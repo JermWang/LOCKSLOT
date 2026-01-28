@@ -10,157 +10,217 @@ interface SymbolProps {
   isWinner?: boolean
 }
 
-// Brick: Misaligned pins - staggered heights, uneven
+// BRICK - Skull emoji style (you got rekt)
 export function BrickSymbol({ className, size = 48, isCenter, isWinner }: SymbolProps) {
   return (
     <svg 
       width={size} 
       height={size} 
-      viewBox="0 0 48 48" 
+      viewBox="0 0 64 64" 
       className={cn("transition-all duration-200", className)}
     >
       <defs>
-        <linearGradient id="brick-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(20, 35%, 45%)" />
-          <stop offset="100%" stopColor="hsl(20, 35%, 32%)" />
+        <linearGradient id="brick-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#c9a076" />
+          <stop offset="100%" stopColor="#8b6914" />
         </linearGradient>
       </defs>
-      {/* Three misaligned vertical pins */}
-      <rect x="10" y="14" width="6" height="28" rx="2" fill="url(#brick-gradient)" opacity="0.9" />
-      <rect x="21" y="8" width="6" height="34" rx="2" fill="url(#brick-gradient)" opacity="0.85" />
-      <rect x="32" y="18" width="6" height="24" rx="2" fill="url(#brick-gradient)" opacity="0.8" />
-      {/* Pin highlights */}
-      <rect x="11" y="14" width="2" height="28" rx="1" fill="hsl(20, 30%, 55%)" opacity="0.4" />
-      <rect x="22" y="8" width="2" height="34" rx="1" fill="hsl(20, 30%, 55%)" opacity="0.4" />
-      <rect x="33" y="18" width="2" height="24" rx="1" fill="hsl(20, 30%, 55%)" opacity="0.4" />
+      {/* Brick shape */}
+      <rect x="8" y="18" width="48" height="28" rx="4" fill="url(#brick-grad)" />
+      <rect x="8" y="18" width="48" height="28" rx="4" fill="url(#brick-grad)" stroke="#6b4c12" strokeWidth="2" />
+      {/* Brick lines */}
+      <line x1="32" y1="18" x2="32" y2="46" stroke="#6b4c12" strokeWidth="2" opacity="0.5" />
+      <line x1="8" y1="32" x2="56" y2="32" stroke="#6b4c12" strokeWidth="2" opacity="0.5" />
+      {/* Crack */}
+      <path d="M20 22 L24 28 L22 32 L26 38" stroke="#5a3d0a" strokeWidth="2" fill="none" strokeLinecap="round" />
     </svg>
   )
 }
 
-// Mid: Partial alignment - 2 aligned, 1 offset
+// MID - Hourglass (time is ticking, meh outcome)
 export function MidSymbol({ className, size = 48, isCenter, isWinner }: SymbolProps) {
   return (
     <svg 
       width={size} 
       height={size} 
-      viewBox="0 0 48 48" 
+      viewBox="0 0 64 64" 
       className={cn("transition-all duration-200", className)}
     >
       <defs>
-        <linearGradient id="mid-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(45, 35%, 55%)" />
-          <stop offset="100%" stopColor="hsl(45, 35%, 42%)" />
+        <linearGradient id="mid-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#ffd700" />
+          <stop offset="50%" stopColor="#ffb347" />
+          <stop offset="100%" stopColor="#ffd700" />
+        </linearGradient>
+        <linearGradient id="mid-sand" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#daa520" />
+          <stop offset="100%" stopColor="#b8860b" />
         </linearGradient>
       </defs>
-      {/* Two aligned, one offset */}
-      <rect x="10" y="10" width="6" height="28" rx="2" fill="url(#mid-gradient)" opacity="0.9" />
-      <rect x="21" y="10" width="6" height="28" rx="2" fill="url(#mid-gradient)" opacity="0.9" />
-      <rect x="32" y="16" width="6" height="22" rx="2" fill="url(#mid-gradient)" opacity="0.75" />
-      {/* Pin highlights */}
-      <rect x="11" y="10" width="2" height="28" rx="1" fill="hsl(45, 30%, 65%)" opacity="0.4" />
-      <rect x="22" y="10" width="2" height="28" rx="1" fill="hsl(45, 30%, 65%)" opacity="0.4" />
-      <rect x="33" y="16" width="2" height="22" rx="1" fill="hsl(45, 30%, 65%)" opacity="0.4" />
+      {/* Top and bottom frames */}
+      <rect x="14" y="8" width="36" height="6" rx="2" fill="#8b7355" />
+      <rect x="14" y="50" width="36" height="6" rx="2" fill="#8b7355" />
+      {/* Glass body */}
+      <path d="M18 14 L18 24 L32 36 L46 24 L46 14 Z" fill="url(#mid-glass)" opacity="0.4" />
+      <path d="M18 50 L18 40 L32 28 L46 40 L46 50 Z" fill="url(#mid-glass)" opacity="0.4" />
+      {/* Sand */}
+      <path d="M22 14 L22 22 L32 30 L42 22 L42 14 Z" fill="url(#mid-sand)" opacity="0.8" />
+      <circle cx="32" cy="44" r="8" fill="url(#mid-sand)" opacity="0.8" />
+      {/* Falling sand */}
+      <line x1="32" y1="32" x2="32" y2="38" stroke="#daa520" strokeWidth="2" strokeLinecap="round" />
+      {/* Outline */}
+      <path d="M18 14 L18 24 L32 36 L46 24 L46 14" fill="none" stroke="#6b5344" strokeWidth="2" />
+      <path d="M18 50 L18 40 L32 28 L46 40 L46 50" fill="none" stroke="#6b5344" strokeWidth="2" />
     </svg>
   )
 }
 
-// Hot: Near alignment - small gap
+// HOT - Fire/Flame (things are heating up!)
 export function HotSymbol({ className, size = 48, isCenter, isWinner }: SymbolProps) {
   return (
     <svg 
       width={size} 
       height={size} 
-      viewBox="0 0 48 48" 
+      viewBox="0 0 64 64" 
       className={cn("transition-all duration-200", className)}
     >
       <defs>
-        <linearGradient id="hot-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(28, 50%, 58%)" />
-          <stop offset="100%" stopColor="hsl(28, 50%, 45%)" />
+        <linearGradient id="fire-outer" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#ff4500" />
+          <stop offset="50%" stopColor="#ff6b35" />
+          <stop offset="100%" stopColor="#ffa500" />
         </linearGradient>
+        <linearGradient id="fire-inner" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#ffcc00" />
+          <stop offset="100%" stopColor="#fff176" />
+        </linearGradient>
+        <filter id="fire-glow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      {/* Nearly aligned with small offset */}
-      <rect x="10" y="10" width="6" height="28" rx="2" fill="url(#hot-gradient)" opacity="0.95" />
-      <rect x="21" y="11" width="6" height="27" rx="2" fill="url(#hot-gradient)" opacity="0.95" />
-      <rect x="32" y="10" width="6" height="28" rx="2" fill="url(#hot-gradient)" opacity="0.95" />
-      {/* Pin highlights */}
-      <rect x="11" y="10" width="2" height="28" rx="1" fill="hsl(28, 45%, 70%)" opacity="0.5" />
-      <rect x="22" y="11" width="2" height="27" rx="1" fill="hsl(28, 45%, 70%)" opacity="0.5" />
-      <rect x="33" y="10" width="2" height="28" rx="1" fill="hsl(28, 45%, 70%)" opacity="0.5" />
+      {/* Outer flame */}
+      <path 
+        d="M32 6 C32 6 42 18 44 28 C46 38 40 50 32 56 C24 50 18 38 20 28 C22 18 32 6 32 6 Z
+           M32 6 C28 14 26 20 28 26 C30 32 32 28 32 28 C32 28 34 32 36 26 C38 20 36 14 32 6 Z" 
+        fill="url(#fire-outer)"
+        filter="url(#fire-glow)"
+      />
+      {/* Inner bright flame */}
+      <path 
+        d="M32 20 C32 20 38 28 38 36 C38 44 35 50 32 52 C29 50 26 44 26 36 C26 28 32 20 32 20 Z" 
+        fill="url(#fire-inner)"
+      />
+      {/* Core */}
+      <ellipse cx="32" cy="42" rx="4" ry="6" fill="#fff9c4" />
     </svg>
   )
 }
 
-// Legendary: Perfect alignment with notch
+// LEGENDARY - Diamond (diamond hands baby!)
 export function LegendarySymbol({ className, size = 48, isCenter, isWinner }: SymbolProps) {
   return (
     <svg 
       width={size} 
       height={size} 
-      viewBox="0 0 48 48" 
-      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_8px_hsl(160,50%,50%)]", className)}
+      viewBox="0 0 64 64" 
+      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_12px_#00ff88]", className)}
     >
       <defs>
-        <linearGradient id="legendary-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(160, 50%, 55%)" />
-          <stop offset="100%" stopColor="hsl(160, 50%, 42%)" />
+        <linearGradient id="diamond-top" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#b8f4ff" />
+          <stop offset="100%" stopColor="#00d4aa" />
         </linearGradient>
-        <linearGradient id="legendary-chrome" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="hsl(160, 40%, 70%)" />
-          <stop offset="50%" stopColor="hsl(160, 50%, 50%)" />
-          <stop offset="100%" stopColor="hsl(160, 40%, 40%)" />
+        <linearGradient id="diamond-left" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#00d4aa" />
+          <stop offset="100%" stopColor="#00a080" />
         </linearGradient>
+        <linearGradient id="diamond-right" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#40e0d0" />
+          <stop offset="100%" stopColor="#00b894" />
+        </linearGradient>
+        <filter id="diamond-glow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      {/* Perfectly aligned pins */}
-      <rect x="10" y="10" width="6" height="28" rx="2" fill={isWinner ? "url(#legendary-chrome)" : "url(#legendary-gradient)"} />
-      <rect x="21" y="10" width="6" height="28" rx="2" fill={isWinner ? "url(#legendary-chrome)" : "url(#legendary-gradient)"} />
-      <rect x="32" y="10" width="6" height="28" rx="2" fill={isWinner ? "url(#legendary-chrome)" : "url(#legendary-gradient)"} />
-      {/* Alignment notch indicator */}
-      <rect x="8" y="22" width="32" height="4" rx="1" fill="hsl(160, 50%, 60%)" opacity="0.6" />
-      {/* Pin highlights */}
-      <rect x="11" y="10" width="2" height="28" rx="1" fill="hsl(160, 40%, 75%)" opacity="0.5" />
-      <rect x="22" y="10" width="2" height="28" rx="1" fill="hsl(160, 40%, 75%)" opacity="0.5" />
-      <rect x="33" y="10" width="2" height="28" rx="1" fill="hsl(160, 40%, 75%)" opacity="0.5" />
+      {/* Diamond shape */}
+      <g filter={isWinner ? "url(#diamond-glow)" : undefined}>
+        {/* Top facet */}
+        <polygon points="32,6 48,22 32,26 16,22" fill="url(#diamond-top)" />
+        {/* Left facet */}
+        <polygon points="16,22 32,26 32,58 12,28" fill="url(#diamond-left)" />
+        {/* Right facet */}
+        <polygon points="48,22 52,28 32,58 32,26" fill="url(#diamond-right)" />
+        {/* Center highlight */}
+        <polygon points="32,26 40,24 32,50 24,24" fill="#afffef" opacity="0.5" />
+        {/* Sparkle */}
+        <circle cx="26" cy="18" r="2" fill="white" opacity="0.9" />
+        <circle cx="40" cy="32" r="1.5" fill="white" opacity="0.7" />
+      </g>
     </svg>
   )
 }
 
-// Mythic: Open state - retracted pins with void
+// MYTHIC - Lightning Bolt (absolute god tier!)
 export function MythicSymbol({ className, size = 48, isCenter, isWinner }: SymbolProps) {
   return (
     <svg 
       width={size} 
       height={size} 
-      viewBox="0 0 48 48" 
-      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_12px_hsl(275,40%,60%)]", className)}
+      viewBox="0 0 64 64" 
+      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_16px_#ff00ff]", className)}
     >
       <defs>
-        <linearGradient id="mythic-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(275, 45%, 60%)" />
-          <stop offset="100%" stopColor="hsl(275, 45%, 45%)" />
+        <linearGradient id="bolt-main" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ff6bff" />
+          <stop offset="50%" stopColor="#bf5fff" />
+          <stop offset="100%" stopColor="#8b5cf6" />
         </linearGradient>
-        <linearGradient id="mythic-iridescent" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(275, 50%, 70%)" />
-          <stop offset="33%" stopColor="hsl(300, 45%, 60%)" />
-          <stop offset="66%" stopColor="hsl(260, 50%, 55%)" />
-          <stop offset="100%" stopColor="hsl(275, 45%, 50%)" />
+        <linearGradient id="bolt-highlight" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#ffd6ff" />
+          <stop offset="100%" stopColor="#ff9eff" />
         </linearGradient>
-        <radialGradient id="mythic-void" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="hsl(275, 50%, 20%)" />
-          <stop offset="70%" stopColor="hsl(275, 40%, 35%)" />
-          <stop offset="100%" stopColor="hsl(275, 45%, 50%)" />
-        </radialGradient>
+        <filter id="mythic-glow">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      {/* Outer ring */}
-      <circle cx="24" cy="24" r="18" fill="none" stroke={isWinner ? "url(#mythic-iridescent)" : "url(#mythic-gradient)"} strokeWidth="3" />
-      {/* Inner void */}
-      <circle cx="24" cy="24" r="10" fill="url(#mythic-void)" />
-      {/* Retracted pins (small) */}
-      <rect x="10" y="32" width="5" height="8" rx="1.5" fill={isWinner ? "url(#mythic-iridescent)" : "url(#mythic-gradient)"} opacity="0.8" />
-      <rect x="21.5" y="34" width="5" height="6" rx="1.5" fill={isWinner ? "url(#mythic-iridescent)" : "url(#mythic-gradient)"} opacity="0.8" />
-      <rect x="33" y="32" width="5" height="8" rx="1.5" fill={isWinner ? "url(#mythic-iridescent)" : "url(#mythic-gradient)"} opacity="0.8" />
-      {/* Center glow dot */}
-      <circle cx="24" cy="24" r="3" fill="hsl(275, 60%, 75%)" opacity={isWinner ? "0.9" : "0.6"} />
+      {/* Lightning bolt */}
+      <g filter={isWinner ? "url(#mythic-glow)" : undefined}>
+        {/* Main bolt shape */}
+        <polygon 
+          points="36,4 18,30 28,30 22,60 46,28 34,28 42,4" 
+          fill="url(#bolt-main)"
+        />
+        {/* Inner highlight */}
+        <polygon 
+          points="34,10 24,28 30,28 26,50 40,30 34,30 38,10" 
+          fill="url(#bolt-highlight)"
+          opacity="0.7"
+        />
+        {/* Bright core */}
+        <polygon 
+          points="32,18 28,28 32,28 30,40 36,30 32,30 34,18" 
+          fill="white"
+          opacity="0.8"
+        />
+      </g>
+      {/* Sparkles */}
+      <circle cx="14" cy="20" r="2" fill="#ff9eff" opacity="0.8" />
+      <circle cx="50" cy="40" r="2" fill="#ff9eff" opacity="0.8" />
+      <circle cx="18" cy="48" r="1.5" fill="#ffd6ff" opacity="0.6" />
+      <circle cx="48" cy="16" r="1.5" fill="#ffd6ff" opacity="0.6" />
     </svg>
   )
 }

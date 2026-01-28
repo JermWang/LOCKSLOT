@@ -199,30 +199,24 @@ function SlotReel({
 
   return (
     <div className={cn(
-      "relative h-40 w-full overflow-hidden rounded-2xl border transition-all duration-300",
-      "bg-gradient-to-b from-secondary/60 via-secondary/30 to-secondary/60",
-      "shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)]",
-      isWinner && result === "mythic" && "border-purple-400/50 shadow-[inset_0_2px_8px_rgba(0,0,0,0.15),0_0_24px_rgba(168,85,247,0.3)]",
-      isWinner && result === "legendary" && "border-emerald-400/50 shadow-[inset_0_2px_8px_rgba(0,0,0,0.15),0_0_24px_rgba(52,211,153,0.3)]",
-      !isWinner && "border-border/40"
+      "relative h-40 w-full overflow-hidden rounded-xl border-2 slot-reel-glow transition-shadow duration-300",
+      "bg-gradient-to-b from-secondary/80 via-secondary/40 to-secondary/80",
+      isWinner && result === "mythic" && "glow-mythic border-pink-400",
+      isWinner && result === "legendary" && "glow-legendary border-emerald-400",
+      !isWinner && "border-border/50"
     )}>
-      {/* Mechanical bezel effect */}
-      <div className="absolute inset-0 rounded-2xl border border-white/5 pointer-events-none" />
+      {/* Reel shine overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
       
-      {/* Top/bottom fade - deeper for instrument look */}
-      <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background/90 to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background/90 to-transparent z-10 pointer-events-none" />
+      {/* Top/bottom fade */}
+      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background/95 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background/95 to-transparent z-10 pointer-events-none" />
       
-      {/* Center alignment window */}
+      {/* Center highlight */}
       <div className={cn(
-        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 pointer-events-none transition-all duration-200",
-        "border-y-2 border-dashed",
-        isWinner ? "border-primary/30 bg-primary/5" : "border-border/30 bg-transparent"
+        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y pointer-events-none transition-all duration-200",
+        isWinner ? "border-primary/40 bg-primary/10" : "border-primary/20 bg-primary/5"
       )} />
-      
-      {/* Side tick marks */}
-      <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-border/30 rounded-full" />
-      <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-border/30 rounded-full" />
 
       {/* Visible items with scaling effect */}
       {visibleItems.map(({ item, yOffset, key, distFromCenter }) => {
@@ -662,45 +656,27 @@ export function SlotMachine() {
           </div>
         )}
 
-        {/* Mechanical Spin Button */}
-        <button
+        {/* Spin Button */}
+        <Button
           onClick={handleSpin}
           disabled={isButtonDisabled}
           className={cn(
-            "relative h-16 w-full rounded-xl font-black uppercase tracking-widest text-lg transition-all duration-150",
-            "border-2 overflow-hidden group",
-            isButtonDisabled 
-              ? "bg-secondary/50 border-border/30 text-muted-foreground cursor-not-allowed"
-              : "bg-gradient-to-b from-primary/90 to-primary border-primary/50 text-primary-foreground hover:from-primary hover:to-primary/80 active:scale-[0.98] active:from-primary/80 active:to-primary/70",
-            !isButtonDisabled && "shadow-[0_4px_20px_rgba(var(--primary),0.3)]"
+            "h-14 w-full text-lg font-black uppercase tracking-wider",
+            !isButtonDisabled && "bg-primary text-primary-foreground hover:bg-primary/90 glow-primary"
           )}
         >
-          {/* Button inner highlight */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-          
-          {/* Grip texture lines */}
-          {!isButtonDisabled && (
-            <div className="absolute inset-x-0 top-1 h-1 flex justify-center gap-1 opacity-30">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="w-1 h-full bg-white/50 rounded-full" />
-              ))}
-            </div>
+          {isSpinning || reelsSpinning ? (
+            <span className="flex items-center gap-2">
+              <span className="animate-spin">◐</span>
+              SPINNING...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              SPIN
+            </span>
           )}
-          
-          <span className="relative z-10 flex items-center justify-center gap-3">
-            {isSpinning || reelsSpinning ? (
-              <>
-                <span className="animate-spin text-xl">⟳</span>
-                <span>LOCKING...</span>
-              </>
-            ) : (
-              <>
-                <Lock className="h-5 w-5" />
-                <span>ENGAGE LOCK</span>
-              </>
-            )}
-          </span>
-        </button>
+        </Button>
       </div>
     </div>
   )
