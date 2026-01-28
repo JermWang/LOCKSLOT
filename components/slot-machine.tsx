@@ -199,14 +199,17 @@ function SlotReel({
 
   return (
     <div className={cn(
-      "relative h-40 w-full overflow-hidden rounded-xl border-2 slot-reel-glow transition-shadow duration-300",
-      "bg-gradient-to-b from-secondary/80 via-secondary/40 to-secondary/80",
-      isWinner && result === "mythic" && "glow-mythic border-pink-400",
-      isWinner && result === "legendary" && "glow-legendary border-emerald-400",
-      !isWinner && "border-border/50"
+      "relative h-40 w-full overflow-hidden rounded-xl border slot-reel-glow transition-shadow duration-300",
+      "bg-gradient-to-b from-black/40 via-black/20 to-black/40",
+      "backdrop-blur-md",
+      isWinner && result === "mythic" && "glow-mythic border-pink-400/60",
+      isWinner && result === "legendary" && "glow-legendary border-emerald-400/60",
+      !isWinner && "border-white/10"
     )}>
+      {/* Glassmorphic inner glow */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 pointer-events-none" />
       {/* Reel shine overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
       
       {/* Top/bottom fade */}
       <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background/95 to-transparent z-10 pointer-events-none" />
@@ -588,7 +591,7 @@ export function SlotMachine() {
               placeholder="Amount"
               value={stakeAmount}
               onChange={(e) => setStakeAmount(e.target.value)}
-              className="h-12 bg-secondary/50 pr-16 text-lg font-mono font-bold"
+              className="h-12 bg-black/40 backdrop-blur-sm border-white/10 pr-16 text-lg font-mono font-bold"
               disabled={isSpinning}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -599,7 +602,7 @@ export function SlotMachine() {
             variant="outline"
             onClick={() => handleQuickAmount(userBalance)}
             disabled={isSpinning}
-            className="h-12 px-4 text-xs font-bold"
+            className="h-12 px-4 text-xs font-bold bg-black/30 backdrop-blur-sm border-white/10 hover:bg-white/10 hover:border-white/20"
           >
             MAX
           </Button>
@@ -664,7 +667,7 @@ export function SlotMachine() {
                   size="sm"
                   onClick={() => handleQuickAmount(amount)}
                   disabled={isSpinning || amount > userBalance}
-                  className="font-mono text-xs h-8 bg-secondary/30"
+                  className="font-mono text-xs h-8 bg-black/30 backdrop-blur-sm border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
                 >
                   {amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}K` : amount}
                 </Button>
@@ -681,27 +684,72 @@ export function SlotMachine() {
           </div>
         )}
 
-        {/* Spin Button */}
-        <Button
-          onClick={handleSpin}
-          disabled={isButtonDisabled}
-          className={cn(
-            "h-14 w-full text-lg font-black uppercase tracking-wider",
-            !isButtonDisabled && "bg-primary text-primary-foreground hover:bg-primary/90 glow-primary"
+        {/* Crystal Spin Button */}
+        <div className="relative">
+          {/* Outer glow effect */}
+          {!isButtonDisabled && (
+            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 via-primary/40 to-cyan-500/30 rounded-xl blur-md animate-pulse" />
           )}
-        >
-          {isSpinning || reelsSpinning ? (
-            <span className="flex items-center gap-2">
-              <span className="animate-spin">◐</span>
-              SPINNING...
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <Zap className="h-5 w-5" />
-              SPIN
-            </span>
-          )}
-        </Button>
+          <button
+            onClick={handleSpin}
+            disabled={isButtonDisabled}
+            className={cn(
+              "relative w-full h-16 overflow-hidden transition-all duration-300",
+              "rounded-xl border",
+              isButtonDisabled 
+                ? "bg-gray-800/50 border-gray-700/50 cursor-not-allowed" 
+                : "bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-black border-white/20 hover:border-white/40 cursor-pointer",
+              "group"
+            )}
+          >
+            {/* Glassmorphic top shine */}
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+            
+            {/* Diamond pattern overlay */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: `linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)`,
+                backgroundSize: '20px 20px'
+              }}
+            />
+            
+            {/* Side crystal facets */}
+            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white/10 to-transparent pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/10 to-transparent pointer-events-none" />
+            
+            {/* Bottom edge highlight */}
+            <div className="absolute inset-x-4 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+            
+            {/* Button content */}
+            <div className={cn(
+              "relative flex items-center justify-center gap-3 h-full",
+              "text-lg font-black uppercase tracking-[0.2em]",
+              isButtonDisabled ? "text-gray-500" : "text-white group-hover:text-cyan-100"
+            )}>
+              {isSpinning || reelsSpinning ? (
+                <>
+                  <span className="animate-spin text-xl">◐</span>
+                  <span>SPINNING...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className={cn(
+                    "h-5 w-5 transition-all",
+                    !isButtonDisabled && "group-hover:text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+                  )} />
+                  <span>SPIN</span>
+                </>
+              )}
+            </div>
+            
+            {/* Hover shimmer effect */}
+            {!isButtonDisabled && (
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              </div>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   )
