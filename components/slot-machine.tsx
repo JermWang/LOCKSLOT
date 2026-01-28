@@ -6,8 +6,8 @@ import { TIER_CONFIG, getTierColor, getTierBgColor, type Tier } from "@/lib/game
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { Zap, Lock, Hash, Settings, Check, X, Volume2, VolumeX } from "lucide-react"
-import { gameSounds, isSoundEnabled, setSoundEnabled, resumeAudio } from "@/lib/sounds"
+import { Zap, Lock, Hash, Settings, Check, X, Volume2, VolumeX, Music, Music2 } from "lucide-react"
+import { gameSounds, isSoundEnabled, setSoundEnabled, isMusicEnabled, resumeAudio } from "@/lib/sounds"
 import { gameToast } from "@/lib/toast"
 import { TierSymbol, TIER_LABELS } from "@/components/reel-symbols"
 import { ArcGauge } from "@/components/arc-gauge"
@@ -338,9 +338,11 @@ export function SlotMachine() {
   
   // Sound state
   const [soundEnabled, setSoundEnabledState] = useState(true)
+  const [musicEnabled, setMusicEnabledState] = useState(false)
   
   useEffect(() => {
     setSoundEnabledState(isSoundEnabled())
+    setMusicEnabledState(isMusicEnabled())
   }, [])
   
   const toggleSound = () => {
@@ -350,6 +352,17 @@ export function SlotMachine() {
     if (newState) {
       resumeAudio()
       gameSounds.click()
+    }
+  }
+
+  const toggleMusic = () => {
+    const newState = !musicEnabled
+    setMusicEnabledState(newState)
+    if (newState) {
+      resumeAudio()
+      gameSounds.startMusic()
+    } else {
+      gameSounds.stopMusic()
     }
   }
 
@@ -459,8 +472,20 @@ export function SlotMachine() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Sound toggle */}
-      <div className="flex justify-end mb-2">
+      {/* Sound & Music toggles */}
+      <div className="flex justify-end gap-1 mb-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleMusic}
+          className={cn(
+            "h-8 w-8 p-0 transition-colors",
+            musicEnabled ? "text-primary" : "text-muted-foreground hover:text-foreground"
+          )}
+          title={musicEnabled ? "Stop lo-fi music" : "Play lo-fi jazz"}
+        >
+          {musicEnabled ? <Music className="h-4 w-4" /> : <Music2 className="h-4 w-4 opacity-50" />}
+        </Button>
         <Button
           variant="ghost"
           size="sm"

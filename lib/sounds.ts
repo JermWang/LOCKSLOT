@@ -791,58 +791,324 @@ class PremiumSoundManager {
     }, 350)
   }
 
-  // Ambient background - relaxing casino atmosphere
-  startAmbient() {
-    if (!this.enabled || this.ambientEnabled) return
+  // === ADDITIONAL SLOT MACHINE SOUNDS ===
+
+  // Anticipation build - tension before reveal
+  anticipation() {
+    if (!this.enabled) return
     const ctx = this.getContext()
     if (!ctx || !this.masterGain) return
 
-    this.ambientEnabled = true
+    // Rising tension tone
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    const filter = ctx.createBiquadFilter()
 
-    // Create a subtle ambient pad
-    const playAmbientPad = () => {
-      if (!this.ambientEnabled || !ctx || !this.masterGain) return
+    osc.type = "sine"
+    osc.frequency.setValueAtTime(200, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 1.5)
 
-      // Soft chord pad
-      const notes = [130.81, 164.81, 196, 261.63] // C3, E3, G3, C4
-      notes.forEach(freq => {
+    filter.type = "lowpass"
+    filter.frequency.setValueAtTime(600, ctx.currentTime)
+    filter.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 1.5)
+
+    gain.gain.setValueAtTime(0, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.15 * this.volume, ctx.currentTime + 0.3)
+    gain.gain.setValueAtTime(0.15 * this.volume, ctx.currentTime + 1.2)
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5)
+
+    osc.connect(filter)
+    filter.connect(gain)
+    gain.connect(this.masterGain)
+
+    osc.start()
+    osc.stop(ctx.currentTime + 1.6)
+
+    // Soft heartbeat-like pulse
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        this.playTone({
+          frequency: 80,
+          type: "sine",
+          duration: 0.15,
+          volume: 0.12,
+          attack: 0.02,
+          decay: 0.08,
+          sustain: 0.3,
+          release: 0.05
+        })
+      }, i * 400)
+    }
+  }
+
+  // Tier reveal sounds - played when result is shown
+  revealBrick() {
+    if (!this.enabled) return
+    // Heavy, dull thud - brick dropped
+    this.playTone({
+      frequency: 80,
+      type: "sine",
+      duration: 0.3,
+      volume: 0.3,
+      attack: 0.01,
+      decay: 0.2,
+      sustain: 0.2,
+      release: 0.1
+    })
+    this.playNoise({
+      duration: 0.15,
+      volume: 0.1,
+      filterFreq: 400,
+      attack: 0.01
+    })
+  }
+
+  revealMid() {
+    if (!this.enabled) return
+    // Neutral tick-tock (hourglass)
+    this.playTone({
+      frequency: 440,
+      type: "triangle",
+      duration: 0.1,
+      volume: 0.2,
+      attack: 0.005,
+      decay: 0.05,
+      sustain: 0.4,
+      release: 0.05
+    })
+    setTimeout(() => {
+      this.playTone({
+        frequency: 330,
+        type: "triangle",
+        duration: 0.15,
+        volume: 0.18,
+        attack: 0.005
+      })
+    }, 120)
+  }
+
+  // Near miss sound - almost got something good
+  nearMiss() {
+    if (!this.enabled) return
+    // Descending "aww" sound
+    const ctx = this.getContext()
+    if (!ctx || !this.masterGain) return
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = "sine"
+    osc.frequency.setValueAtTime(600, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.4)
+
+    gain.gain.setValueAtTime(0.2 * this.volume, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+
+    osc.connect(gain)
+    gain.connect(this.masterGain)
+
+    osc.start()
+    osc.stop(ctx.currentTime + 0.45)
+  }
+
+  // Whoosh for reel acceleration
+  whoosh() {
+    if (!this.enabled) return
+    this.playNoise({
+      duration: 0.3,
+      volume: 0.12,
+      filterFreq: 2500,
+      attack: 0.02,
+      release: 0.2
+    })
+  }
+
+  // === JAPANESE JAZZ LO-FI BACKGROUND MUSIC ===
+  
+  private musicEnabled: boolean = false
+  private musicGain: GainNode | null = null
+  private musicInterval: number | null = null
+  private currentChordIndex: number = 0
+
+  // Lo-fi jazz chord progressions (jazz voicings)
+  private jazzChords = [
+    // Cmaj9 - Dm9 - Em7 - Fmaj7 - G13 - Am9 - Bdim - Cmaj9
+    { root: 130.81, notes: [130.81, 164.81, 196, 233.08, 293.66] }, // Cmaj9
+    { root: 146.83, notes: [146.83, 174.61, 220, 261.63, 329.63] }, // Dm9
+    { root: 164.81, notes: [164.81, 196, 246.94, 293.66, 369.99] }, // Em7
+    { root: 174.61, notes: [174.61, 220, 261.63, 329.63, 392] },    // Fmaj7
+    { root: 196, notes: [196, 246.94, 293.66, 349.23, 440] },       // G13
+    { root: 220, notes: [220, 261.63, 329.63, 392, 493.88] },       // Am9
+    { root: 246.94, notes: [246.94, 293.66, 349.23, 440] },         // Bdim
+    { root: 130.81, notes: [130.81, 164.81, 196, 233.08, 293.66] }, // Cmaj9
+  ]
+
+  startMusic() {
+    if (!this.enabled || this.musicEnabled) return
+    const ctx = this.getContext()
+    if (!ctx || !this.masterGain) return
+
+    this.musicEnabled = true
+    this.currentChordIndex = 0
+
+    // Music gain node for volume control
+    this.musicGain = ctx.createGain()
+    this.musicGain.gain.setValueAtTime(0, ctx.currentTime)
+    this.musicGain.gain.linearRampToValueAtTime(0.15 * this.volume, ctx.currentTime + 2)
+    this.musicGain.connect(this.masterGain)
+
+    const playLofiChord = () => {
+      if (!this.musicEnabled || !ctx || !this.musicGain) return
+
+      const chord = this.jazzChords[this.currentChordIndex]
+      this.currentChordIndex = (this.currentChordIndex + 1) % this.jazzChords.length
+
+      // Play chord with lo-fi character
+      chord.notes.forEach((freq, i) => {
         const osc = ctx.createOscillator()
         const gain = ctx.createGain()
         const filter = ctx.createBiquadFilter()
 
+        // Slight detuning for warmth
         osc.type = "sine"
         osc.frequency.setValueAtTime(freq, ctx.currentTime)
+        osc.detune.setValueAtTime((Math.random() - 0.5) * 10, ctx.currentTime)
 
+        // Lo-fi low-pass filter
         filter.type = "lowpass"
-        filter.frequency.setValueAtTime(400, ctx.currentTime)
+        filter.frequency.setValueAtTime(800 + Math.random() * 400, ctx.currentTime)
+        filter.Q.setValueAtTime(0.7, ctx.currentTime)
 
+        // Soft envelope
+        const noteVolume = 0.08 - i * 0.01
         gain.gain.setValueAtTime(0, ctx.currentTime)
-        gain.gain.linearRampToValueAtTime(0.02 * this.volume, ctx.currentTime + 2)
-        gain.gain.setValueAtTime(0.02 * this.volume, ctx.currentTime + 6)
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 8)
+        gain.gain.linearRampToValueAtTime(noteVolume, ctx.currentTime + 0.3)
+        gain.gain.setValueAtTime(noteVolume, ctx.currentTime + 2.5)
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 3.5)
 
         osc.connect(filter)
         filter.connect(gain)
-        gain.connect(this.masterGain!)
+        gain.connect(this.musicGain!)
 
         osc.start()
-        osc.stop(ctx.currentTime + 8)
+        osc.stop(ctx.currentTime + 3.6)
       })
+
+      // Add subtle vinyl crackle
+      this.playLofiCrackle()
+
+      // Occasional soft piano-like melody note
+      if (Math.random() > 0.6) {
+        setTimeout(() => this.playLofiMelodyNote(chord.root), 500 + Math.random() * 1000)
+      }
     }
 
-    playAmbientPad()
-    // Loop ambient
-    const ambientInterval = setInterval(() => {
-      if (!this.ambientEnabled) {
-        clearInterval(ambientInterval)
+    // Start playing
+    playLofiChord()
+
+    // Loop chords every 3.5 seconds
+    this.musicInterval = window.setInterval(() => {
+      if (!this.musicEnabled) {
+        if (this.musicInterval) clearInterval(this.musicInterval)
         return
       }
-      playAmbientPad()
-    }, 7500)
+      playLofiChord()
+    }, 3500)
+  }
+
+  private playLofiCrackle() {
+    if (!this.enabled || !this.musicEnabled) return
+    const ctx = this.getContext()
+    if (!ctx || !this.musicGain) return
+
+    // Subtle vinyl crackle
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        const bufferSize = Math.floor(ctx.sampleRate * 0.05)
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+        const data = buffer.getChannelData(0)
+        
+        for (let j = 0; j < bufferSize; j++) {
+          data[j] = (Math.random() * 2 - 1) * (Math.random() > 0.95 ? 1 : 0.1)
+        }
+
+        const noise = ctx.createBufferSource()
+        const gain = ctx.createGain()
+        const filter = ctx.createBiquadFilter()
+
+        noise.buffer = buffer
+        filter.type = "highpass"
+        filter.frequency.setValueAtTime(3000, ctx.currentTime)
+        gain.gain.setValueAtTime(0.02, ctx.currentTime)
+
+        noise.connect(filter)
+        filter.connect(gain)
+        gain.connect(this.musicGain!)
+
+        noise.start()
+      }, Math.random() * 3000)
+    }
+  }
+
+  private playLofiMelodyNote(rootFreq: number) {
+    if (!this.enabled || !this.musicEnabled) return
+    const ctx = this.getContext()
+    if (!ctx || !this.musicGain) return
+
+    // Pentatonic scale notes relative to root
+    const pentatonic = [1, 1.125, 1.25, 1.5, 1.667, 2]
+    const noteFreq = rootFreq * 2 * pentatonic[Math.floor(Math.random() * pentatonic.length)]
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    const filter = ctx.createBiquadFilter()
+
+    osc.type = "sine"
+    osc.frequency.setValueAtTime(noteFreq, ctx.currentTime)
+
+    filter.type = "lowpass"
+    filter.frequency.setValueAtTime(1200, ctx.currentTime)
+
+    gain.gain.setValueAtTime(0, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.02)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8)
+
+    osc.connect(filter)
+    filter.connect(gain)
+    gain.connect(this.musicGain!)
+
+    osc.start()
+    osc.stop(ctx.currentTime + 0.9)
+  }
+
+  stopMusic() {
+    this.musicEnabled = false
+    if (this.musicInterval) {
+      clearInterval(this.musicInterval)
+      this.musicInterval = null
+    }
+    // Fade out
+    if (this.musicGain && this.audioContext) {
+      this.musicGain.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 1)
+    }
+  }
+
+  setMusicVolume(volume: number) {
+    if (this.musicGain && this.audioContext) {
+      this.musicGain.gain.setValueAtTime(volume * 0.15 * this.volume, this.audioContext.currentTime)
+    }
+  }
+
+  isMusicEnabled() { return this.musicEnabled }
+
+  // Ambient background - relaxing casino atmosphere (legacy)
+  startAmbient() {
+    // Now just starts the music
+    this.startMusic()
   }
 
   stopAmbient() {
-    this.ambientEnabled = false
+    this.stopMusic()
   }
 
   // Settings
@@ -910,6 +1176,16 @@ export const gameSounds = {
   levelUp: () => getSoundManager()?.levelUp(),
   startAmbient: () => getSoundManager()?.startAmbient(),
   stopAmbient: () => getSoundManager()?.stopAmbient(),
+  // New sounds
+  anticipation: () => getSoundManager()?.anticipation(),
+  revealBrick: () => getSoundManager()?.revealBrick(),
+  revealMid: () => getSoundManager()?.revealMid(),
+  nearMiss: () => getSoundManager()?.nearMiss(),
+  whoosh: () => getSoundManager()?.whoosh(),
+  // Background music
+  startMusic: () => getSoundManager()?.startMusic(),
+  stopMusic: () => getSoundManager()?.stopMusic(),
+  setMusicVolume: (vol: number) => getSoundManager()?.setMusicVolume(vol),
 }
 
 export const setSoundEnabled = (enabled: boolean) => getSoundManager()?.setEnabled(enabled)
@@ -917,4 +1193,5 @@ export const setSoundVolume = (volume: number) => getSoundManager()?.setVolume(v
 export const isSoundEnabled = () => getSoundManager()?.isEnabled() ?? true
 export const getSoundVolume = () => getSoundManager()?.getVolume() ?? 0.6
 export const isAmbientEnabled = () => getSoundManager()?.isAmbientEnabled() ?? false
+export const isMusicEnabled = () => getSoundManager()?.isMusicEnabled() ?? false
 export const resumeAudio = () => getSoundManager()?.resume()
