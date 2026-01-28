@@ -15,11 +15,11 @@ interface RulesModalProps {
 }
 
 const TIER_INFO = [
-  { name: "BRICK", probability: "55%", duration: "14-21d", multiplier: "1.2-2.0x", color: "text-orange-400", eligible: false },
-  { name: "MID", probability: "30%", duration: "7-14d", multiplier: "1.8-3.5x", color: "text-yellow-400", eligible: false },
-  { name: "HOT", probability: "12%", duration: "3-7d", multiplier: "3.0-7.0x", color: "text-orange-500", eligible: false },
-  { name: "LEGENDARY", probability: "2.5%", duration: "1-3d", multiplier: "7.0-12x", color: "text-emerald-400", eligible: true },
-  { name: "MYTHIC", probability: "0.5%", duration: "~1d", multiplier: "12-20x", color: "text-pink-400", eligible: true },
+  { name: "BRICK", probability: "45%", duration: "36-48h", multiplier: "1.2-2.0x", color: "text-orange-400", eligible: false },
+  { name: "MID", probability: "28%", duration: "18-36h", multiplier: "1.8-3.5x", color: "text-yellow-400", eligible: false },
+  { name: "HOT", probability: "15%", duration: "8-18h", multiplier: "3.0-7.0x", color: "text-orange-500", eligible: false },
+  { name: "LEGENDARY", probability: "9%", duration: "3-8h", multiplier: "5.0-8.0x", color: "text-emerald-400", eligible: true },
+  { name: "MYTHIC", probability: "3%", duration: "1-3h", multiplier: "8.0-15x", color: "text-pink-400", eligible: true },
 ]
 
 export function RulesModal({ open, onOpenChange }: RulesModalProps) {

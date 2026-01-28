@@ -1,12 +1,12 @@
 import crypto from 'crypto'
 
-// Tier configuration - rebalanced for better win rate (12% vs old 3%)
+// Tier configuration - durations in HOURS (max 48h), rebalanced for 12% win rate
 export const TIER_CONFIG = {
-  brick: { probability: 0.45, durationRange: [14, 21], multiplierRange: [1.2, 2.0] },
-  mid: { probability: 0.28, durationRange: [7, 14], multiplierRange: [1.8, 3.5] },
-  hot: { probability: 0.15, durationRange: [3, 7], multiplierRange: [3.0, 7.0] },
-  legendary: { probability: 0.09, durationRange: [1, 3], multiplierRange: [5.0, 8.0] },
-  mythic: { probability: 0.03, durationRange: [1, 1], multiplierRange: [8.0, 15.0] },
+  brick: { probability: 0.45, durationRange: [36, 48], multiplierRange: [1.2, 2.0] },    // 36-48 hours (longest)
+  mid: { probability: 0.28, durationRange: [18, 36], multiplierRange: [1.8, 3.5] },      // 18-36 hours
+  hot: { probability: 0.15, durationRange: [8, 18], multiplierRange: [3.0, 7.0] },       // 8-18 hours
+  legendary: { probability: 0.09, durationRange: [3, 8], multiplierRange: [5.0, 8.0] },  // 3-8 hours
+  mythic: { probability: 0.03, durationRange: [1, 3], multiplierRange: [8.0, 15.0] },    // 1-3 hours (shortest)
 } as const
 
 export type Tier = keyof typeof TIER_CONFIG

@@ -71,7 +71,7 @@ create table public.spins (
   
   -- Outcome
   tier text not null check (tier in ('brick', 'mid', 'hot', 'legendary', 'mythic')),
-  lock_duration int not null, -- in days
+  lock_duration int not null, -- in hours
   multiplier decimal(4, 2) not null,
   ticket_score bigint not null, -- stake * multiplier
   
@@ -353,21 +353,22 @@ $$ language plpgsql;
    v_int := to_number(substring(v_hash from 1 for 8), 'FMXXXXXXXX');
    v_roll := v_int / 4294967295::numeric;
 
+   -- Durations in HOURS (max 48h)
    if v_roll < 0.45 then
      v_tier := 'brick';
-     v_min_d := 14; v_max_d := 21; v_min_m := 1.2; v_max_m := 2.0;
+     v_min_d := 36; v_max_d := 48; v_min_m := 1.2; v_max_m := 2.0;  -- 36-48 hours
    elsif v_roll < 0.73 then
      v_tier := 'mid';
-     v_min_d := 7; v_max_d := 14; v_min_m := 1.8; v_max_m := 3.5;
+     v_min_d := 18; v_max_d := 36; v_min_m := 1.8; v_max_m := 3.5;  -- 18-36 hours
    elsif v_roll < 0.88 then
      v_tier := 'hot';
-     v_min_d := 3; v_max_d := 7; v_min_m := 3.0; v_max_m := 7.0;
+     v_min_d := 8; v_max_d := 18; v_min_m := 3.0; v_max_m := 7.0;   -- 8-18 hours
    elsif v_roll < 0.97 then
      v_tier := 'legendary';
-     v_min_d := 1; v_max_d := 3; v_min_m := 5.0; v_max_m := 8.0;
+     v_min_d := 3; v_max_d := 8; v_min_m := 5.0; v_max_m := 8.0;    -- 3-8 hours
    else
      v_tier := 'mythic';
-     v_min_d := 1; v_max_d := 1; v_min_m := 8.0; v_max_m := 15.0;
+     v_min_d := 1; v_max_d := 3; v_min_m := 8.0; v_max_m := 15.0;   -- 1-3 hours
    end if;
 
    v_int := to_number(substring(v_hash from 9 for 8), 'FMXXXXXXXX');
@@ -379,7 +380,7 @@ $$ language plpgsql;
    v_multiplier := round((v_min_m + v_norm * (v_max_m - v_min_m))::numeric, 1);
 
    v_ticket_score := floor(p_stake_amount::numeric * v_multiplier)::bigint;
-   v_unlocks_at := v_locked_at + (v_duration::text || ' days')::interval;
+   v_unlocks_at := v_locked_at + (v_duration::text || ' hours')::interval;
    v_bonus_eligible := (v_tier = 'legendary' or v_tier = 'mythic');
 
    v_new_balance := v_user.balance - p_stake_amount;

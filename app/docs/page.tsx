@@ -55,7 +55,7 @@ export default function DocsPage() {
                 <div className="rounded-lg border border-border bg-secondary/30 p-4">
                   <h4 className="font-semibold text-foreground mb-2">2. Lock</h4>
                   <p className="text-sm">
-                    Your tokens are locked for the determined duration (1-21 days). 
+                    Your tokens are locked for the determined duration (1-48 hours). 
                     Your principal is always recoverable—you just can&apos;t access it until the lock expires.
                   </p>
                 </div>
@@ -98,7 +98,7 @@ export default function DocsPage() {
                           {(config.probability * 100).toFixed(1)}%
                         </td>
                         <td className="py-3 font-mono">
-                          {config.durationRange[0]}-{config.durationRange[1]}d
+                          {config.durationRange[0]}-{config.durationRange[1]}h
                         </td>
                         <td className="py-3 font-mono">
                           {config.multiplierRange[0]}x-{config.multiplierRange[1]}x
