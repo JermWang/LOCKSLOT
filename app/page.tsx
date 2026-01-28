@@ -3,7 +3,6 @@
 import { useState, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FooterStats } from "@/components/footer-stats"
 import { HowItWorks } from "@/components/how-it-works"
 import { SlotMachine } from "@/components/slot-machine"
 import { RewardPool } from "@/components/reward-pool"
@@ -171,8 +170,6 @@ export default function LockSlotPage() {
         )}
       </AnimatePresence>
 
-      {/* Footer Stats */}
-      <FooterStats />
     </div>
   )
 }
