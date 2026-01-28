@@ -34,12 +34,9 @@ export function ArcGauge({
   const normalizedValue = Math.max(0, Math.min(1, (value - min) / (max - min)))
   const fillLength = arcLength * normalizedValue
   
-  // Color based on duration (shorter = better)
+  // Neon green glow for all values
   const getColor = () => {
-    if (value <= 8) return "hsl(160, 50%, 50%)" // Legendary/Mythic range - teal
-    if (value <= 18) return "hsl(28, 50%, 55%)" // Hot range - copper
-    if (value <= 36) return "hsl(45, 35%, 50%)" // Mid range - brass
-    return "hsl(20, 35%, 42%)" // Brick range - bronze
+    return "hsl(142, 100%, 50%)" // Neon green
   }
 
   const formatValue = () => {
@@ -105,7 +102,7 @@ export function ArcGauge({
             ease: [0.34, 1.56, 0.64, 1] // easeOutBack
           }}
           style={{
-            filter: value <= 8 ? `drop-shadow(0 0 6px ${getColor()})` : 'none'
+            filter: `drop-shadow(0 0 8px ${getColor()}) drop-shadow(0 0 16px ${getColor()})`
           }}
         />
       </svg>
@@ -147,10 +144,7 @@ export function ArcGaugeMini({
   const fillLength = arcLength * normalizedValue
 
   const getColor = () => {
-    if (value <= 8) return "hsl(160, 50%, 50%)"
-    if (value <= 18) return "hsl(28, 50%, 55%)"
-    if (value <= 36) return "hsl(45, 35%, 50%)"
-    return "hsl(20, 35%, 42%)"
+    return "hsl(142, 100%, 50%)" // Neon green
   }
 
   return (
