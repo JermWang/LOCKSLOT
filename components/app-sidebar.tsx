@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
   Home,
-  LayoutGrid,
   Trophy,
   Coins,
   Gift,
@@ -14,7 +13,6 @@ import {
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/board", label: "Board", icon: LayoutGrid },
   { href: "/leaderboards", label: "Leaderboards", icon: Trophy },
   { href: "/distributions", label: "Distributions", icon: Coins },
   { href: "/claims", label: "Claims", icon: Gift },
