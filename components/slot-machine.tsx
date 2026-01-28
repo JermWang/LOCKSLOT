@@ -43,8 +43,8 @@ const REEL_ITEMS: { tier: Tier; label: string; symbol: string }[] = [
 ]
 
 const REEL_REPEAT = 60
-const REEL_ITEM_HEIGHT = 56
-const REEL_VIEWPORT_HEIGHT = 112
+const REEL_ITEM_HEIGHT = 80
+const REEL_VIEWPORT_HEIGHT = 160
 const REEL_CENTER_OFFSET = (REEL_VIEWPORT_HEIGHT - REEL_ITEM_HEIGHT) / 2
 const REEL_STRIP: { tier: Tier; label: string; symbol: string }[] = Array.from(
   { length: REEL_ITEMS.length * REEL_REPEAT },
@@ -82,6 +82,7 @@ function SlotReel({
   const stopStartRef = useRef(0)
   const stopDurationRef = useRef(0)
   const lastTickIndexRef = useRef<number | null>(null)
+  const isSpinningRef = useRef(false)
 
   const isWinner = result && (result === "legendary" || result === "mythic") && !isSpinning
 
@@ -124,7 +125,7 @@ function SlotReel({
   }
 
   const loop = (ts: number) => {
-    if (!isSpinning && !stoppingRef.current) {
+    if (!isSpinningRef.current && !stoppingRef.current) {
       rafRef.current = null
       lastTsRef.current = null
       return
@@ -176,6 +177,7 @@ function SlotReel({
   }
 
   useEffect(() => {
+    isSpinningRef.current = isSpinning
     if (!isSpinning) return
 
     stoppingRef.current = false
@@ -206,7 +208,7 @@ function SlotReel({
 
   return (
     <div className={cn(
-      "relative h-28 w-full overflow-hidden rounded-xl border-2 transition-all duration-300 slot-reel-glow",
+      "relative h-40 w-full overflow-hidden rounded-xl border-2 transition-all duration-300 slot-reel-glow",
       "bg-gradient-to-b from-secondary/80 via-secondary/40 to-secondary/80",
       isWinner && result === "mythic" && "glow-mythic border-pink-400",
       isWinner && result === "legendary" && "glow-legendary border-emerald-400",
@@ -219,7 +221,7 @@ function SlotReel({
       <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-background/80 to-transparent z-10" />
       <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background/80 to-transparent z-10" />
       
-      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-14 border-y border-white/5" />
+      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y border-white/5" />
 
       <div
         ref={stripRef}
@@ -230,8 +232,8 @@ function SlotReel({
         style={{ transform: `translate3d(0, ${REEL_CENTER_OFFSET}px, 0)` }}
       >
         {REEL_STRIP.map((item, i) => (
-          <div key={i} className="h-14 flex flex-col items-center justify-center gap-0.5">
-            <span className="text-2xl leading-none">{item.symbol}</span>
+          <div key={i} className="h-20 flex flex-col items-center justify-center gap-1.5">
+            <span className="text-3xl leading-none">{item.symbol}</span>
             <span
               className={cn(
                 "text-sm font-black font-mono tracking-wider transition-all",
