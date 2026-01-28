@@ -42,19 +42,12 @@ const REEL_ITEMS: { tier: Tier; label: string; symbol: string }[] = [
   { tier: "mythic", label: "MYTHIC", symbol: "⚡" },
 ]
 
-const REEL_REPEAT = 60
 const REEL_ITEM_HEIGHT = 80
 const REEL_VIEWPORT_HEIGHT = 160
-const REEL_CENTER_OFFSET = (REEL_VIEWPORT_HEIGHT - REEL_ITEM_HEIGHT) / 2
-const REEL_STRIP: { tier: Tier; label: string; symbol: string }[] = Array.from(
-  { length: REEL_ITEMS.length * REEL_REPEAT },
-  (_, i) => REEL_ITEMS[i % REEL_ITEMS.length]
-)
+const VISIBLE_ITEMS = 5
 
-function easeOutBack(t: number) {
-  const s = 1.70158
-  const u = t - 1
-  return 1 + (s + 1) * u * u * u + s * u * u
+function easeOutCubic(t: number) {
+  return 1 - Math.pow(1 - t, 3)
 }
 
 function SlotReel({ 
@@ -70,182 +63,158 @@ function SlotReel({
   reelIndex?: number
   onStopped?: (reelIndex: number) => void
 }) {
-  const stripRef = useRef<HTMLDivElement | null>(null)
+  const [offset, setOffset] = useState(0)
   const rafRef = useRef<number | null>(null)
   const offsetRef = useRef(0)
-  const lastTsRef = useRef<number | null>(null)
-  const startedAtRef = useRef<number | null>(null)
-  const targetTierRef = useRef<Tier | null>(null)
-  const stoppingRef = useRef(false)
-  const stopFromRef = useRef(0)
-  const stopToRef = useRef(0)
-  const stopStartRef = useRef(0)
-  const stopDurationRef = useRef(0)
-  const lastTickIndexRef = useRef<number | null>(null)
+  const velocityRef = useRef(0)
+  const targetIndexRef = useRef<number | null>(null)
   const isSpinningRef = useRef(false)
+  const hasStoppedRef = useRef(false)
+  const lastTickRef = useRef(-1)
 
+  const n = REEL_ITEMS.length
   const isWinner = result && (result === "legendary" || result === "mythic") && !isSpinning
 
-  useEffect(() => {
-    targetTierRef.current = result
-  }, [result])
-
-  const setTransform = () => {
-    const el = stripRef.current
-    if (!el) return
-    const y = REEL_CENTER_OFFSET - offsetRef.current * REEL_ITEM_HEIGHT
-    el.style.transform = `translate3d(0, ${y}px, 0)`
+  // Get visible items based on current offset
+  const getVisibleItems = (off: number) => {
+    const items: { item: typeof REEL_ITEMS[0]; yOffset: number; key: number }[] = []
+    const centerIndex = Math.floor(off)
+    const fractional = off - centerIndex
+    
+    for (let i = -2; i <= 2; i++) {
+      const idx = ((centerIndex + i) % n + n) % n
+      const yOffset = (i - fractional) * REEL_ITEM_HEIGHT
+      items.push({ item: REEL_ITEMS[idx], yOffset, key: centerIndex + i })
+    }
+    return items
   }
 
-  const stopNow = (tier: Tier) => {
-    const resultIndex = REEL_ITEMS.findIndex((item) => item.tier === tier)
-    const n = REEL_ITEMS.length
-    const from = offsetRef.current
-    const base = Math.floor(from) + n * (12 + reelIndex * 2)
-    let to = base
-    while (to % n !== resultIndex) to += 1
-
-    stoppingRef.current = true
-    stopFromRef.current = from
-    stopToRef.current = to
-    stopStartRef.current = performance.now()
-    stopDurationRef.current = 900 + reelIndex * 180
-  }
-
-  const tickIfNeeded = () => {
-    const idx = Math.floor(offsetRef.current)
-    if (lastTickIndexRef.current === null) {
-      lastTickIndexRef.current = idx
-      return
-    }
-    if (idx !== lastTickIndexRef.current) {
-      lastTickIndexRef.current = idx
-      if (idx % 4 === 0) gameSounds.reelTick()
-    }
-  }
-
-  const loop = (ts: number) => {
-    if (!isSpinningRef.current && !stoppingRef.current) {
-      rafRef.current = null
-      lastTsRef.current = null
-      return
-    }
-
-    if (lastTsRef.current === null) lastTsRef.current = ts
-    const dt = Math.min(0.05, (ts - lastTsRef.current) / 1000)
-    lastTsRef.current = ts
-
-    if (!stoppingRef.current) {
-      const speed = 26 + reelIndex * 2
-      offsetRef.current += speed * dt
-      tickIfNeeded()
-
-      const n = REEL_ITEMS.length
-      const wrapMin = n * Math.floor(REEL_REPEAT / 3)
-      const wrapMax = n * Math.floor((REEL_REPEAT * 2) / 3)
-      const wrapStep = n * Math.floor(REEL_REPEAT / 3)
-      if (offsetRef.current > wrapMax) offsetRef.current -= wrapStep
-      if (offsetRef.current < wrapMin) offsetRef.current += wrapStep
-
-      const targetTier = targetTierRef.current
-      const startedAt = startedAtRef.current
-      if (targetTier && startedAt !== null) {
-        const minSpinMs = 900 + reelIndex * 220
-        if (performance.now() - startedAt >= minSpinMs) {
-          stopNow(targetTier)
-        }
-      }
-    } else {
-      const t = (ts - stopStartRef.current) / stopDurationRef.current
-      const clamped = Math.max(0, Math.min(1, t))
-      const eased = easeOutBack(clamped)
-      offsetRef.current = stopFromRef.current + (stopToRef.current - stopFromRef.current) * eased
-
-      if (clamped >= 1) {
-        offsetRef.current = stopToRef.current
-        stoppingRef.current = false
-        setTransform()
-        rafRef.current = null
-        lastTsRef.current = null
-        onStopped?.(reelIndex)
-        return
-      }
-    }
-
-    setTransform()
-    rafRef.current = requestAnimationFrame(loop)
-  }
+  const visibleItems = getVisibleItems(offset)
 
   useEffect(() => {
     isSpinningRef.current = isSpinning
-    if (!isSpinning) return
-
-    stoppingRef.current = false
-    startedAtRef.current = performance.now()
-    lastTsRef.current = null
-    lastTickIndexRef.current = null
-
-    if (!Number.isFinite(offsetRef.current)) offsetRef.current = 0
-    const n = REEL_ITEMS.length
-    const base = n * Math.floor(REEL_REPEAT / 2)
-    offsetRef.current = base + (offsetRef.current % n) + reelIndex * 0.2
-    setTransform()
-
-    if (rafRef.current === null) {
-      rafRef.current = requestAnimationFrame(loop)
-    }
-
-    return () => {
-      if (rafRef.current !== null) {
+    
+    if (!isSpinning) {
+      if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
         rafRef.current = null
       }
-      lastTsRef.current = null
-      startedAtRef.current = null
-      stoppingRef.current = false
+      return
     }
-  }, [isSpinning, spinKey, reelIndex])
+
+    // Start spinning
+    hasStoppedRef.current = false
+    targetIndexRef.current = null
+    velocityRef.current = 15 + reelIndex * 2
+    lastTickRef.current = -1
+    
+    const startTime = performance.now()
+    const minSpinTime = 800 + reelIndex * 300
+
+    const animate = () => {
+      if (!isSpinningRef.current && targetIndexRef.current === null) {
+        rafRef.current = null
+        return
+      }
+
+      const now = performance.now()
+      
+      // Check if we should start stopping
+      if (result && targetIndexRef.current === null && now - startTime >= minSpinTime) {
+        const targetIdx = REEL_ITEMS.findIndex(item => item.tier === result)
+        const currentIdx = Math.floor(offsetRef.current)
+        // Calculate target: at least 2 full rotations ahead, landing on result
+        let target = currentIdx + n * 2
+        while (target % n !== targetIdx) target++
+        targetIndexRef.current = target
+      }
+
+      // If we have a target, decelerate towards it
+      if (targetIndexRef.current !== null) {
+        const target = targetIndexRef.current
+        const distance = target - offsetRef.current
+        
+        if (distance <= 0.01) {
+          offsetRef.current = target
+          setOffset(target)
+          targetIndexRef.current = null
+          velocityRef.current = 0
+          
+          if (!hasStoppedRef.current) {
+            hasStoppedRef.current = true
+            gameSounds.reelStop()
+            onStopped?.(reelIndex)
+          }
+          rafRef.current = null
+          return
+        }
+        
+        // Smooth deceleration
+        const speed = Math.max(0.5, distance * 0.08)
+        offsetRef.current += speed
+      } else {
+        // Free spinning
+        offsetRef.current += velocityRef.current * 0.016
+      }
+
+      // Tick sound
+      const tickIdx = Math.floor(offsetRef.current)
+      if (tickIdx !== lastTickRef.current) {
+        lastTickRef.current = tickIdx
+        if (tickIdx % 2 === 0) gameSounds.reelTick()
+      }
+
+      setOffset(offsetRef.current)
+      rafRef.current = requestAnimationFrame(animate)
+    }
+
+    rafRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
+  }, [isSpinning, spinKey, reelIndex, result, onStopped])
+
+  const centerY = REEL_VIEWPORT_HEIGHT / 2 - REEL_ITEM_HEIGHT / 2
 
   return (
     <div className={cn(
-      "relative h-40 w-full overflow-hidden rounded-xl border-2 transition-all duration-300 slot-reel-glow",
+      "relative h-40 w-full overflow-hidden rounded-xl border-2 slot-reel-glow",
       "bg-gradient-to-b from-secondary/80 via-secondary/40 to-secondary/80",
       isWinner && result === "mythic" && "glow-mythic border-pink-400",
       isWinner && result === "legendary" && "glow-legendary border-emerald-400",
       !isWinner && "border-border/50"
     )}>
-      {/* Reel shine overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-      
       {/* Top/bottom fade */}
-      <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-background/80 to-transparent z-10" />
-      <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background/80 to-transparent z-10" />
+      <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background/90 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/90 to-transparent z-10 pointer-events-none" />
       
-      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y border-white/5" />
+      {/* Center highlight */}
+      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y border-primary/20 bg-primary/5 pointer-events-none" />
 
-      <div
-        ref={stripRef}
-        className={cn(
-          "absolute left-0 right-0 will-change-transform",
-          isSpinning && "blur-[0.6px]"
-        )}
-        style={{ transform: `translate3d(0, ${REEL_CENTER_OFFSET}px, 0)` }}
-      >
-        {REEL_STRIP.map((item, i) => (
-          <div key={i} className="h-20 flex flex-col items-center justify-center gap-1.5">
-            <span className="text-3xl leading-none">{item.symbol}</span>
-            <span
-              className={cn(
-                "text-sm font-black font-mono tracking-wider transition-all",
-                getTierColor(item.tier),
-                isWinner && "text-glow-mythic"
-              )}
-            >
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* Only render visible items */}
+      {visibleItems.map(({ item, yOffset, key }) => (
+        <div
+          key={key}
+          className="absolute left-0 right-0 h-20 flex flex-col items-center justify-center gap-1.5"
+          style={{ 
+            transform: `translateY(${centerY + yOffset}px)`,
+          }}
+        >
+          <span className="text-3xl leading-none select-none">{item.symbol}</span>
+          <span
+            className={cn(
+              "text-sm font-black font-mono tracking-wider select-none",
+              getTierColor(item.tier)
+            )}
+          >
+            {item.label}
+          </span>
+        </div>
+      ))}
     </div>
   )
 }
