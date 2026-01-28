@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Zap, Lock, Hash, Settings, Check, X, Volume2, VolumeX } from "lucide-react"
 import { gameSounds, isSoundEnabled, setSoundEnabled, resumeAudio } from "@/lib/sounds"
+import { gameToast } from "@/lib/toast"
 
 const DEFAULT_QUICK_AMOUNTS = [100, 500, 1000, 5000]
 const STORAGE_KEY = "lockslot_quick_amounts"
@@ -419,6 +420,10 @@ export function SlotMachine() {
       setShowResult(true)
       const r = resultRef.current
       if (!r) return
+      
+      // Show toast/confetti AFTER reels have stopped
+      gameToast.spin(r.tier, r.multiplier, r.duration)
+      
       resultSoundTimeoutRef.current = setTimeout(() => {
         if (r.tier === "mythic") {
           gameSounds.winMythic()
@@ -497,7 +502,7 @@ export function SlotMachine() {
             </div>
             <div className="text-muted-foreground">•</div>
             <div className="font-mono text-sm">
-              <span className="text-foreground font-bold">{localResult.duration}d</span>
+              <span className="text-foreground font-bold">{localResult.duration >= 24 ? `${Math.round(localResult.duration / 24 * 10) / 10}d` : `${localResult.duration}h`}</span>
               <span className="text-muted-foreground"> lock</span>
             </div>
             <div className="text-muted-foreground">•</div>

@@ -194,7 +194,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         lastResult: result,
       })
 
-      gameToast.spin(result.tier, result.multiplier, result.duration)
       return result
     }
 
@@ -250,7 +249,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         lastResult: result,
       })
 
-      gameToast.spin(result.tier, result.multiplier, result.duration)
       return result
     } catch (err: any) {
       set({ isSpinning: false, error: err.message })

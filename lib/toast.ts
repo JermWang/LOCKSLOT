@@ -22,16 +22,17 @@ export const gameToast = {
 
   spin: (tier: string, multiplier: number, duration: number) => {
     const isWin = tier === "legendary" || tier === "mythic"
+    const durationStr = duration >= 24 ? `${Math.round(duration / 24 * 10) / 10}d` : `${duration}h`
     
     if (isWin) {
       triggerWinConfetti(tier as "legendary" | "mythic")
       toast.success(`🎉 ${tier.toUpperCase()} WIN!`, {
-        description: `${multiplier}× multiplier • ${duration} day lock`,
+        description: `${multiplier}× multiplier • ${durationStr} lock`,
         duration: 6000,
       })
     } else {
       toast.info(`${tier.toUpperCase()}`, {
-        description: `${multiplier}× • ${duration} day lock`,
+        description: `${multiplier}× • ${durationStr} lock`,
         duration: 3000,
       })
     }

@@ -43,7 +43,7 @@ export const TIER_CONFIG: Record<
   Tier,
   {
     probability: number
-    durationRange: [number, number]
+    durationRange: [number, number] // in hours
     multiplierRange: [number, number]
     color: string
     label: string
@@ -51,35 +51,35 @@ export const TIER_CONFIG: Record<
 > = {
   brick: {
     probability: 0.45,
-    durationRange: [14, 21],
+    durationRange: [36, 48], // 36-48 hours (longest lock, worst outcome)
     multiplierRange: [1.2, 2.0],
     color: "brick",
     label: "BRICK",
   },
   mid: {
     probability: 0.28,
-    durationRange: [7, 14],
+    durationRange: [18, 36], // 18-36 hours
     multiplierRange: [1.8, 3.5],
     color: "mid",
     label: "MID",
   },
   hot: {
     probability: 0.15,
-    durationRange: [3, 7],
+    durationRange: [8, 18], // 8-18 hours
     multiplierRange: [3.0, 7.0],
     color: "hot",
     label: "HOT",
   },
   legendary: {
     probability: 0.09,
-    durationRange: [1, 3],
+    durationRange: [3, 8], // 3-8 hours
     multiplierRange: [5.0, 8.0],
     color: "legendary",
     label: "LEGENDARY",
   },
   mythic: {
     probability: 0.03,
-    durationRange: [1, 1],
+    durationRange: [1, 3], // 1-3 hours (shortest lock, best outcome)
     multiplierRange: [8.0, 15.0],
     color: "mythic",
     label: "MYTHIC",
