@@ -10,7 +10,7 @@ interface SymbolProps {
   isWinner?: boolean
 }
 
-// BRICK - Skull emoji style (you got rekt)
+// BRICK - Heavy Anchor (weighed down, longest lock)
 export function BrickSymbol({ className, size = 48, isCenter, isWinner }: SymbolProps) {
   return (
     <svg 
@@ -20,19 +20,42 @@ export function BrickSymbol({ className, size = 48, isCenter, isWinner }: Symbol
       className={cn("transition-all duration-200", className)}
     >
       <defs>
-        <linearGradient id="brick-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#c9a076" />
-          <stop offset="100%" stopColor="#8b6914" />
+        <linearGradient id="anchor-main" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#9ca3af" />
+          <stop offset="50%" stopColor="#6b7280" />
+          <stop offset="100%" stopColor="#4b5563" />
+        </linearGradient>
+        <linearGradient id="anchor-dark" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#6b7280" />
+          <stop offset="100%" stopColor="#374151" />
         </linearGradient>
       </defs>
-      {/* Brick shape */}
-      <rect x="8" y="18" width="48" height="28" rx="4" fill="url(#brick-grad)" />
-      <rect x="8" y="18" width="48" height="28" rx="4" fill="url(#brick-grad)" stroke="#6b4c12" strokeWidth="2" />
-      {/* Brick lines */}
-      <line x1="32" y1="18" x2="32" y2="46" stroke="#6b4c12" strokeWidth="2" opacity="0.5" />
-      <line x1="8" y1="32" x2="56" y2="32" stroke="#6b4c12" strokeWidth="2" opacity="0.5" />
-      {/* Crack */}
-      <path d="M20 22 L24 28 L22 32 L26 38" stroke="#5a3d0a" strokeWidth="2" fill="none" strokeLinecap="round" />
+      {/* Ring at top */}
+      <circle cx="32" cy="10" r="6" fill="none" stroke="url(#anchor-main)" strokeWidth="4" />
+      {/* Shaft */}
+      <rect x="29" y="14" width="6" height="32" rx="1" fill="url(#anchor-main)" />
+      {/* Cross bar */}
+      <rect x="18" y="26" width="28" height="5" rx="2" fill="url(#anchor-main)" />
+      {/* Left fluke */}
+      <path 
+        d="M18 31 L10 50 Q8 54 12 54 L22 46 L22 31 Z" 
+        fill="url(#anchor-dark)"
+      />
+      {/* Right fluke */}
+      <path 
+        d="M46 31 L54 50 Q56 54 52 54 L42 46 L42 31 Z" 
+        fill="url(#anchor-dark)"
+      />
+      {/* Center bottom point */}
+      <path 
+        d="M29 46 L32 58 L35 46 Z" 
+        fill="url(#anchor-dark)"
+      />
+      {/* Highlight on shaft */}
+      <rect x="30" y="16" width="2" height="28" rx="1" fill="#d1d5db" opacity="0.4" />
+      {/* Rust spots for character */}
+      <circle cx="24" cy="38" r="1.5" fill="#92400e" opacity="0.4" />
+      <circle cx="40" cy="42" r="1" fill="#92400e" opacity="0.3" />
     </svg>
   )
 }
