@@ -10,7 +10,7 @@ interface SymbolProps {
   isWinner?: boolean
 }
 
-// BRICK - Heavy Anchor (weighed down, longest lock)
+// BRICK - Stylized red brick (longest lock, worst outcome)
 export function BrickSymbol({ className, size = 48, isCenter, isWinner }: SymbolProps) {
   return (
     <svg 
@@ -20,42 +20,55 @@ export function BrickSymbol({ className, size = 48, isCenter, isWinner }: Symbol
       className={cn("transition-all duration-200", className)}
     >
       <defs>
-        <linearGradient id="anchor-main" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#9ca3af" />
-          <stop offset="50%" stopColor="#6b7280" />
-          <stop offset="100%" stopColor="#4b5563" />
+        <linearGradient id="brick-top" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#dc5044" />
+          <stop offset="100%" stopColor="#b83a30" />
         </linearGradient>
-        <linearGradient id="anchor-dark" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#6b7280" />
-          <stop offset="100%" stopColor="#374151" />
+        <linearGradient id="brick-front" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#c4453b" />
+          <stop offset="50%" stopColor="#a83328" />
+          <stop offset="100%" stopColor="#8b2720" />
+        </linearGradient>
+        <linearGradient id="brick-side" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#9c2e24" />
+          <stop offset="100%" stopColor="#7a2018" />
         </linearGradient>
       </defs>
-      {/* Ring at top */}
-      <circle cx="32" cy="10" r="6" fill="none" stroke="url(#anchor-main)" strokeWidth="4" />
-      {/* Shaft */}
-      <rect x="29" y="14" width="6" height="32" rx="1" fill="url(#anchor-main)" />
-      {/* Cross bar */}
-      <rect x="18" y="26" width="28" height="5" rx="2" fill="url(#anchor-main)" />
-      {/* Left fluke */}
+      
+      {/* 3D Brick - Top face */}
       <path 
-        d="M18 31 L10 50 Q8 54 12 54 L22 46 L22 31 Z" 
-        fill="url(#anchor-dark)"
+        d="M8 20 L32 10 L56 20 L32 30 Z" 
+        fill="url(#brick-top)"
       />
-      {/* Right fluke */}
+      
+      {/* 3D Brick - Front face */}
       <path 
-        d="M46 31 L54 50 Q56 54 52 54 L42 46 L42 31 Z" 
-        fill="url(#anchor-dark)"
+        d="M8 20 L8 44 L32 54 L32 30 Z" 
+        fill="url(#brick-front)"
       />
-      {/* Center bottom point */}
+      
+      {/* 3D Brick - Right side face */}
       <path 
-        d="M29 46 L32 58 L35 46 Z" 
-        fill="url(#anchor-dark)"
+        d="M32 30 L32 54 L56 44 L56 20 Z" 
+        fill="url(#brick-side)"
       />
-      {/* Highlight on shaft */}
-      <rect x="30" y="16" width="2" height="28" rx="1" fill="#d1d5db" opacity="0.4" />
-      {/* Rust spots for character */}
-      <circle cx="24" cy="38" r="1.5" fill="#92400e" opacity="0.4" />
-      <circle cx="40" cy="42" r="1" fill="#92400e" opacity="0.3" />
+      
+      {/* Mortar lines on front */}
+      <line x1="8" y1="32" x2="32" y2="42" stroke="#6b1a14" strokeWidth="1.5" opacity="0.4" />
+      <line x1="20" y1="26" x2="20" y2="48" stroke="#6b1a14" strokeWidth="1" opacity="0.3" />
+      
+      {/* Mortar lines on side */}
+      <line x1="32" y1="42" x2="56" y2="32" stroke="#5a1510" strokeWidth="1.5" opacity="0.4" />
+      <line x1="44" y1="25" x2="44" y2="49" stroke="#5a1510" strokeWidth="1" opacity="0.3" />
+      
+      {/* Top edge highlight */}
+      <path d="M10 20 L32 11 L54 20" fill="none" stroke="#ff7066" strokeWidth="1" opacity="0.5" />
+      
+      {/* Texture spots */}
+      <circle cx="16" cy="35" r="1.5" fill="#6b1a14" opacity="0.3" />
+      <circle cx="24" cy="42" r="1" fill="#6b1a14" opacity="0.25" />
+      <circle cx="40" cy="32" r="1.5" fill="#5a1510" opacity="0.3" />
+      <circle cx="48" cy="38" r="1" fill="#5a1510" opacity="0.25" />
     </svg>
   )
 }
