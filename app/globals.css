@@ -1,0 +1,422 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* LOCK SLOT - Cream Casino Theme */
+:root {
+  --background: oklch(0.96 0.02 85);
+  --foreground: oklch(0.15 0.02 260);
+  --card: oklch(0.93 0.025 85);
+  --card-foreground: oklch(0.15 0.02 260);
+  --popover: oklch(0.94 0.02 85);
+  --popover-foreground: oklch(0.15 0.02 260);
+  --primary: oklch(0.45 0.18 160);
+  --primary-foreground: oklch(0.98 0.01 85);
+  --secondary: oklch(0.88 0.03 85);
+  --secondary-foreground: oklch(0.2 0.02 260);
+  --muted: oklch(0.90 0.02 85);
+  --muted-foreground: oklch(0.45 0.02 260);
+  --accent: oklch(0.55 0.2 330);
+  --accent-foreground: oklch(0.98 0.01 85);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.82 0.03 85);
+  --input: oklch(0.92 0.02 85);
+  --ring: oklch(0.45 0.18 160);
+  --chart-1: oklch(0.45 0.18 160);
+  --chart-2: oklch(0.55 0.2 330);
+  --chart-3: oklch(0.65 0.2 50);
+  --chart-4: oklch(0.5 0.15 200);
+  --chart-5: oklch(0.55 0.22 25);
+  --radius: 0.5rem;
+  
+  /* Custom tier colors */
+  --brick: oklch(0.45 0.1 30);
+  --mid: oklch(0.55 0.15 50);
+  --hot: oklch(0.6 0.2 30);
+  --legendary: oklch(0.45 0.18 160);
+  --mythic: oklch(0.55 0.2 330);
+  
+  --sidebar: oklch(0.92 0.025 85);
+  --sidebar-foreground: oklch(0.15 0.02 260);
+  --sidebar-primary: oklch(0.45 0.18 160);
+  --sidebar-primary-foreground: oklch(0.98 0.01 85);
+  --sidebar-accent: oklch(0.88 0.03 85);
+  --sidebar-accent-foreground: oklch(0.15 0.02 260);
+  --sidebar-border: oklch(0.82 0.03 85);
+  --sidebar-ring: oklch(0.45 0.18 160);
+}
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Tier colors */
+  --color-brick: var(--brick);
+  --color-mid: var(--mid);
+  --color-hot: var(--hot);
+  --color-legendary: var(--legendary);
+  --color-mythic: var(--mythic);
+}
+
+/* Neon glow utilities */
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 20px oklch(0.75 0.18 160 / 0.5), 0 0 40px oklch(0.75 0.18 160 / 0.3);
+  }
+  .glow-accent {
+    box-shadow: 0 0 20px oklch(0.7 0.2 330 / 0.5), 0 0 40px oklch(0.7 0.2 330 / 0.3);
+  }
+  .glow-legendary {
+    box-shadow: 0 0 30px oklch(0.75 0.18 160 / 0.6), 0 0 60px oklch(0.75 0.18 160 / 0.4);
+  }
+  .glow-mythic {
+    box-shadow: 0 0 40px oklch(0.7 0.2 330 / 0.7), 0 0 80px oklch(0.7 0.2 330 / 0.5);
+  }
+  .glow-gold {
+    box-shadow: 0 0 25px oklch(0.8 0.15 85 / 0.6), 0 0 50px oklch(0.8 0.15 85 / 0.3);
+  }
+  .text-glow-primary {
+    text-shadow: 0 0 10px oklch(0.75 0.18 160 / 0.8), 0 0 20px oklch(0.75 0.18 160 / 0.6);
+  }
+  .text-glow-mythic {
+    text-shadow: 0 0 15px oklch(0.7 0.2 330 / 0.9), 0 0 30px oklch(0.7 0.2 330 / 0.7);
+  }
+  .text-glow-gold {
+    text-shadow: 0 0 10px oklch(0.8 0.15 85 / 0.9), 0 0 25px oklch(0.8 0.15 85 / 0.5);
+  }
+  
+  /* Premium gradient text */
+  .gradient-text-primary {
+    background: linear-gradient(135deg, oklch(0.75 0.18 160), oklch(0.85 0.15 170));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-gold {
+    background: linear-gradient(135deg, oklch(0.75 0.12 60), oklch(0.85 0.15 85), oklch(0.75 0.12 60));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-mythic {
+    background: linear-gradient(135deg, oklch(0.7 0.2 330), oklch(0.8 0.18 300), oklch(0.7 0.2 330));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Casino shine effect */
+  .casino-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .casino-shine::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent
+    );
+    animation: shine 3s infinite;
+  }
+
+  /* Premium Racing Border Animation */
+  .glow-border {
+    position: relative;
+    border-radius: 1rem;
+    isolation: isolate;
+  }
+
+  .glow-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: conic-gradient(
+      from var(--border-angle, 0deg),
+      transparent 0%,
+      transparent 25%,
+      hsl(var(--primary)) 30%,
+      hsl(var(--primary) / 0.8) 35%,
+      hsl(var(--primary) / 0.4) 40%,
+      transparent 45%,
+      transparent 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: border-spin 4s linear infinite;
+  }
+
+  @keyframes border-spin {
+    to {
+      --border-angle: 360deg;
+    }
+  }
+
+  @property --border-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  /* Intense glow border for featured elements */
+  .glow-border-intense {
+    position: relative;
+    border-radius: 1rem;
+    background: hsl(var(--card));
+    isolation: isolate;
+  }
+
+  .glow-border-intense::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--border-angle, 0deg),
+      transparent 0%,
+      transparent 15%,
+      hsl(var(--primary)) 20%,
+      hsl(var(--primary)) 30%,
+      hsl(var(--primary) / 0.5) 40%,
+      transparent 50%,
+      transparent 100%
+    );
+    animation: border-spin 3s linear infinite;
+    z-index: -1;
+  }
+
+  .glow-border-intense::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: hsl(var(--card));
+    z-index: -1;
+  }
+
+  /* Subtle border for secondary panels */
+  .glow-border-subtle {
+    position: relative;
+    border-radius: 0.75rem;
+    background: hsl(var(--card));
+    isolation: isolate;
+  }
+
+  .glow-border-subtle::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--border-angle, 0deg),
+      transparent 0%,
+      transparent 35%,
+      hsl(var(--primary) / 0.6) 40%,
+      hsl(var(--primary) / 0.4) 50%,
+      transparent 55%,
+      transparent 100%
+    );
+    animation: border-spin 5s linear infinite;
+    z-index: -1;
+  }
+
+  .glow-border-subtle::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: hsl(var(--card));
+    z-index: -1;
+  }
+
+  /* Pulsing glow for jackpot/win states */
+  .glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3),
+                  0 0 40px hsl(var(--primary) / 0.2),
+                  0 0 60px hsl(var(--primary) / 0.1);
+    }
+    50% {
+      box-shadow: 0 0 30px hsl(var(--primary) / 0.5),
+                  0 0 60px hsl(var(--primary) / 0.3),
+                  0 0 90px hsl(var(--primary) / 0.2);
+    }
+  }
+
+  /* Slot reel effect - Cream theme */
+  .slot-reel-glow {
+    box-shadow: 
+      inset 0 0 20px oklch(0.5 0.02 85 / 0.3),
+      0 0 15px oklch(0.45 0.18 160 / 0.25);
+  }
+  
+  /* Liquid Glassmorphic styling for widgets - Cream theme */
+  .glass-panel {
+    background: oklch(1 0.01 85 / 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid oklch(0.45 0.18 160 / 0.2);
+    box-shadow: 
+      0 8px 32px oklch(0.3 0.02 85 / 0.15),
+      inset 0 1px 0 oklch(1 0 0 / 0.5),
+      inset 0 -1px 0 oklch(0.5 0.02 85 / 0.1);
+  }
+
+  .glass-panel-intense {
+    background: oklch(1 0.015 85 / 0.75);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border: 1px solid oklch(0.45 0.18 160 / 0.3);
+    box-shadow: 
+      0 8px 32px oklch(0.3 0.02 85 / 0.2),
+      0 0 60px oklch(0.45 0.18 160 / 0.08),
+      inset 0 1px 0 oklch(1 0 0 / 0.6),
+      inset 0 -1px 0 oklch(0.5 0.02 85 / 0.15);
+  }
+
+  .glass-panel-subtle {
+    background: oklch(1 0.01 85 / 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid oklch(0.45 0.18 160 / 0.12);
+    box-shadow: 
+      0 4px 24px oklch(0.3 0.02 85 / 0.1),
+      inset 0 1px 0 oklch(1 0 0 / 0.4);
+  }
+
+  /* Probability bar segments */
+  .prob-bar {
+    background: linear-gradient(90deg, 
+      oklch(0.5 0.1 30) 0%, oklch(0.5 0.1 30) 55%,
+      oklch(0.6 0.15 50) 55%, oklch(0.6 0.15 50) 85%,
+      oklch(0.7 0.2 30) 85%, oklch(0.7 0.2 30) 97%,
+      oklch(0.75 0.18 160) 97%, oklch(0.75 0.18 160) 99.5%,
+      oklch(0.7 0.2 330) 99.5%, oklch(0.7 0.2 330) 100%
+    );
+  }
+}
+
+/* Casino animations */
+@keyframes shine {
+  0% { left: -100%; }
+  50%, 100% { left: 150%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes slot-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes number-tick {
+  0% { transform: translateY(0); }
+  10% { transform: translateY(-100%); }
+  20% { transform: translateY(0); }
+}
+
+@keyframes jackpot-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.02);
+    filter: brightness(1.2);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Solana Wallet Adapter Overrides */
+.wallet-adapter-button {
+  background-color: var(--secondary) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+}
+
+.wallet-adapter-button:hover {
+  background-color: var(--muted) !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: calc(var(--radius) + 4px) !important;
+}
+
+.wallet-adapter-modal-title {
+  color: var(--foreground) !important;
+}
+
+.wallet-adapter-modal-list li {
+  background-color: var(--secondary) !important;
+  border-radius: var(--radius) !important;
+}
+
+.wallet-adapter-modal-list li:hover {
+  background-color: var(--muted) !important;
+}

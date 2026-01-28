@@ -1,0 +1,34 @@
+LOCK SLOT — OVERVIEW & ECONOMIC RATIONALE
+
+One-line synopsis
+LOCK SLOT is a provably-fair, pari-mutuel staking slot machine where players lock tokens for random durations and multipliers—long locks are bricks, short locks are legendary—and losers directly fund the winners through a shared reward pool.
+
+Core thesis
+LOCK SLOT deliberately inverts traditional staking psychology. Time is not rewarded. Liquidity and luck are rewarded. Long locks are punitive dead money, while short locks with high multipliers are the rare, celebrated outcomes.
+
+This is not yield, farming, or passive income. It is a controlled, high-variance gambling system designed for degenerate behavior with strict mathematical solvency.
+
+Fundamental economic rule (non-negotiable)
+LOCK SLOT is pari-mutuel. The system never pays out more than it collects. All bonuses are funded exclusively by player-paid fees. Principal is never used for rewards.
+
+High-level flow
+1. Player spins by locking X tokens.
+2. A fee f·X is paid into the Reward Pool.
+3. A provably-fair RNG assigns a lock duration T and multiplier M.
+4. Principal X is locked for T.
+5. On unlock, X is returned.
+6. Only winning tiers receive bonus payouts funded by the Reward Pool.
+
+Why this system is bulletproof
+- Zero inflation
+- Zero treasury risk
+- Zero insolvency vectors
+- Rewards strictly capped by fees
+- Principal always recoverable
+- EV fully tunable via parameters
+
+Psychological design
+- Short lock = best possible outcome
+- Long lock = pain and opportunity cost
+- Visible losers amplify winner dopamine
+- Public pool creates social pressure and hype

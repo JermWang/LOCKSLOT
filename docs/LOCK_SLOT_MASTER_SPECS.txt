@@ -1,0 +1,68 @@
+LOCK SLOT — MASTER SPECIFICATION (EXPERT)
+
+1. System classification
+LOCK SLOT is a non-custodial, provably-fair, pari-mutuel gambling mechanism with time-lock constraints. It is not a staking protocol, yield system, or investment vehicle.
+
+2. Core invariants
+- Total bonuses paid ≤ total fees collected
+- Principal is never used for payouts
+- Reward Pool can only increase via fees or penalties
+- Bonus eligibility is immutable after spin
+- RNG outcomes are auditable and replayable
+
+3. Economic parameters
+- Stake amount: X
+- Fee rate: f (tunable, e.g. 3–8%)
+- Fee per spin: F = f·X
+- Reward Pool: P = ΣF + penalties
+- Ticket score: S = X·M (optionally capped or sqrt-weighted)
+
+4. Tier model (inverted rarity)
+Brick: ~55%, 14–21d, 1.2–2.0×
+Mid: ~30%, 7–14d, 1.8–3.5×
+Hot: ~12%, 3–7d, 3.0–7.0×
+Legendary: ~2.5%, 1–3d, 7.0–12×
+Mythic: ~0.5%, ~1d, 12–20×
+
+Only Legendary + Mythic participate in bonus payouts.
+
+5. Bonus distribution
+For each winning ticket i:
+bonus_i = P * (S_i / Σ S_j for j ∈ winners)
+
+If no winners occur, P rolls over.
+
+6. RNG & fairness
+- serverSeed committed via hash pre-game
+- clientSeed supplied per spin
+- nonce increments per spin
+- hash(serverSeed || clientSeed || nonce) → u ∈ (0,1)
+- u maps deterministically to tier, duration, multiplier
+- serverSeed revealed post-game for verification
+
+7. Early exit mechanic (optional)
+- Player may exit early
+- Forfeits all bonus eligibility
+- Pays penalty ≥ remaining expected value
+- Penalty is added to Reward Pool
+
+8. Whale mitigation
+- Optional cap on effective score S_max
+- Or sqrt-weighted scoring
+- Prevents single-ticket domination
+
+9. Lifecycle constraints
+- Game duration: 14–21 days hard stop
+- No new spins after cutoff
+- All locks resolve naturally
+- Final bonuses distributed
+- Contract becomes inert
+
+10. Legal & framing notes
+- No promised returns
+- No yield/APR language
+- Entertainment-first framing
+- Outcomes are random and peer-funded
+- Explicit loss risk disclosures
+
+LOCK SLOT is intentionally unfair in expectation. Pain funds glory.
