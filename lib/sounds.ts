@@ -110,7 +110,8 @@ class PremiumSoundManager {
     gain.gain.setValueAtTime(0, now)
     gain.gain.linearRampToValueAtTime(peakVolume, now + attack)
     gain.gain.linearRampToValueAtTime(sustainVolume, now + attack + decay)
-    gain.gain.setValueAtTime(sustainVolume, now + duration - release)
+    const sustainEnd = Math.max(now + attack + decay, now + duration - release)
+    gain.gain.setValueAtTime(sustainVolume, sustainEnd)
     gain.gain.linearRampToValueAtTime(0.001, now + duration)
 
     osc.connect(gain)
