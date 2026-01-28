@@ -391,6 +391,17 @@ export function HowItWorks({ onComplete }: HowItWorksProps) {
           Previous
         </Button>
         
+        {currentStep < STEPS.length - 1 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { gameSounds.click(); onComplete() }}
+            className="text-muted-foreground border-muted-foreground/30 hover:border-primary hover:text-primary"
+          >
+            Skip Tutorial
+          </Button>
+        )}
+        
         {currentStep === STEPS.length - 1 ? (
           <Button
             onClick={() => { gameSounds.success(); onComplete() }}
