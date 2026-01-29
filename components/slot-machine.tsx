@@ -684,69 +684,26 @@ export function SlotMachine() {
           </div>
         )}
 
-        {/* Crystal Spin Button */}
-        <div className="relative">
-          {/* Outer glow effect */}
-          {!isButtonDisabled && (
-            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 via-primary/40 to-cyan-500/30 rounded-xl blur-md animate-pulse" />
-          )}
+        {/* Spin Button - Elegant cream theme */}
+        <div className="flex justify-center">
           <button
             onClick={handleSpin}
             disabled={isButtonDisabled}
             className={cn(
-              "relative w-full h-14 overflow-hidden transition-all duration-300",
-              "rounded-xl border",
-              isButtonDisabled 
-                ? "bg-gray-800/50 border-gray-700/50 cursor-not-allowed" 
-                : "bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-black border-white/20 hover:border-white/40 cursor-pointer",
-              "group"
+              "btn-premium px-8 py-3 text-sm font-bold uppercase tracking-widest",
+              isButtonDisabled && "opacity-50 cursor-not-allowed"
             )}
           >
-            {/* Glassmorphic top shine */}
-            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
-            
-            {/* Diamond pattern overlay */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none"
-              style={{
-                backgroundImage: `linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)`,
-                backgroundSize: '20px 20px'
-              }}
-            />
-            
-            {/* Side crystal facets */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white/10 to-transparent pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/10 to-transparent pointer-events-none" />
-            
-            {/* Bottom edge highlight */}
-            <div className="absolute inset-x-4 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
-            
-            {/* Button content */}
-            <div className={cn(
-              "relative flex items-center justify-center gap-3 h-full",
-              "text-lg font-black uppercase tracking-[0.2em]",
-              isButtonDisabled ? "text-gray-500" : "text-white group-hover:text-cyan-100"
-            )}>
-              {isSpinning || reelsSpinning ? (
-                <>
-                  <span className="animate-spin text-xl">◐</span>
-                  <span>SPINNING...</span>
-                </>
-              ) : (
-                <>
-                  <Zap className={cn(
-                    "h-5 w-5 transition-all",
-                    !isButtonDisabled && "group-hover:text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
-                  )} />
-                  <span>SPIN</span>
-                </>
-              )}
-            </div>
-            
-            {/* Hover shimmer effect */}
-            {!isButtonDisabled && (
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              </div>
+            {isSpinning || reelsSpinning ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">◐</span>
+                SPINNING...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                SPIN
+              </span>
             )}
           </button>
         </div>
