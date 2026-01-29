@@ -6,7 +6,7 @@ import { TIER_CONFIG, getTierColor, getTierBgColor, type Tier } from "@/lib/game
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { Zap, Lock, Hash, Settings, Check, X, Volume2, VolumeX, Music, Music2 } from "lucide-react"
+import { Lock, Unlock, Settings, Check, X, Volume2, VolumeX, Music, Music2, TrendingUp, Timer, Vault } from "lucide-react"
 import { gameSounds, isSoundEnabled, setSoundEnabled, isMusicEnabled, resumeAudio } from "@/lib/sounds"
 import { gameToast } from "@/lib/toast"
 import { TierSymbol, TIER_LABELS } from "@/components/reel-symbols"
@@ -500,7 +500,7 @@ export function SlotMachine() {
         </Button>
       </div>
 
-      {/* Slot Reels - Main visual focus */}
+      {/* Vault Reels - Staking Lock Mechanism */}
       <div className="grid grid-cols-3 gap-2 mb-3">
         <SlotReel 
           isSpinning={reelsSpinning} 
@@ -525,62 +525,115 @@ export function SlotMachine() {
         />
       </div>
 
-      {/* Result Display - Redesigned with Arc Gauge */}
+      {/* Lock Result - Staking outcome display */}
       {showResult && localResult ? (
         <div className={cn(
-          "rounded-lg border p-3 mb-3",
+          "rounded-lg border p-4 mb-3",
           isWinner ? "border-primary/50 bg-primary/5" : "border-border/50 bg-secondary/20"
         )}>
-          <div className="flex items-center justify-between gap-4">
-            {/* Tier Badge */}
-            <div className="flex items-center gap-3">
-              <TierSymbol tier={localResult.tier} size={32} isWinner={isWinner || undefined} />
-              <div>
-                <span className={cn("text-lg font-black tracking-wide", getTierColor(localResult.tier))}>
-                  {TIER_CONFIG[localResult.tier].label}
-                </span>
-                {isWinner && (
-                  <div className="text-[10px] uppercase tracking-widest text-primary font-bold">
-                    Bonus Eligible
-                  </div>
-                )}
-              </div>
+          {/* Header with lock status */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Lock className={cn("h-4 w-4", isWinner ? "text-primary" : "text-muted-foreground")} />
+              <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
+                Stake Locked
+              </span>
             </div>
-            
-            {/* Duration Arc Gauge */}
-            <ArcGauge 
-              value={localResult.duration} 
-              size={72} 
-              strokeWidth={6}
-              animated={true}
-            />
-            
-            {/* Multiplier Display */}
-            <div className="text-right">
-              <div className="text-2xl font-mono font-black text-foreground">
-                {localResult.multiplier}×
-              </div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                Multiplier
-              </div>
+            <div className="flex items-center gap-2">
+              <TierSymbol tier={localResult.tier} size={24} isWinner={isWinner || undefined} />
+              <span className={cn("text-sm font-black tracking-wide", getTierColor(localResult.tier))}>
+                {TIER_CONFIG[localResult.tier].label}
+              </span>
             </div>
           </div>
+          
+          {/* Main stats row */}
+          <div className="grid grid-cols-3 gap-3">
+            {/* Lock Duration */}
+            <div className="text-center p-2 rounded-lg bg-secondary/30">
+              <Timer className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+              <div className="text-xl font-mono font-black text-foreground">
+                {localResult.duration}
+              </div>
+              <div className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                Day Lock
+              </div>
+            </div>
+            
+            {/* Yield Multiplier */}
+            <div className={cn(
+              "text-center p-2 rounded-lg",
+              isWinner ? "bg-primary/10" : "bg-secondary/30"
+            )}>
+              <TrendingUp className={cn("h-4 w-4 mx-auto mb-1", isWinner ? "text-primary" : "text-muted-foreground")} />
+              <div className={cn(
+                "text-xl font-mono font-black",
+                isWinner ? "text-primary" : "text-foreground"
+              )}>
+                {localResult.multiplier}×
+              </div>
+              <div className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                Yield
+              </div>
+            </div>
+            
+            {/* Duration Gauge */}
+            <div className="flex items-center justify-center">
+              <ArcGauge 
+                value={localResult.duration} 
+                size={64} 
+                strokeWidth={5}
+                animated={true}
+              />
+            </div>
+          </div>
+          
+          {/* Bonus eligibility */}
+          {isWinner && (
+            <div className="mt-3 pt-3 border-t border-primary/20 text-center">
+              <span className="text-xs uppercase tracking-widest text-primary font-bold">
+                ✦ Eligible for Epoch Bonus Distribution ✦
+              </span>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="rounded-lg border border-border/30 bg-secondary/10 p-3 mb-3 text-center">
-          <div className="text-muted-foreground text-sm">Enter amount and spin</div>
-          <div className="text-[10px] text-muted-foreground/60 mt-1 uppercase tracking-wider">
-            Short locks win big
+        <div className="rounded-lg border border-border/30 bg-secondary/10 p-4 mb-3">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Vault className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <div className="text-foreground text-sm font-semibold">Stake to Earn</div>
+              <div className="text-[10px] text-muted-foreground">Lock tokens → Get multiplied rewards</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+            <div className="p-2 rounded bg-secondary/30">
+              <Timer className="h-3 w-3 mx-auto mb-1 text-muted-foreground" />
+              <span className="text-muted-foreground">Lock Duration</span>
+            </div>
+            <div className="p-2 rounded bg-secondary/30">
+              <TrendingUp className="h-3 w-3 mx-auto mb-1 text-muted-foreground" />
+              <span className="text-muted-foreground">Yield Multiplier</span>
+            </div>
+            <div className="p-2 rounded bg-secondary/30">
+              <Lock className="h-3 w-3 mx-auto mb-1 text-muted-foreground" />
+              <span className="text-muted-foreground">Tier Bonus</span>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Stake Input - Simplified */}
+      {/* Stake Amount */}
       <div className="mt-auto space-y-2">
-        {/* Balance indicator */}
+        {/* Balance indicator with vault icon */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Your Balance</span>
-          <span className="font-mono font-bold text-foreground">{userBalance.toLocaleString()} tokens</span>
+          <span className="flex items-center gap-1.5 text-muted-foreground">
+            <Vault className="h-3 w-3" />
+            Available to Lock
+          </span>
+          <span className="font-mono font-bold text-foreground">{userBalance.toLocaleString()} $LOCK</span>
         </div>
 
         {/* Input with quick amounts */}
@@ -588,14 +641,14 @@ export function SlotMachine() {
           <div className="relative flex-1">
             <Input
               type="number"
-              placeholder="Amount"
+              placeholder="Stake amount"
               value={stakeAmount}
               onChange={(e) => setStakeAmount(e.target.value)}
               className="h-10 bg-black/40 backdrop-blur-sm border-white/10 pr-16 text-base font-mono font-bold"
               disabled={isSpinning}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-              tokens
+              $LOCK
             </span>
           </div>
           <Button
@@ -676,15 +729,15 @@ export function SlotMachine() {
           )}
         </div>
 
-        {/* Fee preview - subtle */}
+        {/* Protocol fee preview */}
         {stakeNum > 0 && (
           <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-            <span>5% fee: -{feeAmount.toFixed(0)}</span>
-            <span>You lock: {(stakeNum - feeAmount).toFixed(0)} tokens</span>
+            <span>Protocol fee (5%): -{feeAmount.toFixed(0)}</span>
+            <span className="text-foreground font-medium">Locked: {(stakeNum - feeAmount).toFixed(0)} $LOCK</span>
           </div>
         )}
 
-        {/* Spin Button - Elegant cream theme */}
+        {/* Lock Stake Button - Staking-focused */}
         <div className="flex justify-center">
           <button
             onClick={handleSpin}
@@ -696,13 +749,13 @@ export function SlotMachine() {
           >
             {isSpinning || reelsSpinning ? (
               <span className="flex items-center gap-2">
-                <span className="animate-spin">◐</span>
-                SPINNING...
+                <Unlock className="h-4 w-4 animate-pulse" />
+                LOCKING...
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                SPIN
+                <Lock className="h-4 w-4" />
+                LOCK STAKE
               </span>
             )}
           </button>
