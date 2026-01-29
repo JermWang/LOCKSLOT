@@ -1,7 +1,8 @@
 "use client"
 
-import { Shield, Lock, ExternalLink, Heart, Dice1 } from "lucide-react"
+import { Shield, Lock, ExternalLink, Heart } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -15,9 +16,7 @@ export function Footer() {
           {/* Brand & Description */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 rounded-lg bg-primary/20">
-                <Dice1 className="h-5 w-5 text-primary" />
-              </div>
+              <Image src="/logo.png" alt="Lock Slot" width={40} height={40} className="rounded-lg" />
               <span className="font-bold text-lg">LOCK SLOT</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
