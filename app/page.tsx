@@ -110,24 +110,6 @@ export default function LockSlotPage() {
                 <div className="glow-border-intense glass-panel-intense rounded-xl p-6">
                   {/* Slot Machine - Clean and focused */}
                   <SlotMachine />
-                  
-                  {/* Quick odds below slot */}
-                  <div className="mt-6 pt-4 border-t border-primary/20">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground">Win chance:</span>
-                        <span className="font-mono font-bold text-primary">12%</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground">Fee:</span>
-                        <span className="font-mono font-bold text-muted-foreground">5%</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground">Principal:</span>
-                        <span className="font-mono font-bold text-emerald-400">Returned</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Tier odds - Collapsible/minimal on desktop */}
