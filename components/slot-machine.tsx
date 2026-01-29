@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo, memo } from "react"
+import { useState, useEffect, useRef, useMemo, memo, useCallback } from "react"
 import { useGameStore } from "@/lib/game-store"
 import { TIER_CONFIG, getTierColor, type SpinResult, type Tier } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
@@ -103,11 +103,11 @@ function SlotReel({
 
   const centerY = REEL_VIEWPORT_HEIGHT / 2 - REEL_ITEM_HEIGHT / 2
 
-  const applyTransform = () => {
+  const applyTransform = useCallback(() => {
     const el = trackRef.current
     if (!el) return
     el.style.transform = `translate3d(0, ${centerY - offsetRef.current * REEL_ITEM_HEIGHT}px, 0)`
-  }
+  }, [centerY])
 
   useEffect(() => {
     resultRef.current = result
@@ -215,14 +215,14 @@ function SlotReel({
         rafRef.current = null
       }
     }
-  }, [isSpinning, spinKey, reelIndex])
+  }, [applyTransform, isSpinning, n, reelIndex, spinKey])
 
   return (
     <div className={cn(
       "relative h-28 w-full overflow-hidden rounded-md transition-shadow duration-300",
       "bg-gradient-to-b from-[#050f19] via-[#081420] to-[#050f19]",
-      isWinner && result === "mythic" && "shadow-[0_0_30px_rgba(168,85,247,0.4)]",
-      isWinner && result === "legendary" && "shadow-[0_0_30px_rgba(0,212,170,0.4)]"
+      isWinner && result === "mythic" && "shadow-[0_0_30px_rgba(251,113,133,0.4)]",
+      isWinner && result === "legendary" && "shadow-[0_0_30px_rgba(34,211,238,0.4)]"
     )}>
       {/* Inner glow effect */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#00d4aa]/5 via-transparent to-[#00d4aa]/5 pointer-events-none" />
@@ -618,11 +618,7 @@ export function SlotMachine() {
               <div>
                 <div className={cn(
                   "text-base font-bold uppercase tracking-wide",
-                  localResult.tier === "legendary" && "text-[#00d4aa]",
-                  localResult.tier === "mythic" && "text-[#a855f7]",
-                  localResult.tier === "hot" && "text-[#f0c674]",
-                  localResult.tier === "mid" && "text-[#6b8a9a]",
-                  localResult.tier === "brick" && "text-[#4a5568]"
+                  getTierColor(localResult.tier)
                 )}>
                   {TIER_CONFIG[localResult.tier].label}
                 </div>
@@ -632,7 +628,7 @@ export function SlotMachine() {
             <div className="text-right">
               <div className={cn(
                 "text-xl font-mono font-bold",
-                isWinner ? "text-[#00d4aa]" : "text-[#e8f4f8]"
+                isWinner ? getTierColor(localResult.tier) : "text-[#e8f4f8]"
               )}>
                 {localResult.multiplier}×
               </div>
@@ -642,8 +638,14 @@ export function SlotMachine() {
           
           {/* Bonus eligibility */}
           {isWinner && (
-            <div className="pt-2 border-t border-[#00d4aa]/20 text-center">
-              <span className="text-[10px] uppercase tracking-widest text-[#00d4aa] font-bold">
+            <div className={cn(
+              "pt-2 border-t text-center",
+              localResult.tier === "mythic" ? "border-pink-400/20" : "border-cyan-400/20"
+            )}>
+              <span className={cn(
+                "text-[10px] uppercase tracking-widest font-bold",
+                getTierColor(localResult.tier)
+              )}>
                 ✦ Eligible for Epoch Bonus ✦
               </span>
             </div>
@@ -653,7 +655,7 @@ export function SlotMachine() {
         <div className="cyber-panel p-3 mb-3">
           <div className="text-center">
             <div className="text-[#6b8a9a] text-xs mb-1">Spin to determine your lock tier</div>
-            <div className="flex justify-center gap-4 text-[10px] text-[#4a5568]">
+            <div className="flex justify-center gap-4 text-[10px] text-[#6b8a9a]">
               <span>BRICK • MID • HOT • LEGENDARY • MYTHIC</span>
             </div>
           </div>

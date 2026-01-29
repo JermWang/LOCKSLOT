@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { gameSounds } from "@/lib/sounds"
+import { TIER_CONFIG, getTierColor, getTierDotColor, formatTierDurationRange, type Tier } from "@/lib/game-types"
 
 // Unified primary color theme for all steps
 const STEPS = [
@@ -39,7 +40,7 @@ const STEPS = [
   {
     id: 3,
     title: "Get Locked",
-    description: "Your tokens are locked for 1-21 days based on your tier.",
+    description: "Your tokens are locked for 1-48 hours based on your tier.",
     icon: Lock,
     visual: "lock",
     highlight: "Short locks are rare wins. Long locks are common losses.",
@@ -62,14 +63,24 @@ const STEPS = [
   },
 ]
 
-// Tier visuals - losers muted, winners get distinct colors (durations in HOURS)
-const TIERS_VISUAL = [
-  { name: "BRICK", prob: 45, duration: "36-48h", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
-  { name: "MID", prob: 28, duration: "18-36h", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
-  { name: "HOT", prob: 15, duration: "8-18h", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
-  { name: "LEGENDARY", prob: 9, duration: "3-8h", isWin: true, color: "bg-emerald-400", text: "text-emerald-400" },
-  { name: "MYTHIC", prob: 3, duration: "1-3h", isWin: true, color: "bg-pink-400", text: "text-pink-400" },
-]
+// Tier visuals (durations in HOURS)
+const TIERS_VISUAL: Array<{
+  tier: Tier
+  name: string
+  prob: number
+  duration: string
+  isWin: boolean
+  color: string
+  text: string
+}> = (["brick", "mid", "hot", "legendary", "mythic"] as const).map((tier) => ({
+  tier,
+  name: TIER_CONFIG[tier].label,
+  prob: Math.round(TIER_CONFIG[tier].probability * 100),
+  duration: formatTierDurationRange(tier),
+  isWin: tier === "legendary" || tier === "mythic",
+  color: getTierDotColor(tier),
+  text: getTierColor(tier),
+}))
 
 function StakeVisual() {
   return (
@@ -249,7 +260,7 @@ function WaitVisual() {
         </div>
       </motion.div>
       <div className="text-center">
-        <div className="text-sm font-mono text-muted-foreground">14d 6h 32m remaining</div>
+        <div className="text-sm font-mono text-muted-foreground">18h 32m remaining</div>
       </div>
     </div>
   )

@@ -12,10 +12,10 @@ const STAKE_MARKS = ["100", "1K", "5K", "10K", "50K"]
 
 // Tier data - avgLock in HOURS (matching lib/rng.ts)
 const TIER_DATA = [
-  { name: "BRICK", probability: 0.45, avgLock: 42, color: "text-orange-400", bonus: false },      // 36-48h avg
-  { name: "MID", probability: 0.28, avgLock: 27, color: "text-yellow-400", bonus: false },        // 18-36h avg
-  { name: "HOT", probability: 0.15, avgLock: 13, color: "text-orange-500", bonus: false },        // 8-18h avg
-  { name: "LEGENDARY", probability: 0.09, avgLock: 5.5, color: "text-emerald-400", bonus: true }, // 3-8h avg
+  { name: "BRICK", probability: 0.45, avgLock: 42, color: "text-yellow-400", bonus: false },      // 36-48h avg
+  { name: "MID", probability: 0.28, avgLock: 27, color: "text-orange-400", bonus: false },        // 18-36h avg
+  { name: "HOT", probability: 0.15, avgLock: 13, color: "text-red-400", bonus: false },           // 8-18h avg
+  { name: "LEGENDARY", probability: 0.09, avgLock: 5.5, color: "text-cyan-400", bonus: true },    // 3-8h avg
   { name: "MYTHIC", probability: 0.03, avgLock: 2, color: "text-pink-400", bonus: true },         // 1-3h avg
 ]
 

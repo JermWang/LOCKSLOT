@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TIER_CONFIG } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import Link from "next/link"
 import { 
   Dices, 
   Lock, 
@@ -40,19 +41,19 @@ import {
 import { motion } from "framer-motion"
 
 const tierColors: Record<string, string> = {
-  brick: "text-[#4a5568]",
-  mid: "text-[#6b8a9a]",
-  hot: "text-[#f0c674]",
-  legendary: "text-[#00d4aa]",
-  mythic: "text-[#a855f7]",
+  brick: "text-yellow-400",
+  mid: "text-orange-400",
+  hot: "text-red-400",
+  legendary: "text-cyan-400",
+  mythic: "text-pink-400",
 }
 
 const tierBgColors: Record<string, string> = {
-  brick: "bg-[#4a5568]/20 border-[#4a5568]/30",
-  mid: "bg-[#6b8a9a]/20 border-[#6b8a9a]/30",
-  hot: "bg-[#f0c674]/20 border-[#f0c674]/30",
-  legendary: "bg-[#00d4aa]/20 border-[#00d4aa]/30",
-  mythic: "bg-[#a855f7]/20 border-[#a855f7]/30",
+  brick: "bg-yellow-400/20 border-yellow-400/40",
+  mid: "bg-orange-400/20 border-orange-400/40",
+  hot: "bg-red-400/20 border-red-400/40",
+  legendary: "bg-cyan-400/20 border-cyan-400/40",
+  mythic: "bg-pink-400/20 border-pink-400/40",
 }
 
 const tierIcons: Record<string, React.ReactNode> = {
@@ -74,7 +75,7 @@ export default function DocsPage() {
             <Image src="/logo.png" alt="Lock Slot" width={100} height={100} className="relative rounded-2xl" />
           </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#00d4aa] via-[#00b4d8] to-[#a855f7] bg-clip-text text-transparent">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#00d4aa] via-[#00b4d8] to-pink-400 bg-clip-text text-transparent">
           LOCK SLOT Documentation
         </h1>
         <p className="text-lg text-[#6b8a9a] max-w-2xl mx-auto">
@@ -101,7 +102,7 @@ export default function DocsPage() {
           <div className="text-xs text-[#6b8a9a]">Win Rate</div>
         </div>
         <div className="cyber-panel p-4 text-center">
-          <Zap className="h-8 w-8 text-[#a855f7] mx-auto mb-2" />
+          <Zap className="h-8 w-8 text-pink-400 mx-auto mb-2" />
           <div className="text-2xl font-bold text-[#e8f4f8]">10x</div>
           <div className="text-xs text-[#6b8a9a]">Max Multiplier</div>
         </div>
@@ -252,18 +253,18 @@ export default function DocsPage() {
 
               {/* Step 3 */}
               <div className="relative">
-                <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-[#a855f7] flex items-center justify-center text-[#0a1628] font-bold text-lg">
+                <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-pink-400 flex items-center justify-center text-[#0a1628] font-bold text-lg">
                   3
                 </div>
-                <div className="p-6 rounded-xl bg-gradient-to-br from-[#a855f7]/20 to-transparent border border-[#a855f7]/30 h-full">
-                  <Unlock className="h-12 w-12 text-[#a855f7] mb-4" />
+                <div className="p-6 rounded-xl bg-gradient-to-br from-pink-400/20 to-transparent border border-pink-400/30 h-full">
+                  <Unlock className="h-12 w-12 text-pink-400 mb-4" />
                   <h3 className="text-lg font-bold text-[#e8f4f8] mb-2">UNLOCK</h3>
                   <p className="text-sm text-[#6b8a9a]">
                     When the lock expires, your principal is returned. Winners (Legendary/Mythic) also receive bonus payouts.
                   </p>
                   <div className="mt-4 p-2 rounded-lg bg-[#0a1628] border border-[#1a3a4a]/50">
                     <div className="text-xs text-[#6b8a9a]">You receive:</div>
-                    <div className="text-sm font-mono text-[#a855f7]">Principal + Bonus (if winner)</div>
+                    <div className="text-sm font-mono text-pink-400">Principal + Bonus (if winner)</div>
                   </div>
                 </div>
               </div>
@@ -329,25 +330,25 @@ export default function DocsPage() {
               <div className={cn("p-4 rounded-xl border", tierBgColors.brick)}>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-[#4a5568]/30">
-                      <Lock className="h-8 w-8 text-[#4a5568]" />
+                    <div className="p-3 rounded-xl bg-yellow-400/30">
+                      <Lock className="h-8 w-8 text-yellow-400" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#4a5568]">BRICK</h3>
+                      <h3 className="text-xl font-bold text-yellow-400">BRICK</h3>
                       <p className="text-sm text-[#6b8a9a]">The most common outcome - long lock, no bonus</p>
                     </div>
                   </div>
                   <div className="flex gap-6 text-center">
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#4a5568]">45%</div>
+                      <div className="text-2xl font-bold font-mono text-yellow-400">45%</div>
                       <div className="text-xs text-[#6b8a9a]">Probability</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#4a5568]">36-48h</div>
+                      <div className="text-2xl font-bold font-mono text-yellow-400">36-48h</div>
                       <div className="text-xs text-[#6b8a9a]">Lock Duration</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#4a5568]">1x</div>
+                      <div className="text-2xl font-bold font-mono text-yellow-400">1.2-2.0x</div>
                       <div className="text-xs text-[#6b8a9a]">Multiplier</div>
                     </div>
                     <div>
@@ -362,25 +363,25 @@ export default function DocsPage() {
               <div className={cn("p-4 rounded-xl border", tierBgColors.mid)}>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-[#6b8a9a]/30">
-                      <Clock className="h-8 w-8 text-[#6b8a9a]" />
+                    <div className="p-3 rounded-xl bg-orange-400/30">
+                      <Clock className="h-8 w-8 text-orange-400" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#6b8a9a]">MID</h3>
+                      <h3 className="text-xl font-bold text-orange-400">MID</h3>
                       <p className="text-sm text-[#6b8a9a]">Below average - moderate lock, no bonus</p>
                     </div>
                   </div>
                   <div className="flex gap-6 text-center">
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#6b8a9a]">28%</div>
+                      <div className="text-2xl font-bold font-mono text-orange-400">28%</div>
                       <div className="text-xs text-[#6b8a9a]">Probability</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#6b8a9a]">18-36h</div>
+                      <div className="text-2xl font-bold font-mono text-orange-400">18-36h</div>
                       <div className="text-xs text-[#6b8a9a]">Lock Duration</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#6b8a9a]">1x</div>
+                      <div className="text-2xl font-bold font-mono text-orange-400">1.8-3.5x</div>
                       <div className="text-xs text-[#6b8a9a]">Multiplier</div>
                     </div>
                     <div>
@@ -395,25 +396,25 @@ export default function DocsPage() {
               <div className={cn("p-4 rounded-xl border", tierBgColors.hot)}>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-[#f0c674]/30">
-                      <Flame className="h-8 w-8 text-[#f0c674]" />
+                    <div className="p-3 rounded-xl bg-red-400/30">
+                      <Flame className="h-8 w-8 text-red-400" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#f0c674]">HOT</h3>
+                      <h3 className="text-xl font-bold text-red-400">HOT</h3>
                       <p className="text-sm text-[#6b8a9a]">Decent outcome - shorter lock but still no bonus</p>
                     </div>
                   </div>
                   <div className="flex gap-6 text-center">
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#f0c674]">15%</div>
+                      <div className="text-2xl font-bold font-mono text-red-400">15%</div>
                       <div className="text-xs text-[#6b8a9a]">Probability</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#f0c674]">8-18h</div>
+                      <div className="text-2xl font-bold font-mono text-red-400">8-18h</div>
                       <div className="text-xs text-[#6b8a9a]">Lock Duration</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#f0c674]">1-2x</div>
+                      <div className="text-2xl font-bold font-mono text-red-400">3.0-7.0x</div>
                       <div className="text-xs text-[#6b8a9a]">Multiplier</div>
                     </div>
                     <div>
@@ -427,33 +428,33 @@ export default function DocsPage() {
               {/* LEGENDARY */}
               <div className={cn("p-4 rounded-xl border relative overflow-hidden", tierBgColors.legendary)}>
                 <div className="absolute top-2 right-2">
-                  <Badge className="bg-[#00d4aa] text-[#0a1628] font-bold">WINNER</Badge>
+                  <Badge className="bg-cyan-400 text-[#0a1628] font-bold">WINNER</Badge>
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-[#00d4aa]/30">
-                      <Star className="h-8 w-8 text-[#00d4aa]" />
+                    <div className="p-3 rounded-xl bg-cyan-400/30">
+                      <Star className="h-8 w-8 text-cyan-400" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#00d4aa]">LEGENDARY</h3>
+                      <h3 className="text-xl font-bold text-cyan-400">LEGENDARY</h3>
                       <p className="text-sm text-[#6b8a9a]">Great outcome - short lock with bonus payout!</p>
                     </div>
                   </div>
                   <div className="flex gap-6 text-center">
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#00d4aa]">9%</div>
+                      <div className="text-2xl font-bold font-mono text-cyan-400">9%</div>
                       <div className="text-xs text-[#6b8a9a]">Probability</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#00d4aa]">3-8h</div>
+                      <div className="text-2xl font-bold font-mono text-cyan-400">3-8h</div>
                       <div className="text-xs text-[#6b8a9a]">Lock Duration</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#00d4aa]">2-5x</div>
+                      <div className="text-2xl font-bold font-mono text-cyan-400">5.0-8.0x</div>
                       <div className="text-xs text-[#6b8a9a]">Multiplier</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#00d4aa]">✓</div>
+                      <div className="text-2xl font-bold font-mono text-cyan-400">✓</div>
                       <div className="text-xs text-[#6b8a9a]">Bonus</div>
                     </div>
                   </div>
@@ -463,33 +464,33 @@ export default function DocsPage() {
               {/* MYTHIC */}
               <div className={cn("p-4 rounded-xl border relative overflow-hidden", tierBgColors.mythic)}>
                 <div className="absolute top-2 right-2">
-                  <Badge className="bg-[#a855f7] text-white font-bold">JACKPOT</Badge>
+                  <Badge className="bg-pink-400 text-white font-bold">JACKPOT</Badge>
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-[#a855f7]/30">
-                      <Crown className="h-8 w-8 text-[#a855f7]" />
+                    <div className="p-3 rounded-xl bg-pink-400/30">
+                      <Crown className="h-8 w-8 text-pink-400" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#a855f7]">MYTHIC</h3>
+                      <h3 className="text-xl font-bold text-pink-400">MYTHIC</h3>
                       <p className="text-sm text-[#6b8a9a]">The dream - shortest lock with highest multiplier!</p>
                     </div>
                   </div>
                   <div className="flex gap-6 text-center">
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#a855f7]">3%</div>
+                      <div className="text-2xl font-bold font-mono text-pink-400">3%</div>
                       <div className="text-xs text-[#6b8a9a]">Probability</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#a855f7]">1-3h</div>
+                      <div className="text-2xl font-bold font-mono text-pink-400">1-3h</div>
                       <div className="text-xs text-[#6b8a9a]">Lock Duration</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#a855f7]">5-10x</div>
+                      <div className="text-2xl font-bold font-mono text-pink-400">8.0-15x</div>
                       <div className="text-xs text-[#6b8a9a]">Multiplier</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold font-mono text-[#a855f7]">✓</div>
+                      <div className="text-2xl font-bold font-mono text-pink-400">✓</div>
                       <div className="text-xs text-[#6b8a9a]">Bonus</div>
                     </div>
                   </div>
@@ -508,19 +509,19 @@ export default function DocsPage() {
                 <h3 className="text-lg font-bold text-[#e8f4f8]">Losing Tiers (88%)</h3>
               </div>
               <p className="text-sm text-[#6b8a9a] mb-4">
-                Brick, Mid, and Hot are all "losses" - you get your principal back but receive no bonus from the reward pool.
+                Brick, Mid, and Hot are all &quot;losses&quot; - you get your principal back but receive no bonus from the reward pool.
               </p>
               <div className="space-y-2">
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#4a5568]/10">
-                  <span className="text-[#4a5568] font-semibold">BRICK</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-yellow-400/10">
+                  <span className="text-yellow-400 font-semibold">BRICK</span>
                   <span className="font-mono text-[#6b8a9a]">45% chance</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#6b8a9a]/10">
-                  <span className="text-[#6b8a9a] font-semibold">MID</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-orange-400/10">
+                  <span className="text-orange-400 font-semibold">MID</span>
                   <span className="font-mono text-[#6b8a9a]">28% chance</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#f0c674]/10">
-                  <span className="text-[#f0c674] font-semibold">HOT</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-red-400/10">
+                  <span className="text-red-400 font-semibold">HOT</span>
                   <span className="font-mono text-[#6b8a9a]">15% chance</span>
                 </div>
               </div>
@@ -528,21 +529,21 @@ export default function DocsPage() {
 
             <div className="cyber-panel p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-[#00d4aa]/20">
-                  <CheckCircle2 className="h-6 w-6 text-[#00d4aa]" />
+                <div className="p-2 rounded-lg bg-cyan-400/20">
+                  <CheckCircle2 className="h-6 w-6 text-cyan-400" />
                 </div>
                 <h3 className="text-lg font-bold text-[#e8f4f8]">Winning Tiers (12%)</h3>
               </div>
               <p className="text-sm text-[#6b8a9a] mb-4">
-                Only Legendary and Mythic are "wins" - you get your principal PLUS a share of the reward pool!
+                Only Legendary and Mythic are &quot;wins&quot; - you get your principal PLUS a share of the reward pool!
               </p>
               <div className="space-y-2">
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#00d4aa]/10">
-                  <span className="text-[#00d4aa] font-semibold">LEGENDARY</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-cyan-400/10">
+                  <span className="text-cyan-400 font-semibold">LEGENDARY</span>
                   <span className="font-mono text-[#6b8a9a]">9% chance</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#a855f7]/10">
-                  <span className="text-[#a855f7] font-semibold">MYTHIC</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-pink-400/10">
+                  <span className="text-pink-400 font-semibold">MYTHIC</span>
                   <span className="font-mono text-[#6b8a9a]">3% chance</span>
                 </div>
               </div>
@@ -578,8 +579,8 @@ export default function DocsPage() {
                 <h4 className="font-semibold text-[#e8f4f8] mb-1">Pool Grows</h4>
                 <p className="text-xs text-[#6b8a9a]">Fees accumulate in reward pool</p>
               </div>
-              <div className="p-4 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30 text-center">
-                <Trophy className="h-10 w-10 text-[#a855f7] mx-auto mb-3" />
+              <div className="p-4 rounded-xl bg-pink-400/10 border border-pink-400/30 text-center">
+                <Trophy className="h-10 w-10 text-pink-400 mx-auto mb-3" />
                 <h4 className="font-semibold text-[#e8f4f8] mb-1">Winners Paid</h4>
                 <p className="text-xs text-[#6b8a9a]">Legendary/Mythic split the pool</p>
               </div>
@@ -625,18 +626,18 @@ export default function DocsPage() {
                   </li>
                 </ul>
               </div>
-              <div className="p-4 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30">
+              <div className="p-4 rounded-xl bg-pink-400/10 border border-pink-400/30">
                 <div className="flex items-center gap-2 mb-3">
-                  <Gift className="h-5 w-5 text-[#a855f7]" />
-                  <span className="font-semibold text-[#a855f7]">Pool Pays Out To</span>
+                  <Gift className="h-5 w-5 text-pink-400" />
+                  <span className="font-semibold text-pink-400">Pool Pays Out To</span>
                 </div>
                 <ul className="space-y-2 text-sm text-[#e8f4f8]">
                   <li className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#a855f7]" />
+                    <div className="w-2 h-2 rounded-full bg-cyan-400" />
                     Legendary tier winners (9%)
                   </li>
                   <li className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#a855f7]" />
+                    <div className="w-2 h-2 rounded-full bg-pink-400" />
                     Mythic tier winners (3%)
                   </li>
                   <li className="flex items-center gap-2 text-[#6b8a9a]">
@@ -727,7 +728,7 @@ export default function DocsPage() {
             <div className="p-4 rounded-xl bg-[#00d4aa]/10 border border-[#00d4aa]/20 mb-6">
               <div className="flex items-center gap-2 mb-2">
                 <Eye className="h-5 w-5 text-[#00d4aa]" />
-                <span className="font-semibold text-[#00d4aa]">What "Provably Fair" Means</span>
+                <span className="font-semibold text-[#00d4aa]">What &quot;Provably Fair&quot; Means</span>
               </div>
               <p className="text-sm text-[#e8f4f8]">
                 You can mathematically verify that your spin result was determined fairly and wasn&apos;t manipulated. 
@@ -806,19 +807,19 @@ export default function DocsPage() {
 
               {/* Step 4 */}
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#a855f7] flex items-center justify-center text-[#0a1628] font-bold">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-pink-400 flex items-center justify-center text-[#0a1628] font-bold">
                   4
                 </div>
                 <div className="flex-1 p-4 rounded-xl bg-[#1a3a4a]/30 border border-[#1a3a4a]/50">
                   <h4 className="font-semibold text-[#e8f4f8] mb-2 flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-[#a855f7]" />
+                    <Eye className="h-4 w-4 text-pink-400" />
                     Server Reveals & You Verify
                   </h4>
                   <p className="text-sm text-[#6b8a9a]">
                     After the spin, the server reveals its original seed. You can hash it yourself and confirm 
                     it matches the hash shown before your spin.
                   </p>
-                  <div className="mt-2 p-2 rounded bg-[#0a1628] font-mono text-xs text-[#a855f7]">
+                  <div className="mt-2 p-2 rounded bg-[#0a1628] font-mono text-xs text-pink-400">
                     verify: SHA256(revealed_seed) == original_hash ✓
                   </div>
                 </div>
@@ -911,13 +912,13 @@ export default function DocsPage() {
           <p className="text-[#6b8a9a] mb-6">
             Now that you understand how LOCK SLOT works, connect your wallet and try your luck!
           </p>
-          <a 
+          <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00d4aa] to-[#00b4d8] text-[#0a1628] font-bold hover:opacity-90 transition-opacity"
           >
             <Dices className="h-5 w-5" />
             Start Playing
-          </a>
+          </Link>
         </div>
       </div>
     </div>

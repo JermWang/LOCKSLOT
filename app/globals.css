@@ -32,11 +32,11 @@
   --radius: 0.625rem;
   
   /* Custom tier colors - cyberpunk style */
-  --brick: #4a5568;
-  --mid: #6b8a9a;
-  --hot: #f0c674;
-  --legendary: #00d4aa;
-  --mythic: #a855f7;
+  --brick: #facc15;
+  --mid: #fb923c;
+  --hot: #f87171;
+  --legendary: #22d3ee;
+  --mythic: #fb7185;
   
   /* Neon glow colors */
   --neon-cyan: #00d4aa;
@@ -110,22 +110,22 @@
     box-shadow: 0 0 20px rgba(240, 198, 116, 0.5), 0 0 40px rgba(240, 198, 116, 0.3);
   }
   .glow-legendary {
-    box-shadow: 0 0 30px rgba(0, 212, 170, 0.6), 0 0 60px rgba(0, 212, 170, 0.4);
+    box-shadow: 0 0 30px rgba(34, 211, 238, 0.6), 0 0 60px rgba(34, 211, 238, 0.4);
   }
   .glow-mythic {
-    box-shadow: 0 0 40px rgba(168, 85, 247, 0.7), 0 0 80px rgba(168, 85, 247, 0.5);
+    box-shadow: 0 0 40px rgba(251, 113, 133, 0.7), 0 0 80px rgba(251, 113, 133, 0.5);
   }
   .glow-gold {
     box-shadow: 0 0 25px rgba(240, 198, 116, 0.6), 0 0 50px rgba(240, 198, 116, 0.3);
   }
   .glow-cyan {
-    box-shadow: 0 0 20px rgba(0, 212, 170, 0.6), 0 0 40px rgba(0, 212, 170, 0.3), 0 0 60px rgba(0, 212, 170, 0.2);
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.6), 0 0 40px rgba(34, 211, 238, 0.3), 0 0 60px rgba(34, 211, 238, 0.2);
   }
   .text-glow-primary {
     text-shadow: 0 0 10px rgba(0, 212, 170, 0.8), 0 0 20px rgba(0, 212, 170, 0.6);
   }
   .text-glow-mythic {
-    text-shadow: 0 0 15px rgba(168, 85, 247, 0.9), 0 0 30px rgba(168, 85, 247, 0.7);
+    text-shadow: 0 0 15px rgba(251, 113, 133, 0.9), 0 0 30px rgba(251, 113, 133, 0.7);
   }
   .text-glow-gold {
     text-shadow: 0 0 10px oklch(0.8 0.15 85 / 0.9), 0 0 25px oklch(0.8 0.15 85 / 0.5);

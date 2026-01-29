@@ -89,10 +89,10 @@ export const TIER_CONFIG: Record<
 
 export function getTierColor(tier: Tier): string {
   const colors: Record<Tier, string> = {
-    brick: "text-orange-400",
-    mid: "text-yellow-400",
-    hot: "text-orange-500",
-    legendary: "text-emerald-400",
+    brick: "text-yellow-400",
+    mid: "text-orange-400",
+    hot: "text-red-400",
+    legendary: "text-cyan-400",
     mythic: "text-pink-400",
   }
   return colors[tier]
@@ -100,11 +100,27 @@ export function getTierColor(tier: Tier): string {
 
 export function getTierBgColor(tier: Tier): string {
   const colors: Record<Tier, string> = {
-    brick: "bg-orange-400/20 border-orange-400/40",
-    mid: "bg-yellow-400/20 border-yellow-400/40",
-    hot: "bg-orange-500/20 border-orange-500/40",
-    legendary: "bg-emerald-400/20 border-emerald-400/40",
+    brick: "bg-yellow-400/20 border-yellow-400/40",
+    mid: "bg-orange-400/20 border-orange-400/40",
+    hot: "bg-red-400/20 border-red-400/40",
+    legendary: "bg-cyan-400/20 border-cyan-400/40",
     mythic: "bg-pink-400/20 border-pink-400/40",
   }
   return colors[tier]
+}
+
+export function getTierDotColor(tier: Tier): string {
+  const colors: Record<Tier, string> = {
+    brick: "bg-yellow-400",
+    mid: "bg-orange-400",
+    hot: "bg-red-400",
+    legendary: "bg-cyan-400",
+    mythic: "bg-pink-400",
+  }
+  return colors[tier]
+}
+
+export function formatTierDurationRange(tier: Tier): string {
+  const [minH, maxH] = TIER_CONFIG[tier].durationRange
+  return `${minH}-${maxH}h`
 }

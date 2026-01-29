@@ -11,6 +11,7 @@ import { LiveChat } from "@/components/live-chat"
 import { Dices, ChevronDown } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { TIER_CONFIG, formatTierDurationRange, getTierColor, getTierDotColor, type Tier } from "@/lib/game-types"
 
 export default function LockSlotPage() {
   const [showGame, setShowGame] = useState(false)
@@ -136,18 +137,14 @@ export default function LockSlotPage() {
                     <ChevronDown className="h-4 w-4" />
                   </summary>
                   <div className="px-4 pb-4 grid grid-cols-5 gap-2 text-center">
-                    {[
-                      { name: "BRICK", prob: "45%", duration: "36-48h", color: "text-[#4a5568]", dot: "bg-[#4a5568]" },
-                      { name: "MID", prob: "28%", duration: "18-36h", color: "text-[#6b8a9a]", dot: "bg-[#6b8a9a]" },
-                      { name: "HOT", prob: "15%", duration: "8-18h", color: "text-[#f0c674]", dot: "bg-[#f0c674]" },
-                      { name: "LEGEND", prob: "9%", duration: "3-8h", color: "text-[#00d4aa]", dot: "bg-[#00d4aa]" },
-                      { name: "MYTHIC", prob: "3%", duration: "1-3h", color: "text-[#a855f7]", dot: "bg-[#a855f7]" },
-                    ].map((tier) => (
-                      <div key={tier.name} className="p-2 rounded-lg bg-[#0a1628]/80 border border-[#1a3a4a]/30">
-                        <div className={cn("w-2 h-2 rounded-full mx-auto mb-1", tier.dot)} />
-                        <div className={cn("text-[10px] font-bold", tier.color)}>{tier.name}</div>
-                        <div className="text-xs font-mono text-[#e8f4f8]">{tier.prob}</div>
-                        <div className="text-[10px] font-mono text-[#6b8a9a]">{tier.duration}</div>
+                    {(["brick", "mid", "hot", "legendary", "mythic"] as const).map((tier: Tier) => (
+                      <div key={tier} className="p-2 rounded-lg bg-[#0a1628]/80 border border-[#1a3a4a]/30">
+                        <div className={cn("w-2 h-2 rounded-full mx-auto mb-1", getTierDotColor(tier))} />
+                        <div className={cn("text-[10px] font-bold", getTierColor(tier))}>
+                          {tier === "legendary" ? "LEGEND" : TIER_CONFIG[tier].label}
+                        </div>
+                        <div className="text-xs font-mono text-[#e8f4f8]">{Math.round(TIER_CONFIG[tier].probability * 100)}%</div>
+                        <div className="text-[10px] font-mono text-[#6b8a9a]">{formatTierDurationRange(tier)}</div>
                       </div>
                     ))}
                   </div>

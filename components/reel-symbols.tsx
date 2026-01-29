@@ -207,7 +207,7 @@ export function LegendarySymbol({ className, size = 48, isCenter, isWinner }: Sy
       width={size} 
       height={size} 
       viewBox="0 0 64 64" 
-      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_12px_#00ff88]", className)}
+      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_12px_#22d3ee]", className)}
     >
       <defs>
         <linearGradient id="diamond-top" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -255,7 +255,7 @@ export function MythicSymbol({ className, size = 48, isCenter, isWinner }: Symbo
       width={size} 
       height={size} 
       viewBox="0 0 64 64" 
-      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_16px_#ff00ff]", className)}
+      className={cn("transition-all duration-200", isWinner && "drop-shadow-[0_0_16px_#fb7185]", className)}
     >
       <defs>
         <linearGradient id="bolt-main" x1="0%" y1="0%" x2="100%" y2="100%">

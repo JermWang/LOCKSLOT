@@ -102,10 +102,13 @@ export function Navbar() {
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <img 
-            src="/logo.png" 
-            alt="Lock Slot" 
-            className="h-10 w-auto rounded-lg"
+          <Image
+            src="/logo.png"
+            alt="Lock Slot"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-lg"
+            priority
           />
         </div>
 

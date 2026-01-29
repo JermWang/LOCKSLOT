@@ -25,7 +25,6 @@ export function ActivityFeed() {
     <ScrollArea className="h-[400px]">
       <div className="p-4">
         {activityFeed.map((item) => {
-          const isBrick = item.tier === "brick"
           const isWinner = item.tier === "legendary" || item.tier === "mythic"
           
           return (
@@ -43,9 +42,9 @@ export function ActivityFeed() {
                   </span>
                   <span className={cn(
                     "text-xs font-medium",
-                    isBrick ? "text-muted-foreground" : getTierColor(item.tier)
+                    getTierColor(item.tier)
                   )}>
-                    {isBrick ? "bricked" : TIER_CONFIG[item.tier].label}
+                    {TIER_CONFIG[item.tier].label}
                   </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground/60">
@@ -55,7 +54,7 @@ export function ActivityFeed() {
               
               <div className="mt-1 flex items-center gap-3 text-xs">
                 <span className="text-muted-foreground">
-                  <span className="font-mono">{item.duration}</span>d
+                  <span className="font-mono">{item.duration}</span>h
                 </span>
                 <span className="text-muted-foreground">@</span>
                 <span className={cn(

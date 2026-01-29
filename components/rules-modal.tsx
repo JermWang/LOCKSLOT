@@ -8,19 +8,19 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { TIER_CONFIG, formatTierDurationRange, getTierColor, type Tier } from "@/lib/game-types"
 
 interface RulesModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const TIER_INFO = [
-  { name: "BRICK", probability: "45%", duration: "36-48h", multiplier: "1.2-2.0x", color: "text-orange-400", eligible: false },
-  { name: "MID", probability: "28%", duration: "18-36h", multiplier: "1.8-3.5x", color: "text-yellow-400", eligible: false },
-  { name: "HOT", probability: "15%", duration: "8-18h", multiplier: "3.0-7.0x", color: "text-orange-500", eligible: false },
-  { name: "LEGENDARY", probability: "9%", duration: "3-8h", multiplier: "5.0-8.0x", color: "text-emerald-400", eligible: true },
-  { name: "MYTHIC", probability: "3%", duration: "1-3h", multiplier: "8.0-15x", color: "text-pink-400", eligible: true },
-]
+const TIERS: Tier[] = ["brick", "mid", "hot", "legendary", "mythic"]
+
+function formatMultiplierRange(tier: Tier): string {
+  const [min, max] = TIER_CONFIG[tier].multiplierRange
+  return `${min.toFixed(1)}-${max.toFixed(1)}x`
+}
 
 export function RulesModal({ open, onOpenChange }: RulesModalProps) {
   return (
@@ -96,22 +96,22 @@ export function RulesModal({ open, onOpenChange }: RulesModalProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {TIER_INFO.map((tier) => (
-                      <tr key={tier.name} className="border-b border-border/50 last:border-0">
-                        <td className={cn("px-3 py-2 font-medium", tier.color)}>
-                          {tier.name}
+                    {TIERS.map((tier) => (
+                      <tr key={tier} className="border-b border-border/50 last:border-0">
+                        <td className={cn("px-3 py-2 font-medium", getTierColor(tier))}>
+                          {TIER_CONFIG[tier].label}
                         </td>
                         <td className="px-3 py-2 text-right font-mono text-muted-foreground">
-                          {tier.probability}
+                          {Math.round(TIER_CONFIG[tier].probability * 100)}%
                         </td>
                         <td className="px-3 py-2 text-right font-mono text-muted-foreground">
-                          {tier.duration}
+                          {formatTierDurationRange(tier)}
                         </td>
                         <td className="px-3 py-2 text-right font-mono text-muted-foreground">
-                          {tier.multiplier}
+                          {formatMultiplierRange(tier)}
                         </td>
                         <td className="px-3 py-2 text-center">
-                          {tier.eligible ? (
+                          {tier === "legendary" || tier === "mythic" ? (
                             <span className="text-primary">Yes</span>
                           ) : (
                             <span className="text-muted-foreground/50">No</span>

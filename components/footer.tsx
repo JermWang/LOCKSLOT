@@ -1,6 +1,6 @@
 "use client"
 
-import { Shield, Lock, ExternalLink, Heart } from "lucide-react"
+import { Shield, Lock, ExternalLink, Heart, Github, Twitter } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -65,13 +65,24 @@ export function Footer() {
               </li>
               <li>
                 <a 
-                  href="https://github.com" 
+                  href="https://github.com/JermWang/LOCKSLOT" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Smart Contract
+                  <Github className="h-3.5 w-3.5" />
+                  GitHub Repo
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://twitter.com/LockSlotSolana"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
+                >
+                  <Twitter className="h-3.5 w-3.5" />
+                  @LockSlotSolana
                 </a>
               </li>
             </ul>
