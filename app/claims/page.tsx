@@ -1,23 +1,30 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useWallet } from "@/lib/wallet-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Gift, Wallet, Clock, CheckCircle } from "lucide-react"
+import { Gift, Wallet, Clock, CheckCircle, Coins } from "lucide-react"
 
-const claimableRewards = [
-  { epoch: 41, amount: 0.523, status: "claimable" },
-  { epoch: 40, amount: 0.412, status: "claimable" },
-]
+interface ClaimableReward {
+  epoch: number
+  amount: number
+  status: "claimable" | "pending"
+}
 
-const claimedRewards = [
-  { epoch: 39, amount: 0.387, claimedAt: "2026-01-20", txHash: "5x7...a2f" },
-  { epoch: 38, amount: 0.445, claimedAt: "2026-01-13", txHash: "8k2...b9c" },
-]
+interface ClaimedReward {
+  epoch: number
+  amount: number
+  claimedAt: string
+  txHash: string
+}
 
 export default function ClaimsPage() {
-  const { connected, connect } = useWallet()
+  const { connected, connect, publicKey } = useWallet()
+  const [claimableRewards, setClaimableRewards] = useState<ClaimableReward[]>([])
+  const [claimedRewards, setClaimedRewards] = useState<ClaimedReward[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   const totalClaimable = claimableRewards.reduce((acc, r) => acc + r.amount, 0)
 
@@ -58,8 +65,8 @@ export default function ClaimsPage() {
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Total Claimable</div>
-                <div className="text-3xl font-bold font-mono text-primary">
-                  {totalClaimable.toFixed(3)} SOL
+                <div className="text-3xl font-bold font-mono text-primary flex items-center gap-2">
+                  {totalClaimable.toLocaleString()} <span className="text-xl">$LOCK</span>
                 </div>
               </div>
             </div>
@@ -96,7 +103,7 @@ export default function ClaimsPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-mono text-primary">{reward.amount} SOL</span>
+                    <span className="font-mono text-primary">{reward.amount.toLocaleString()} $LOCK</span>
                     <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent">
                       Claim
                     </Button>
@@ -136,7 +143,7 @@ export default function ClaimsPage() {
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-muted-foreground">{reward.claimedAt}</span>
-                  <span className="font-mono">{reward.amount} SOL</span>
+                  <span className="font-mono">{reward.amount.toLocaleString()} $LOCK</span>
                 </div>
               </div>
             ))}
