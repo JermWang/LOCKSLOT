@@ -139,11 +139,11 @@ export function Navbar() {
         {/* Right Section */}
         <div className="flex items-center gap-3">
           {/* Token Balance - minimal inline display */}
-          {connected && balance !== null && (
+          {connected && (
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081420] border border-[#1a3a4a]/50">
               <Image src="/logo.png" alt="" width={20} height={20} className="rounded" />
               <span className="font-mono text-sm font-semibold text-[#00d4aa]">
-                {formatBalance(balance)}
+                {balance !== null ? formatBalance(balance) : "..."}
               </span>
               <span className="text-[10px] text-[#6b8a9a] uppercase">{TOKEN_SYMBOL}</span>
             </div>

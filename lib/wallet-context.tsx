@@ -317,17 +317,17 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       console.error("[getTokenBalance] NEXT_PUBLIC_TOKEN_MINT not configured:", process.env.NEXT_PUBLIC_TOKEN_MINT)
       return 0
     }
-    
-    const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
-
-    console.log(
-      "[getTokenBalance] Token mint:",
-      tokenMint.toBase58(),
-      "program:",
-      tokenProgramId.toBase58()
-    )
 
     try {
+      const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
+
+      console.log(
+        "[getTokenBalance] Token mint:",
+        tokenMint.toBase58(),
+        "program:",
+        tokenProgramId.toBase58()
+      )
+
       const userPubkey = new PublicKey(publicKey)
       const userAta = await getAssociatedTokenAddress(
         tokenMint,
@@ -350,7 +350,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return Number(balance.value.amount)
     } catch (err: any) {
       // Handle specific RPC errors
-      if (err?.message?.includes("could not find account") || err?.message?.includes("Invalid param")) {
+      if (err?.message?.includes("could not find account") || err?.message?.includes("Invalid param") || err?.message?.includes("Token mint account not found")) {
         console.log("[getTokenBalance] Token account not found - user has 0 balance of this token")
         return 0
       }
