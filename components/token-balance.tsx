@@ -10,6 +10,10 @@ import Image from "next/image"
 // Token decimals - adjust based on your token
 const TOKEN_DECIMALS = 9
 const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
+const TOKEN_MINT = process.env.NEXT_PUBLIC_TOKEN_MINT || "NOT_SET"
+
+// Debug flag - set to true to show debug info in UI
+const SHOW_DEBUG = true
 
 function formatBalance(rawBalance: number): string {
   const balance = rawBalance / Math.pow(10, TOKEN_DECIMALS)
@@ -39,7 +43,13 @@ export function TokenBalance() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // Debug: log token mint on mount
+  useEffect(() => {
+    console.log("[TokenBalance] NEXT_PUBLIC_TOKEN_MINT:", process.env.NEXT_PUBLIC_TOKEN_MINT)
+  }, [])
+
   const fetchBalance = useCallback(async () => {
+    console.log("[TokenBalance] fetchBalance called, connected:", connected, "publicKey:", publicKey)
     if (!connected) {
       setBalance(null)
       return
@@ -48,15 +58,16 @@ export function TokenBalance() {
     setLoading(true)
     try {
       const bal = await getTokenBalance()
+      console.log("[TokenBalance] Got balance:", bal)
       setBalance(bal)
       setLastUpdate(new Date())
     } catch (error) {
-      console.error("Failed to fetch balance:", error)
+      console.error("[TokenBalance] Failed to fetch balance:", error)
       setBalance(null)
     } finally {
       setLoading(false)
     }
-  }, [connected, getTokenBalance])
+  }, [connected, publicKey, getTokenBalance])
 
   // Fetch balance on connect and set up polling
   useEffect(() => {
@@ -222,6 +233,15 @@ export function TokenBalance() {
           {lastUpdate ? lastUpdate.toLocaleTimeString() : "--:--"}
         </span>
       </div>
+
+      {/* Debug info */}
+      {SHOW_DEBUG && (
+        <div className="mt-3 pt-3 border-t border-[#1a3a4a]/50 text-[9px] font-mono text-[#6b8a9a] space-y-1">
+          <div>Mint: {TOKEN_MINT.slice(0, 8)}...{TOKEN_MINT.slice(-4)}</div>
+          <div>Wallet: {publicKey?.slice(0, 8)}...{publicKey?.slice(-4)}</div>
+          <div>Raw bal: {balance}</div>
+        </div>
+      )}
     </div>
   )
 }

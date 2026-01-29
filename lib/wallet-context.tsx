@@ -298,11 +298,24 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const userPubkey = new PublicKey(publicKey)
       const userAta = await getAssociatedTokenAddress(tokenMint, userPubkey)
       console.log("[getTokenBalance] User ATA:", userAta.toBase58())
+      
+      // Check if the token account exists first
+      const accountInfo = await connection.getAccountInfo(userAta)
+      if (!accountInfo) {
+        console.log("[getTokenBalance] No token account exists for this mint - user has 0 balance")
+        return 0
+      }
+      
       const balance = await connection.getTokenAccountBalance(userAta)
       console.log("[getTokenBalance] Balance:", balance.value.amount, "uiAmount:", balance.value.uiAmountString)
       return Number(balance.value.amount)
-    } catch (err) {
-      console.error("[getTokenBalance] Error fetching balance:", err)
+    } catch (err: any) {
+      // Handle specific RPC errors
+      if (err?.message?.includes("could not find account") || err?.message?.includes("Invalid param")) {
+        console.log("[getTokenBalance] Token account not found - user has 0 balance of this token")
+        return 0
+      }
+      console.error("[getTokenBalance] Error fetching balance:", err?.message || err)
       return 0
     }
   }, [connected, publicKey])
