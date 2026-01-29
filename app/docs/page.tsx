@@ -85,22 +85,22 @@ export default function DocsPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-        <div className="cyber-panel cyber-corners p-4 text-center">
+        <div className="cyber-panel p-4 text-center">
           <Shield className="h-8 w-8 text-[#00d4aa] mx-auto mb-2" />
           <div className="text-2xl font-bold text-[#e8f4f8]">100%</div>
           <div className="text-xs text-[#6b8a9a]">Principal Protected</div>
         </div>
-        <div className="cyber-panel cyber-corners p-4 text-center">
+        <div className="cyber-panel p-4 text-center">
           <Clock className="h-8 w-8 text-[#00b4d8] mx-auto mb-2" />
           <div className="text-2xl font-bold text-[#e8f4f8]">1-48h</div>
           <div className="text-xs text-[#6b8a9a]">Lock Duration</div>
         </div>
-        <div className="cyber-panel cyber-corners p-4 text-center">
+        <div className="cyber-panel p-4 text-center">
           <Trophy className="h-8 w-8 text-[#f0c674] mx-auto mb-2" />
           <div className="text-2xl font-bold text-[#e8f4f8]">12%</div>
           <div className="text-xs text-[#6b8a9a]">Win Rate</div>
         </div>
-        <div className="cyber-panel cyber-corners p-4 text-center">
+        <div className="cyber-panel p-4 text-center">
           <Zap className="h-8 w-8 text-[#a855f7] mx-auto mb-2" />
           <div className="text-2xl font-bold text-[#e8f4f8]">10x</div>
           <div className="text-xs text-[#6b8a9a]">Max Multiplier</div>
@@ -130,7 +130,7 @@ export default function DocsPage() {
         {/* OVERVIEW TAB */}
         <TabsContent value="overview" className="space-y-8">
           {/* What is Lock Slot */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <div className="flex items-start gap-4 mb-6">
               <div className="p-3 rounded-xl bg-[#00d4aa]/20 border border-[#00d4aa]/30">
                 <Dices className="h-8 w-8 text-[#00d4aa]" />
@@ -207,7 +207,7 @@ export default function DocsPage() {
           </div>
 
           {/* How It Works - Visual Flow */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-6 flex items-center gap-3">
               <RefreshCw className="h-6 w-6 text-[#00d4aa]" />
               How It Works
@@ -271,7 +271,7 @@ export default function DocsPage() {
           </div>
 
           {/* Fee Structure */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-6 flex items-center gap-3">
               <Percent className="h-6 w-6 text-[#00d4aa]" />
               Fee Structure
@@ -285,9 +285,13 @@ export default function DocsPage() {
                 <p className="text-sm text-[#6b8a9a]">
                   A 5% fee is taken from each spin and added to the reward pool. This funds winner bonuses.
                 </p>
-                <div className="mt-3 p-2 rounded-lg bg-[#0a1628]">
+                <div className="mt-3 p-2 rounded-lg bg-[#00d4aa]/10 border border-[#00d4aa]/30">
+                  <div className="text-xs font-semibold text-[#00d4aa]">🎯 NOT A HOUSE FEE</div>
+                  <div className="text-xs text-[#6b8a9a]">100% of this fee goes to Legendary & Mythic winners!</div>
+                </div>
+                <div className="mt-2 p-2 rounded-lg bg-[#0a1628]">
                   <div className="text-xs text-[#6b8a9a]">Example: 1000 token stake</div>
-                  <div className="text-sm font-mono text-[#00d4aa]">50 tokens → Reward Pool</div>
+                  <div className="text-sm font-mono text-[#00d4aa]">50 tokens → Reward Pool → Winners</div>
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-[#1a3a4a]/30 border border-[#1a3a4a]/50">
@@ -310,7 +314,7 @@ export default function DocsPage() {
         {/* TIERS TAB */}
         <TabsContent value="tiers" className="space-y-8">
           {/* Tier Overview */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-2 flex items-center gap-3">
               <Target className="h-6 w-6 text-[#00d4aa]" />
               Understanding Tiers
@@ -496,7 +500,7 @@ export default function DocsPage() {
 
           {/* Win vs Loss Breakdown */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="cyber-panel cyber-corners p-6">
+            <div className="cyber-panel p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 rounded-lg bg-red-500/20">
                   <XCircle className="h-6 w-6 text-red-400" />
@@ -522,7 +526,7 @@ export default function DocsPage() {
               </div>
             </div>
 
-            <div className="cyber-panel cyber-corners p-6">
+            <div className="cyber-panel p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 rounded-lg bg-[#00d4aa]/20">
                   <CheckCircle2 className="h-6 w-6 text-[#00d4aa]" />
@@ -549,7 +553,7 @@ export default function DocsPage() {
         {/* REWARDS TAB */}
         <TabsContent value="rewards" className="space-y-8">
           {/* Pari-Mutuel Explanation */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <div className="flex items-start gap-4 mb-6">
               <div className="p-3 rounded-xl bg-[#00d4aa]/20 border border-[#00d4aa]/30">
                 <Scale className="h-8 w-8 text-[#00d4aa]" />
@@ -594,7 +598,7 @@ export default function DocsPage() {
           </div>
 
           {/* Reward Pool Mechanics */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-6 flex items-center gap-3">
               <Coins className="h-6 w-6 text-[#00d4aa]" />
               Reward Pool Mechanics
@@ -666,7 +670,7 @@ export default function DocsPage() {
           </div>
 
           {/* Core Guarantees */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-6 flex items-center gap-3">
               <Shield className="h-6 w-6 text-[#00d4aa]" />
               Core Guarantees
@@ -707,7 +711,7 @@ export default function DocsPage() {
         {/* FAIRNESS TAB */}
         <TabsContent value="fairness" className="space-y-8">
           {/* Provably Fair Overview */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <div className="flex items-start gap-4 mb-6">
               <div className="p-3 rounded-xl bg-[#00d4aa]/20 border border-[#00d4aa]/30">
                 <Shield className="h-8 w-8 text-[#00d4aa]" />
@@ -733,7 +737,7 @@ export default function DocsPage() {
           </div>
 
           {/* How It Works */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-6 flex items-center gap-3">
               <RefreshCw className="h-6 w-6 text-[#00d4aa]" />
               How Verification Works
@@ -823,7 +827,7 @@ export default function DocsPage() {
           </div>
 
           {/* Trust Guarantees */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-6 flex items-center gap-3">
               <CheckCircle2 className="h-6 w-6 text-[#00d4aa]" />
               Trust Guarantees
@@ -873,7 +877,7 @@ export default function DocsPage() {
           </div>
 
           {/* On-Chain Verification */}
-          <div className="cyber-panel cyber-corners p-6">
+          <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-4 flex items-center gap-3">
               <Gem className="h-6 w-6 text-[#00d4aa]" />
               Solana On-Chain Verification
@@ -902,7 +906,7 @@ export default function DocsPage() {
 
       {/* Bottom CTA */}
       <div className="mt-12 text-center">
-        <div className="cyber-panel cyber-corners p-8 max-w-2xl mx-auto">
+        <div className="cyber-panel p-8 max-w-2xl mx-auto">
           <h3 className="text-2xl font-bold text-[#e8f4f8] mb-2">Ready to Play?</h3>
           <p className="text-[#6b8a9a] mb-6">
             Now that you understand how LOCK SLOT works, connect your wallet and try your luck!

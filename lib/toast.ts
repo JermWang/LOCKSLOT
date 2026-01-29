@@ -2,25 +2,41 @@ import { toast } from "sonner"
 import { triggerWinConfetti, triggerDepositConfetti } from "./confetti"
 import { gameSounds } from "./sounds"
 
+const SOLSCAN_BASE = "https://solscan.io/tx"
+
+function getSolscanLink(txSignature: string): string {
+  return `${SOLSCAN_BASE}/${txSignature}`
+}
+
 export const gameToast = {
-  deposit: (amount: number) => {
+  deposit: (amount: number, txSignature?: string) => {
     triggerDepositConfetti()
     gameSounds.deposit()
     toast.success("Deposit Confirmed", {
-      description: `${amount.toLocaleString()} tokens added to your balance`,
+      description: txSignature 
+        ? `${amount.toLocaleString()} tokens added` 
+        : `${amount.toLocaleString()} tokens added to your balance`,
+      action: txSignature ? {
+        label: "View TX",
+        onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
+      } : undefined,
       duration: 4000,
     })
   },
 
-  withdraw: (amount: number) => {
+  withdraw: (amount: number, txSignature?: string) => {
     gameSounds.withdraw()
     toast.success("Withdrawal Sent", {
       description: `${amount.toLocaleString()} tokens sent to your wallet`,
+      action: txSignature ? {
+        label: "View TX",
+        onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
+      } : undefined,
       duration: 4000,
     })
   },
 
-  spin: (tier: string, multiplier: number, duration: number) => {
+  spin: (tier: string, multiplier: number, duration: number, txSignature?: string) => {
     const isWin = tier === "legendary" || tier === "mythic"
     const durationStr = duration >= 24 ? `${Math.round(duration / 24 * 10) / 10}d` : `${duration}h`
     
@@ -28,21 +44,33 @@ export const gameToast = {
       triggerWinConfetti(tier as "legendary" | "mythic")
       toast.success(`🎉 ${tier.toUpperCase()} WIN!`, {
         description: `${multiplier}× multiplier • ${durationStr} lock`,
+        action: txSignature ? {
+          label: "View TX",
+          onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
+        } : undefined,
         duration: 6000,
       })
     } else {
       toast.info(`${tier.toUpperCase()}`, {
         description: `${multiplier}× • ${durationStr} lock`,
+        action: txSignature ? {
+          label: "View TX",
+          onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
+        } : undefined,
         duration: 3000,
       })
     }
   },
 
-  claim: (principal: number, bonus: number) => {
+  claim: (principal: number, bonus: number, txSignature?: string) => {
     const total = principal + bonus
     gameSounds.claim()
     toast.success("Claim Successful!", {
       description: `${principal.toLocaleString()} principal + ${bonus.toLocaleString()} bonus = ${total.toLocaleString()} tokens`,
+      action: txSignature ? {
+        label: "View TX",
+        onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
+      } : undefined,
       duration: 5000,
     })
   },

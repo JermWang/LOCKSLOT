@@ -79,7 +79,7 @@ export function TokenBalance() {
   // Not connected state
   if (!connected) {
     return (
-      <div className="cyber-panel cyber-corners p-4">
+      <div className="cyber-panel p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
@@ -120,7 +120,7 @@ export function TokenBalance() {
   }
 
   return (
-    <div className="cyber-panel cyber-corners p-4">
+    <div className="cyber-panel p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

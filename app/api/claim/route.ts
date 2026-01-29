@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const maintenance = maintenanceGate()
     if (maintenance) return maintenance
 
-    const limited = rateLimitGate(request, { id: 'claim', windowMs: 10_000, max: 10 })
+    const limited = await rateLimitGate(request, { id: 'claim', windowMs: 10_000, max: 10 })
     if (limited) return limited
 
     const { walletAddress, spinId, auth } = await request.json()
@@ -106,58 +106,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Check claimable locks
-export async function GET(request: NextRequest) {
-  try {
-    const maintenance = maintenanceGate()
-    if (maintenance) return maintenance
-
-    const limited = rateLimitGate(request, { id: 'claim_get', windowMs: 10_000, max: 30 })
-    if (limited) return limited
-
-    const { searchParams } = new URL(request.url)
-    const walletAddress = searchParams.get('wallet')
-    
-    if (!walletAddress) {
-      return NextResponse.json({ error: 'Wallet address required' }, { status: 400 })
-    }
-    
-    const supabase = createServerClient()
-    
-    // Get user
-    const { data: user } = await supabase
-      .from('users')
-      .select('id')
-      .eq('wallet_address', walletAddress)
-      .single()
-    
-    if (!user) {
-      return NextResponse.json({ claimable: [] })
-    }
-    
-    // Get claimable locks (unlocked but not claimed)
-    const now = new Date().toISOString()
-    
-    const { data: claimable } = await supabase
-      .from('spins')
-      .select('*')
-      .eq('user_id', user.id)
-      .in('status', ['locked', 'unlocked'])
-      .lte('unlocks_at', now)
-    
-    return NextResponse.json({
-      claimable: claimable?.map((spin: any) => ({
-        id: spin.id,
-        tier: spin.tier,
-        principal: spin.stake_amount - spin.fee_amount,
-        bonus: spin.bonus_amount || 0,
-        total: (spin.stake_amount - spin.fee_amount) + (spin.bonus_amount || 0),
-        unlockedAt: spin.unlocks_at
-      })) || []
-    })
-    
-  } catch (error) {
-    console.error('Get claimable error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }

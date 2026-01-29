@@ -41,7 +41,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Footer />
         </div>
       </main>
-      <Toaster position="bottom-right" richColors closeButton />
+      <Toaster position="bottom-right" closeButton />
     </WalletProvider>
   )
 }

@@ -1,16 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo, memo } from "react"
 import { useGameStore } from "@/lib/game-store"
-import { TIER_CONFIG, getTierColor, getTierBgColor, type Tier } from "@/lib/game-types"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { TIER_CONFIG, getTierColor, type SpinResult, type Tier } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
-import { Lock, Unlock, Settings, Check, X, Volume2, VolumeX, Music, Music2, TrendingUp, Timer, Vault } from "lucide-react"
+import { Lock, Unlock, Settings, Check, X, Volume2, VolumeX, Music, Music2 } from "lucide-react"
 import { gameSounds, isSoundEnabled, setSoundEnabled, isMusicEnabled, resumeAudio } from "@/lib/sounds"
 import { gameToast } from "@/lib/toast"
-import { TierSymbol, TIER_LABELS } from "@/components/reel-symbols"
-import { ArcGauge } from "@/components/arc-gauge"
+import { TierSymbol } from "@/components/reel-symbols"
 
 const DEFAULT_QUICK_AMOUNTS = [100, 500, 1000, 5000]
 const STORAGE_KEY = "lockslot_quick_amounts"
@@ -48,11 +45,31 @@ const REEL_ITEMS: { tier: Tier; label: string }[] = [
 const REEL_ITEM_HEIGHT = 64
 const REEL_VIEWPORT_HEIGHT = 128
 
-// Easing with slight overshoot for satisfying stop
-function easeOutBack(t: number) {
-  const c1 = 1.70158
-  const c3 = c1 + 1
-  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+const REEL_REPEAT = 25
+const REEL_TRACK = Array.from(
+  { length: REEL_ITEMS.length * REEL_REPEAT },
+  (_, i) => REEL_ITEMS[i % REEL_ITEMS.length]
+)
+const REEL_BASE_OFFSET = REEL_ITEMS.length * Math.floor(REEL_REPEAT / 2)
+
+// Memoized reel item to prevent re-renders during spin animation
+const ReelItem = memo(function ReelItem({ tier, label }: { tier: Tier; label: string }) {
+  return (
+    <div className="reel-item h-16 flex flex-col items-center justify-center gap-1">
+      <TierSymbol tier={tier} size={32} />
+      <span className={cn(
+        "text-xs font-bold font-mono tracking-widest select-none uppercase",
+        getTierColor(tier)
+      )}>
+        {label}
+      </span>
+    </div>
+  )
+})
+
+// Smooth cubic ease-out (no overshoot to avoid jank)
+function easeOutCubic(t: number) {
+  return 1 - Math.pow(1 - t, 3)
 }
 
 function SlotReel({ 
@@ -68,35 +85,37 @@ function SlotReel({
   reelIndex?: number
   onStopped?: (reelIndex: number) => void
 }) {
-  const [offset, setOffset] = useState(0)
-  const [velocity, setVelocity] = useState(0)
+  const trackRef = useRef<HTMLDivElement | null>(null)
   const rafRef = useRef<number | null>(null)
-  const offsetRef = useRef(0)
+  const offsetRef = useRef(REEL_BASE_OFFSET)
   const velocityRef = useRef(0)
+  const lastTimeRef = useRef<number | null>(null)
   const isSpinningRef = useRef(false)
   const hasStoppedRef = useRef(false)
   const lastTickRef = useRef(-1)
   const stopAnimRef = useRef<{ start: number; from: number; to: number } | null>(null)
 
+  const resultRef = useRef<Tier | null>(null)
+  const onStoppedRef = useRef<typeof onStopped>(onStopped)
+
   const n = REEL_ITEMS.length
   const isWinner = result && (result === "legendary" || result === "mythic") && !isSpinning
 
-  // Get visible items based on current offset
-  const getVisibleItems = (off: number) => {
-    const items: { item: typeof REEL_ITEMS[0]; yOffset: number; key: number; distFromCenter: number }[] = []
-    const centerIndex = Math.floor(off)
-    const fractional = off - centerIndex
-    
-    for (let i = -2; i <= 2; i++) {
-      const idx = ((centerIndex + i) % n + n) % n
-      const yOffset = (i - fractional) * REEL_ITEM_HEIGHT
-      const distFromCenter = Math.abs(yOffset)
-      items.push({ item: REEL_ITEMS[idx], yOffset, key: centerIndex + i, distFromCenter })
-    }
-    return items
+  const centerY = REEL_VIEWPORT_HEIGHT / 2 - REEL_ITEM_HEIGHT / 2
+
+  const applyTransform = () => {
+    const el = trackRef.current
+    if (!el) return
+    el.style.transform = `translate3d(0, ${centerY - offsetRef.current * REEL_ITEM_HEIGHT}px, 0)`
   }
 
-  const visibleItems = getVisibleItems(offset)
+  useEffect(() => {
+    resultRef.current = result
+  }, [result])
+
+  useEffect(() => {
+    onStoppedRef.current = onStopped
+  }, [onStopped])
 
   useEffect(() => {
     isSpinningRef.current = isSpinning
@@ -112,8 +131,11 @@ function SlotReel({
     // Start spinning
     hasStoppedRef.current = false
     stopAnimRef.current = null
+    lastTimeRef.current = null
     velocityRef.current = 18 + reelIndex * 3
     lastTickRef.current = -1
+    offsetRef.current = REEL_BASE_OFFSET + (offsetRef.current % n)
+    applyTransform()
     
     const startTime = performance.now()
     const minSpinTime = 600 + reelIndex * 250
@@ -125,10 +147,14 @@ function SlotReel({
       }
 
       const now = performance.now()
+      const last = lastTimeRef.current
+      const dt = last === null ? 0.016 : Math.min(0.05, (now - last) / 1000)
+      lastTimeRef.current = now
       
       // Check if we should start the stop animation
-      if (result && stopAnimRef.current === null && now - startTime >= minSpinTime) {
-        const targetIdx = REEL_ITEMS.findIndex(item => item.tier === result)
+      const r = resultRef.current
+      if (r && stopAnimRef.current === null && now - startTime >= minSpinTime) {
+        const targetIdx = REEL_ITEMS.findIndex(item => item.tier === r)
         const currentIdx = Math.floor(offsetRef.current)
         // Calculate target: at least 2 full rotations ahead, landing on result
         let target = currentIdx + n * 3
@@ -144,10 +170,10 @@ function SlotReel({
       // Stop animation with easing
       if (stopAnimRef.current !== null) {
         const { start, from, to } = stopAnimRef.current
-        const duration = 1200 + reelIndex * 150
+        const duration = 1000 + reelIndex * 100
         const elapsed = now - start
         const progress = Math.min(1, elapsed / duration)
-        const eased = easeOutBack(progress)
+        const eased = easeOutCubic(progress)
         
         offsetRef.current = from + (to - from) * eased
         velocityRef.current = progress < 1 ? (to - from) * (1 - progress) * 0.01 : 0
@@ -159,28 +185,25 @@ function SlotReel({
           
           if (!hasStoppedRef.current) {
             hasStoppedRef.current = true
-            gameSounds.reelStop()
-            onStopped?.(reelIndex)
+            onStoppedRef.current?.(reelIndex)
           }
-          setOffset(offsetRef.current)
-          setVelocity(0)
+          applyTransform()
           rafRef.current = null
           return
         }
       } else {
         // Free spinning with slight acceleration feel
-        offsetRef.current += velocityRef.current * 0.016
+        offsetRef.current += velocityRef.current * dt
       }
 
       // Tick sound (less frequent for performance)
       const tickIdx = Math.floor(offsetRef.current)
       if (tickIdx !== lastTickRef.current) {
         lastTickRef.current = tickIdx
-        if (tickIdx % 3 === 0) gameSounds.reelTick()
+        if (reelIndex === 0 && tickIdx % 6 === 0) gameSounds.reelTick()
       }
 
-      setOffset(offsetRef.current)
-      setVelocity(velocityRef.current)
+      applyTransform()
       rafRef.current = requestAnimationFrame(animate)
     }
 
@@ -192,10 +215,7 @@ function SlotReel({
         rafRef.current = null
       }
     }
-  }, [isSpinning, spinKey, reelIndex, result, onStopped])
-
-  const centerY = REEL_VIEWPORT_HEIGHT / 2 - REEL_ITEM_HEIGHT / 2
-  const isHighSpeed = velocity > 10
+  }, [isSpinning, spinKey, reelIndex])
 
   return (
     <div className={cn(
@@ -217,45 +237,40 @@ function SlotReel({
         isWinner ? "border-[#00d4aa]/40 bg-[#00d4aa]/10" : "border-[#00d4aa]/10"
       )} />
 
-      {/* Visible items with scaling effect */}
-      {visibleItems.map(({ item, yOffset, key, distFromCenter }) => {
-        const scale = Math.max(0.85, 1 - distFromCenter * 0.002)
-        const opacity = Math.max(0.4, 1 - distFromCenter * 0.006)
-        const isCenter = distFromCenter < REEL_ITEM_HEIGHT * 0.5
-        
-        return (
-          <div
-            key={key}
-            className="absolute left-0 right-0 h-16 flex flex-col items-center justify-center gap-1"
-            style={{ 
-              transform: `translateY(${centerY + yOffset}px) scale(${scale}) translateZ(0)`,
-              opacity,
-              willChange: isSpinning ? 'transform, opacity' : 'auto',
-            }}
-          >
-            <div className={cn(
-              "select-none transition-transform duration-100",
-              isCenter && !isSpinning && "scale-110"
-            )}>
-              <TierSymbol 
-                tier={item.tier} 
-                size={36} 
-                isCenter={isCenter}
-                isWinner={isCenter && isWinner || undefined}
-              />
-            </div>
-            <span
-              className={cn(
-                "text-xs font-bold font-mono tracking-widest select-none uppercase",
-                getTierColor(item.tier),
-                isCenter && isWinner && "animate-pulse"
-              )}
-            >
-              {item.label}
-            </span>
+      <div
+        ref={trackRef}
+        className="reel-track absolute left-0 right-0 top-0"
+        style={{
+          willChange: isSpinning ? "transform" : "auto",
+          transform: `translate3d(0, ${centerY - REEL_BASE_OFFSET * REEL_ITEM_HEIGHT}px, 0)`,
+        }}
+      >
+        {REEL_TRACK.map((item, idx) => (
+          <ReelItem key={idx} tier={item.tier} label={item.label} />
+        ))}
+      </div>
+
+      {!isSpinning && result && (
+        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-16 flex flex-col items-center justify-center gap-1 pointer-events-none bg-[#0a1628]">
+          <div className="select-none">
+            <TierSymbol
+              tier={result}
+              size={38}
+              isCenter={true}
+              isWinner={isWinner || undefined}
+            />
           </div>
-        )
-      })}
+          <span
+            className={cn(
+              "text-xs font-bold font-mono tracking-widest select-none uppercase",
+              getTierColor(result),
+              isWinner && "animate-pulse"
+            )}
+          >
+            {REEL_ITEMS.find(i => i.tier === result)?.label ?? ""}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -321,14 +336,18 @@ function ReelDisplay({
 
 export function SlotMachine() {
   const [stakeAmount, setStakeAmount] = useState("")
-  const { isSpinning, lastResult, userBalance, spin } = useGameStore()
-  const [localResult, setLocalResult] = useState<typeof lastResult>(null)
+  const isSpinning = useGameStore((s) => s.isSpinning)
+  const userBalance = useGameStore((s) => s.userBalance)
+  const spin = useGameStore((s) => s.spin)
+  const [localResult, setLocalResult] = useState<SpinResult | null>(null)
   const [showResult, setShowResult] = useState(false)
   const [spinCount, setSpinCount] = useState(0)
   const [reelsSpinning, setReelsSpinning] = useState(false)
+  const cabinetRef = useRef<HTMLDivElement | null>(null)
   const reelStopCountRef = useRef(0)
-  const resultRef = useRef<typeof lastResult>(null)
+  const resultRef = useRef<SpinResult | null>(null)
   const resultSoundTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const stopPulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Customizable quick amounts
   const [quickAmounts, setQuickAmounts] = useState<number[]>(DEFAULT_QUICK_AMOUNTS)
@@ -407,6 +426,14 @@ export function SlotMachine() {
     if (!FREE_SPIN_MODE && (Number.isNaN(amount) || amount <= 0)) return
     if (!FREE_SPIN_MODE && amount > userBalance) return
 
+    if (stopPulseTimeoutRef.current) {
+      clearTimeout(stopPulseTimeoutRef.current)
+      stopPulseTimeoutRef.current = null
+    }
+    if (cabinetRef.current) {
+      cabinetRef.current.classList.remove("slot-stop")
+    }
+
     setShowResult(false)
     setLocalResult(null)
     resultRef.current = null
@@ -434,16 +461,29 @@ export function SlotMachine() {
   }
 
   const handleReelStopped = (index: number) => {
-    gameSounds.reelStop(index)
+    // Defer sound to avoid blocking the animation frame
+    setTimeout(() => gameSounds.reelStop(index), 0)
     reelStopCountRef.current += 1
     if (reelStopCountRef.current >= 3) {
       setReelsSpinning(false)
       setShowResult(true)
+
+      const el = cabinetRef.current
+      if (el) {
+        el.classList.remove("slot-stop")
+        void el.offsetWidth // Force reflow to restart animation
+        el.classList.add("slot-stop")
+        stopPulseTimeoutRef.current = setTimeout(() => {
+          el.classList.remove("slot-stop")
+          stopPulseTimeoutRef.current = null
+        }, 650)
+      }
+
       const r = resultRef.current
       if (!r) return
       
-      // Show toast/confetti AFTER reels have stopped
-      gameToast.spin(r.tier, r.multiplier, r.duration)
+      // Defer toast to next frame to avoid stop animation jank
+      setTimeout(() => gameToast.spin(r.tier, r.multiplier, r.duration), 50)
       
       resultSoundTimeoutRef.current = setTimeout(() => {
         if (r.tier === "mythic") {
@@ -500,71 +540,77 @@ export function SlotMachine() {
       </div>
 
       {/* Premium Slot Cabinet */}
-      <div className="slot-cabinet mb-3">
-        {/* LOCK SLOT Title */}
-        <div className="text-center mb-2">
-          <h2 className="slot-title text-lg">LOCK SLOT</h2>
+      <div
+        ref={cabinetRef}
+        className={cn("slot-cabinet mb-3", reelsSpinning && "slot-spinning")}
+      >
+        <div className="slot-shine" />
+        <div className="slot-cabinet-inner">
+          {/* LOCK SLOT Title */}
+          <div className="text-center mb-2">
+            <h2 className="slot-title text-lg">LOCK SLOT</h2>
+          </div>
+
+          {/* Reel Container with metallic frame */}
+          <div className="relative">
+            {/* Decorative frame corners */}
+            <div className="absolute -inset-2 border border-[#00d4aa]/20 rounded-lg pointer-events-none">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00d4aa]/60 rounded-tl" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00d4aa]/60 rounded-tr" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00d4aa]/60 rounded-bl" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00d4aa]/60 rounded-br" />
+            </div>
+
+            {/* Slot Reels */}
+            <div className="grid grid-cols-3 gap-2 p-1.5">
+              <div className="reel-window">
+                <SlotReel 
+                  isSpinning={reelsSpinning} 
+                  spinKey={spinCount}
+                  result={localResult?.tier ?? null}
+                  reelIndex={0}
+                  onStopped={handleReelStopped}
+                />
+              </div>
+              <div className="reel-window">
+                <SlotReel 
+                  isSpinning={reelsSpinning} 
+                  spinKey={spinCount}
+                  result={localResult?.tier ?? null}
+                  reelIndex={1}
+                  onStopped={handleReelStopped}
+                />
+              </div>
+              <div className="reel-window">
+                <SlotReel 
+                  isSpinning={reelsSpinning} 
+                  spinKey={spinCount}
+                  result={localResult?.tier ?? null}
+                  reelIndex={2}
+                  onStopped={handleReelStopped}
+                />
+              </div>
+            </div>
+
+            {/* Win line indicator */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-transparent via-[#00d4aa]/50 to-transparent pointer-events-none" />
+          </div>
+
+          {/* Lock Duration Badge - shown after spin */}
+          {showResult && localResult && (
+            <div className="flex justify-center mt-3">
+              <div className="lock-badge">
+                <span className="duration">{localResult.duration}h</span>
+                <span className="label">LOCK</span>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Reel Container with metallic frame */}
-        <div className="relative">
-          {/* Decorative frame corners */}
-          <div className="absolute -inset-2 border border-[#00d4aa]/20 rounded-lg pointer-events-none">
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00d4aa]/60 rounded-tl" />
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00d4aa]/60 rounded-tr" />
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00d4aa]/60 rounded-bl" />
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00d4aa]/60 rounded-br" />
-          </div>
-
-          {/* Slot Reels */}
-          <div className="grid grid-cols-3 gap-2 p-1.5">
-            <div className="reel-window">
-              <SlotReel 
-                isSpinning={reelsSpinning} 
-                spinKey={spinCount}
-                result={localResult?.tier ?? null}
-                reelIndex={0}
-                onStopped={handleReelStopped}
-              />
-            </div>
-            <div className="reel-window">
-              <SlotReel 
-                isSpinning={reelsSpinning} 
-                spinKey={spinCount}
-                result={localResult?.tier ?? null}
-                reelIndex={1}
-                onStopped={handleReelStopped}
-              />
-            </div>
-            <div className="reel-window">
-              <SlotReel 
-                isSpinning={reelsSpinning} 
-                spinKey={spinCount}
-                result={localResult?.tier ?? null}
-                reelIndex={2}
-                onStopped={handleReelStopped}
-              />
-            </div>
-          </div>
-
-          {/* Win line indicator */}
-          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-transparent via-[#00d4aa]/50 to-transparent pointer-events-none" />
-        </div>
-
-        {/* Lock Duration Badge - shown after spin */}
-        {showResult && localResult && (
-          <div className="flex justify-center mt-3">
-            <div className="lock-badge">
-              <span className="duration">{localResult.duration}h</span>
-              <span className="label">LOCK</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Result Display - Cyber themed */}
       {showResult && localResult ? (
-        <div className="cyber-panel cyber-corners p-3 mb-3">
+        <div className="cyber-panel p-3 mb-3">
           {/* Tier result header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
@@ -604,7 +650,7 @@ export function SlotMachine() {
           )}
         </div>
       ) : (
-        <div className="cyber-panel cyber-corners p-3 mb-3">
+        <div className="cyber-panel p-3 mb-3">
           <div className="text-center">
             <div className="text-[#6b8a9a] text-xs mb-1">Spin to determine your lock tier</div>
             <div className="flex justify-center gap-4 text-[10px] text-[#4a5568]">

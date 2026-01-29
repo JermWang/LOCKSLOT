@@ -18,6 +18,7 @@ export interface Lock {
   status: "active" | "unlocked" | "claimed" | "exited"
   bonusEligible?: boolean
   bonusAmount?: number
+  txSignature?: string
 }
 
 export interface ActivityItem {

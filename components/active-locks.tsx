@@ -4,7 +4,9 @@ import { useEffect, useState } from "react"
 import { useGameStore } from "@/lib/game-store"
 import { getTierColor, getTierBgColor, TIER_CONFIG } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
-import { Clock, Lock, Zap, Trophy, Timer } from "lucide-react"
+import { Clock, Lock, Zap, Trophy, Timer, ExternalLink } from "lucide-react"
+
+const SOLSCAN_BASE = "https://solscan.io/tx"
 
 function CountdownTimer({ endTime }: { endTime: Date }) {
   const [timeLeft, setTimeLeft] = useState("")
@@ -195,6 +197,19 @@ export function ActiveLocks() {
                 </div>
                 <CountdownTimer endTime={lock.endTime} />
               </div>
+
+              {/* Solscan link */}
+              {lock.txSignature && (
+                <a
+                  href={`${SOLSCAN_BASE}/${lock.txSignature}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  <span className="font-mono">View on Solscan</span>
+                </a>
+              )}
 
               {isWinner && (
                 <div className="mt-3 rounded-lg bg-primary/20 border border-primary/30 px-3 py-1.5 text-center">

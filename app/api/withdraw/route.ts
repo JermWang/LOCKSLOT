@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const maintenance = maintenanceGate()
     if (maintenance) return maintenance
 
-    const limited = rateLimitGate(request, { id: 'withdraw', windowMs: 30_000, max: 5 })
+    const limited = await rateLimitGate(request, { id: 'withdraw', windowMs: 30_000, max: 5 })
     if (limited) return limited
 
     const { walletAddress, amount, auth } = await request.json()
@@ -31,8 +31,13 @@ export async function POST(request: NextRequest) {
     }
     
     const withdrawAmount = Number(amount)
-    if (!Number.isFinite(withdrawAmount) || withdrawAmount <= 0) {
+    if (!Number.isFinite(withdrawAmount) || withdrawAmount <= 0 || !Number.isSafeInteger(withdrawAmount)) {
       return NextResponse.json({ error: 'Invalid withdrawal amount' }, { status: 400 })
+    }
+
+    const maxWithdraw = Number(process.env.WITHDRAW_MAX_AMOUNT || 0)
+    if (Number.isFinite(maxWithdraw) && maxWithdraw > 0 && withdrawAmount > maxWithdraw) {
+      return NextResponse.json({ error: 'Withdrawal amount exceeds limit' }, { status: 400 })
     }
     
     const supabase = createServerClient()
@@ -53,9 +58,56 @@ export async function POST(request: NextRequest) {
 
     const reserved = reservedRows[0] as any
 
+    const manualThreshold = Number(process.env.WITHDRAW_MANUAL_THRESHOLD || 0)
+    if (Number.isFinite(manualThreshold) && manualThreshold > 0 && withdrawAmount >= manualThreshold) {
+      await supabase
+        .from('transactions')
+        .update({ metadata: { status: 'manual_review' } })
+        .eq('id', reserved.tx_id)
+
+      return NextResponse.json(
+        {
+          success: true,
+          amount: withdrawAmount,
+          newBalance: reserved.balance_after,
+          status: 'manual_review',
+          txId: reserved.tx_id,
+        },
+        { status: 202 }
+      )
+    }
+
     const result = await processWithdrawal(walletAddress, withdrawAmount)
 
     if (!result.success) {
+      if (result.txSignature) {
+        const { error: markError } = await supabase.rpc('mark_withdrawal_submitted', {
+          p_tx_id: reserved.tx_id,
+          p_tx_signature: result.txSignature,
+        })
+
+        if (markError) {
+          return NextResponse.json(
+            {
+              error: 'Withdrawal submitted on-chain but failed to persist submission in database',
+              txSignature: result.txSignature,
+            },
+            { status: 500 }
+          )
+        }
+
+        return NextResponse.json(
+          {
+            success: true,
+            amount: withdrawAmount,
+            newBalance: reserved.balance_after,
+            txSignature: result.txSignature,
+            status: 'submitted',
+          },
+          { status: 202 }
+        )
+      }
+
       const { data: refundedBalance } = await supabase.rpc('fail_withdrawal', {
         p_tx_id: reserved.tx_id,
         p_reason: result.error || 'Withdrawal failed',
@@ -65,6 +117,21 @@ export async function POST(request: NextRequest) {
         {
           error: result.error || 'Withdrawal failed',
           newBalance: refundedBalance ?? null,
+        },
+        { status: 500 }
+      )
+    }
+
+    const { error: markError } = await supabase.rpc('mark_withdrawal_submitted', {
+      p_tx_id: reserved.tx_id,
+      p_tx_signature: result.txSignature,
+    })
+
+    if (markError) {
+      return NextResponse.json(
+        {
+          error: 'Withdrawal submitted on-chain but failed to persist submission in database',
+          txSignature: result.txSignature,
         },
         { status: 500 }
       )

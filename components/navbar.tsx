@@ -2,8 +2,7 @@
 
 import { useWallet } from "@/lib/wallet-context"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, Bell, Wallet, ChevronDown, Copy, LogOut, RefreshCw } from "lucide-react"
+import { Bell, Wallet, ChevronDown, Copy, LogOut, RefreshCw } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +17,7 @@ import Image from "next/image"
 
 const TOKEN_DECIMALS = 9
 const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_MINT || ""
 
 function formatBalance(rawBalance: number): string {
   const balance = rawBalance / Math.pow(10, TOKEN_DECIMALS)
@@ -30,6 +30,7 @@ function formatBalance(rawBalance: number): string {
 export function Navbar() {
   const { publicKey, disconnect, connected, connect, connecting, walletName, getTokenBalance } = useWallet()
   const [copied, setCopied] = useState(false)
+  const [contractCopied, setContractCopied] = useState(false)
   const [balance, setBalance] = useState<number | null>(null)
 
   // Fetch token balance
@@ -69,6 +70,22 @@ export function Navbar() {
     }
   }
 
+  const truncatedContract = CONTRACT_ADDRESS
+    ? `${CONTRACT_ADDRESS.slice(0, 4)}...${CONTRACT_ADDRESS.slice(-4)}`
+    : null
+
+  const copyContract = async () => {
+    if (!CONTRACT_ADDRESS) return
+    try {
+      await navigator.clipboard.writeText(CONTRACT_ADDRESS)
+      setContractCopied(true)
+      gameSounds.success()
+      setTimeout(() => setContractCopied(false), 2000)
+    } catch {
+      // ignore
+    }
+  }
+
   const handleConnect = () => {
     resumeAudio()
     gameSounds.click()
@@ -92,16 +109,28 @@ export function Navbar() {
           />
         </div>
 
-        {/* Search Bar */}
+        {/* Contract Address */}
         <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search wallets, epochs..."
-              className="w-full pl-10 bg-[#081420] border-[#1a3a4a]/50 text-sm text-[#e8f4f8] placeholder:text-[#6b8a9a]"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={copyContract}
+            disabled={!CONTRACT_ADDRESS}
+            className="group relative w-full h-10 rounded-lg border border-[#1a3a4a]/50 bg-[#081420]/70 backdrop-blur-md px-4 text-sm text-[#e8f4f8] transition-all overflow-hidden flex items-center justify-start disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#00d4aa]/40"
+            title={CONTRACT_ADDRESS ? CONTRACT_ADDRESS : "Set NEXT_PUBLIC_TOKEN_MINT"}
+          >
+            <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <span className="absolute inset-y-0 -left-full w-1/2 bg-gradient-to-r from-transparent via-[#00d4aa]/20 to-transparent skew-x-12 transition-transform duration-700 group-hover:translate-x-[240%]" />
+            </span>
+
+            <Copy className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b8a9a] group-hover:text-[#00d4aa] transition-colors" />
+            <span className="pl-7 font-mono">
+              {contractCopied
+                ? "Copied Contract!"
+                : truncatedContract
+                  ? `Contract: ${truncatedContract}`
+                  : "Contract not set"}
+            </span>
+          </button>
         </div>
 
         {/* Right Section */}

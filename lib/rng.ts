@@ -35,7 +35,7 @@ export function hashToRoll(hash: string): number {
   // Use first 8 characters of hash (32 bits)
   const hex = hash.substring(0, 8)
   const int = parseInt(hex, 16)
-  return int / 0xFFFFFFFF
+  return int / 0x100000000
 }
 
 // Determine tier from roll value
@@ -56,7 +56,7 @@ export function rollToTier(roll: number): Tier {
 export function hashToRange(hash: string, offset: number, min: number, max: number): number {
   const hex = hash.substring(offset, offset + 8)
   const int = parseInt(hex, 16)
-  const normalized = int / 0xFFFFFFFF
+  const normalized = int / 0x100000000
   return min + normalized * (max - min)
 }
 

@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 // Get username for a wallet
 export async function GET(request: NextRequest) {
   try {
-    const limited = rateLimitGate(request, { id: 'username_get', windowMs: 10_000, max: 60 })
+    const limited = await rateLimitGate(request, { id: 'username_get', windowMs: 10_000, max: 60 })
     if (limited) return limited
 
     const { searchParams } = new URL(request.url)
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 // Set or update username
 export async function POST(request: NextRequest) {
   try {
-    const limited = rateLimitGate(request, { id: 'username_post', windowMs: 10_000, max: 10 })
+    const limited = await rateLimitGate(request, { id: 'username_post', windowMs: 10_000, max: 10 })
     if (limited) return limited
 
     const { walletAddress, username, auth } = await request.json()

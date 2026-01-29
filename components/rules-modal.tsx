@@ -58,7 +58,7 @@ export function RulesModal({ open, onOpenChange }: RulesModalProps) {
                 </li>
                 <li className="flex gap-3">
                   <span className="font-mono text-primary">2.</span>
-                  <span>A 5% fee is taken and added to the Reward Pool</span>
+                  <span>A 5% fee is taken and added to the Reward Pool <span className="text-primary">(not a house fee — 100% goes to winners!)</span></span>
                 </li>
                 <li className="flex gap-3">
                   <span className="font-mono text-primary">3.</span>
@@ -131,9 +131,10 @@ export function RulesModal({ open, onOpenChange }: RulesModalProps) {
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 The Reward Pool is funded exclusively by player fees (5% of each stake). 
+                <span className="text-primary font-medium">This is NOT a house fee — 100% of the pool goes to players.</span>{" "}
                 At the end of each game period, the pool is distributed proportionally 
-                among Legendary and Mythic winners based on their ticket score (stake x multiplier).
-                If no winners occur, the pool rolls over.
+                among Legendary and Mythic winners based on their ticket score (stake × multiplier).
+                If no winners occur, the pool rolls over to the next period.
               </p>
             </section>
 

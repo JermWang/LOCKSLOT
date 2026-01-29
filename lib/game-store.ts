@@ -7,7 +7,15 @@ import { gameToast } from "@/lib/toast"
 const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
 // DEV MODE: Enable free spins (no balance deduction)
-const FREE_SPIN_MODE = true
+const FREE_SPIN_MODE = process.env.NEXT_PUBLIC_FREE_SPIN_MODE === 'true'
+
+let cachedGetUserAuth:
+  | {
+      walletAddress: string
+      createdAtMs: number
+      auth: Awaited<ReturnType<typeof signAuth>>
+    }
+  | null = null
 
 function generateClientSeed(): string {
   if (typeof window === "undefined") return Math.random().toString(16).slice(2)
@@ -116,7 +124,28 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     set({ isLoading: true, error: null })
     try {
-      const res = await fetch(`/api/user?wallet=${address}`)
+      const now = Date.now()
+      const cachedOk =
+        cachedGetUserAuth?.walletAddress === address &&
+        now - cachedGetUserAuth.createdAtMs < 60_000
+
+      const auth = cachedOk
+        ? cachedGetUserAuth!.auth
+        : await signAuth({
+            action: "get_user",
+            walletAddress: address,
+            payload: {},
+          })
+
+      if (!cachedOk) {
+        cachedGetUserAuth = { walletAddress: address, createdAtMs: now, auth }
+      }
+
+      const res = await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: address, auth }),
+      })
       const data = await res.json()
       
       if (!res.ok) throw new Error(data.error)
@@ -173,7 +202,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         duration: result.duration,
         multiplier: result.multiplier,
         startTime: new Date(),
-        endTime: new Date(Date.now() + result.duration * 24 * 60 * 60 * 1000),
+        endTime: new Date(Date.now() + result.duration * 60 * 60 * 1000),
         status: "active",
       }
 
@@ -279,7 +308,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     
     set({ userBalance: data.newBalance })
-    gameToast.deposit(amount)
+    gameToast.deposit(amount, txSignature)
   },
 
   withdraw: async (amount: number) => {
@@ -312,7 +341,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     
     set({ userBalance: data.newBalance })
-    gameToast.withdraw(amount)
+    gameToast.withdraw(amount, data.txSignature)
     return { txSignature: data.txSignature }
   },
 

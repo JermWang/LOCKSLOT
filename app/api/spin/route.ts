@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const maintenance = maintenanceGate()
     if (maintenance) return maintenance
 
-    const limited = rateLimitGate(request, { id: 'spin', windowMs: 10_000, max: 10 })
+    const limited = await rateLimitGate(request, { id: 'spin', windowMs: 10_000, max: 10 })
     if (limited) return limited
 
     const { walletAddress, stakeAmount, clientSeed: providedClientSeed, auth } = await request.json()
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
     
     const stake = Number(stakeAmount)
-    if (!Number.isFinite(stake) || stake <= 0) {
+    if (!Number.isFinite(stake) || stake <= 0 || !Number.isSafeInteger(stake)) {
       return NextResponse.json({ error: 'Invalid stake amount' }, { status: 400 })
     }
 
@@ -52,7 +52,33 @@ export async function POST(request: NextRequest) {
     
     const supabase = createServerClient()
 
-    const serverSeed = process.env.SERVER_SEED
+    const { data: epoch, error: epochError } = await supabase
+      .from('epochs')
+      .select('id, server_seed_hash')
+      .eq('status', 'active')
+      .lte('start_time', new Date().toISOString())
+      .gte('end_time', new Date().toISOString())
+      .order('start_time', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (epochError) {
+      return NextResponse.json({ error: 'Failed to load active epoch' }, { status: 500 })
+    }
+    if (!epoch?.id) {
+      return NextResponse.json({ error: 'No active game epoch' }, { status: 400 })
+    }
+
+    const { data: secretRow, error: secretError } = await supabase
+      .from('epoch_secrets')
+      .select('server_seed')
+      .eq('epoch_id', epoch.id)
+      .maybeSingle()
+
+    if (secretError) {
+      return NextResponse.json({ error: 'Failed to load epoch secret' }, { status: 500 })
+    }
+    const serverSeed = (secretRow as any)?.server_seed as string | undefined
     if (!serverSeed) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }

@@ -2,6 +2,8 @@ export type AuthAction =
   | "spin"
   | "withdraw"
   | "claim"
+  | "get_user"
+  | "get_claimable"
   | "set_username"
 
 export interface AuthPayload {

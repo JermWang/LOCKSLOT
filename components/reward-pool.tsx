@@ -45,7 +45,7 @@ export function RewardPool() {
               </div>
               <div>
                 <div className="text-xs font-semibold uppercase tracking-widest text-primary">Reward Pool</div>
-                <div className="text-[10px] text-muted-foreground font-mono">P = Σ(fees) + Σ(penalties)</div>
+                <div className="text-[10px] text-muted-foreground">100% goes to Legendary & Mythic winners</div>
               </div>
             </div>
             <div className="flex items-center gap-1 text-xs text-primary">

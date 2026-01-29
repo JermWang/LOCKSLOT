@@ -65,6 +65,10 @@ export async function verifyDeposit(
   try {
     const escrowWallet = getEscrowKeypair()
     const tokenMint = getTokenMint()
+
+    if (!Number.isSafeInteger(minAmount) || minAmount < 0) {
+      return { valid: false, amount: 0, error: 'Invalid minimum amount' }
+    }
     
     // Fetch transaction
     const tx = await connection.getParsedTransaction(txSignature, {
@@ -83,6 +87,7 @@ export async function verifyDeposit(
     const escrowAta = await getAssociatedTokenAddress(tokenMint, escrowWallet.publicKey)
     
     let depositAmount = 0
+    let depositAmountBig = BigInt(0)
     
     // Check post token balances
     if (tx.meta.postTokenBalances && tx.meta.preTokenBalances) {
@@ -91,18 +96,38 @@ export async function verifyDeposit(
         const pre = tx.meta.preTokenBalances.find(p => p.accountIndex === post.accountIndex)
         
         if (post.mint === tokenMint.toBase58()) {
-          const postAmount = Number(post.uiTokenAmount.amount)
-          const preAmount = pre ? Number(pre.uiTokenAmount.amount) : 0
+          let postAmount = BigInt(0)
+          try {
+            postAmount = BigInt(post.uiTokenAmount.amount)
+          } catch {
+            return { valid: false, amount: 0, error: 'Invalid token amount' }
+          }
+
+          let preAmount = BigInt(0)
+          if (pre) {
+            try {
+              preAmount = BigInt(pre.uiTokenAmount.amount)
+            } catch {
+              return { valid: false, amount: 0, error: 'Invalid token amount' }
+            }
+          }
+
           const diff = postAmount - preAmount
           
           // Check if this is the escrow receiving
           const accountKey = tx.transaction.message.accountKeys[post.accountIndex]
-          if (accountKey && accountKey.pubkey.toBase58() === escrowAta.toBase58() && diff > 0) {
-            depositAmount = diff
+          if (accountKey && accountKey.pubkey.toBase58() === escrowAta.toBase58() && diff > BigInt(0)) {
+            depositAmountBig = diff
           }
         }
       }
     }
+
+    if (depositAmountBig > BigInt(Number.MAX_SAFE_INTEGER)) {
+      return { valid: false, amount: 0, error: 'Deposit amount too large' }
+    }
+
+    depositAmount = Number(depositAmountBig)
     
     if (depositAmount < minAmount) {
       return { valid: false, amount: depositAmount, error: 'Deposit amount too low' }
@@ -209,9 +234,13 @@ export async function processWithdrawal(
     tx.sign(escrowKeypair)
     
     const txSignature = await connection.sendRawTransaction(tx.serialize())
-    await connection.confirmTransaction(txSignature, 'finalized')
-    
-    return { success: true, txSignature, amount }
+    try {
+      await connection.confirmTransaction(txSignature, 'finalized')
+      return { success: true, txSignature, amount }
+    } catch (error) {
+      console.error('Withdrawal confirm error:', error)
+      return { success: false, txSignature, amount, error: 'Withdrawal submitted but confirmation pending' }
+    }
   } catch (error) {
     console.error('Withdrawal error:', error)
     return { success: false, error: 'Withdrawal failed' }

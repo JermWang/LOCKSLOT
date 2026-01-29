@@ -12,7 +12,7 @@ create extension if not exists "pgcrypto";
 -- ==========================================
 -- USERS TABLE
 -- ==========================================
-create table public.users (
+create table if not exists public.users (
   id uuid primary key default uuid_generate_v4(),
   wallet_address text unique not null,
   username text unique, -- Optional display name
@@ -26,15 +26,15 @@ create table public.users (
 );
 
 -- Index for username lookups
-create index idx_users_username on public.users(username) where username is not null;
+create index if not exists idx_users_username on public.users(username) where username is not null;
 
 -- Index for wallet lookups
-create index idx_users_wallet on public.users(wallet_address);
+create index if not exists idx_users_wallet on public.users(wallet_address);
 
 -- ==========================================
 -- GAME EPOCHS TABLE
 -- ==========================================
-create table public.epochs (
+create table if not exists public.epochs (
   id uuid primary key default uuid_generate_v4(),
   epoch_number int unique not null,
   server_seed_hash text not null, -- Published before epoch starts
@@ -48,13 +48,23 @@ create table public.epochs (
   created_at timestamptz default now()
 );
 
+create unique index if not exists idx_epochs_single_active
+  on public.epochs(status)
+  where status = 'active';
+
+create table if not exists public.epoch_secrets (
+  epoch_id uuid primary key references public.epochs(id) on delete cascade,
+  server_seed text not null,
+  created_at timestamptz default now()
+);
+
 -- Index for active epoch lookup
-create index idx_epochs_status on public.epochs(status);
+create index if not exists idx_epochs_status on public.epochs(status);
 
 -- ==========================================
 -- SPINS TABLE
 -- ==========================================
-create table public.spins (
+create table if not exists public.spins (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.users(id) not null,
   epoch_id uuid references public.epochs(id) not null,
@@ -88,19 +98,19 @@ create table public.spins (
 );
 
 -- Indexes for common queries
-create index idx_spins_user on public.spins(user_id);
-create index idx_spins_epoch on public.spins(epoch_id);
-create index idx_spins_status on public.spins(status);
-create index idx_spins_unlocks_at on public.spins(unlocks_at);
-create index idx_spins_bonus_eligible on public.spins(bonus_eligible) where bonus_eligible = true;
+create index if not exists idx_spins_user on public.spins(user_id);
+create index if not exists idx_spins_epoch on public.spins(epoch_id);
+create index if not exists idx_spins_status on public.spins(status);
+create index if not exists idx_spins_unlocks_at on public.spins(unlocks_at);
+create index if not exists idx_spins_bonus_eligible on public.spins(bonus_eligible) where bonus_eligible = true;
 
 -- Ensure per-user epoch nonces are unique
-create unique index idx_spins_user_epoch_nonce on public.spins(user_id, epoch_id, nonce);
+create unique index if not exists idx_spins_user_epoch_nonce on public.spins(user_id, epoch_id, nonce);
 
 -- ==========================================
 -- TRANSACTIONS TABLE (Audit Log)
 -- ==========================================
-create table public.transactions (
+create table if not exists public.transactions (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.users(id) not null,
   type text not null check (type in ('deposit', 'withdraw', 'spin_fee', 'bonus_payout', 'early_exit_penalty')),
@@ -120,12 +130,16 @@ create table public.transactions (
 );
 
 -- Index for user transaction history
-create index idx_transactions_user on public.transactions(user_id, created_at desc);
+create index if not exists idx_transactions_user on public.transactions(user_id, created_at desc);
+
+create unique index if not exists idx_transactions_deposit_tx_signature
+  on public.transactions(tx_signature)
+  where type = 'deposit';
 
 -- ==========================================
 -- REWARD POOL LEDGER
 -- ==========================================
-create table public.reward_pool_ledger (
+create table if not exists public.reward_pool_ledger (
   id uuid primary key default uuid_generate_v4(),
   epoch_id uuid references public.epochs(id) not null,
   type text not null check (type in ('fee_in', 'penalty_in', 'bonus_out', 'rollover_in', 'rollover_out')),
@@ -134,12 +148,12 @@ create table public.reward_pool_ledger (
   created_at timestamptz default now()
 );
 
-create index idx_reward_ledger_epoch on public.reward_pool_ledger(epoch_id);
+create index if not exists idx_reward_ledger_epoch on public.reward_pool_ledger(epoch_id);
 
 -- ==========================================
 -- ESCROW DEPOSITS (Pending blockchain confirmations)
 -- ==========================================
-create table public.escrow_deposits (
+create table if not exists public.escrow_deposits (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.users(id),
   wallet_address text not null,
@@ -151,8 +165,8 @@ create table public.escrow_deposits (
   confirmed_at timestamptz
 );
 
-create index idx_escrow_deposits_status on public.escrow_deposits(status);
-create index idx_escrow_deposits_tx on public.escrow_deposits(tx_signature);
+create index if not exists idx_escrow_deposits_status on public.escrow_deposits(status);
+create index if not exists idx_escrow_deposits_tx on public.escrow_deposits(tx_signature);
 
 -- ==========================================
 -- FUNCTIONS
@@ -200,6 +214,122 @@ returns public.epochs as $$
   limit 1;
 $$ language sql;
 
+create or replace function confirm_deposit(
+  p_wallet_address text,
+  p_tx_signature text,
+  p_amount bigint,
+  p_confirmations int
+) returns table(
+  deposit_id uuid,
+  new_balance bigint
+) as $$
+declare
+  v_user public.users;
+  v_deposit public.escrow_deposits;
+  v_before bigint;
+  v_after bigint;
+begin
+  if p_wallet_address is null or length(p_wallet_address) = 0 then
+    raise exception 'Missing wallet address';
+  end if;
+
+  if p_tx_signature is null or length(p_tx_signature) = 0 then
+    raise exception 'Missing tx signature';
+  end if;
+
+  if p_amount <= 0 then
+    raise exception 'Invalid deposit amount';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended('deposit:' || p_tx_signature, 0));
+
+  select * into v_user
+  from public.users
+  where wallet_address = p_wallet_address
+  for update;
+
+  if v_user.id is null then
+    insert into public.users (wallet_address, balance)
+    values (p_wallet_address, 0)
+    returning * into v_user;
+  end if;
+
+  select * into v_deposit
+  from public.escrow_deposits
+  where tx_signature = p_tx_signature
+  for update;
+
+  if v_deposit.id is null then
+    insert into public.escrow_deposits (
+      user_id,
+      wallet_address,
+      amount,
+      tx_signature,
+      status,
+      confirmations,
+      confirmed_at
+    ) values (
+      v_user.id,
+      p_wallet_address,
+      p_amount,
+      p_tx_signature,
+      'confirmed',
+      coalesce(p_confirmations, 0),
+      now()
+    ) returning * into v_deposit;
+  else
+    update public.escrow_deposits
+    set user_id = v_user.id,
+        wallet_address = p_wallet_address,
+        amount = p_amount,
+        status = 'confirmed',
+        confirmations = greatest(coalesce(confirmations, 0), coalesce(p_confirmations, 0)),
+        confirmed_at = coalesce(confirmed_at, now())
+    where id = v_deposit.id;
+  end if;
+
+  if exists (
+    select 1
+    from public.transactions
+    where type = 'deposit'
+    and tx_signature = p_tx_signature
+  ) then
+    deposit_id := v_deposit.id;
+    new_balance := v_user.balance;
+    return next;
+  end if;
+
+  v_before := v_user.balance;
+  v_after := v_before + p_amount;
+
+  update public.users
+  set balance = v_after,
+      total_deposited = coalesce(total_deposited, 0) + p_amount,
+      updated_at = now()
+  where id = v_user.id;
+
+  insert into public.transactions (
+    user_id,
+    type,
+    amount,
+    balance_before,
+    balance_after,
+    tx_signature
+  ) values (
+    v_user.id,
+    'deposit',
+    p_amount,
+    v_before,
+    v_after,
+    p_tx_signature
+  );
+
+  deposit_id := v_deposit.id;
+  new_balance := v_after;
+  return next;
+end;
+$$ language plpgsql;
+
 -- Function to calculate bonus distribution
 create or replace function calculate_bonus_distribution(p_epoch_id uuid)
 returns table(spin_id uuid, user_id uuid, bonus_amount bigint) as $$
@@ -236,9 +366,14 @@ end;
 $$ language plpgsql;
 
 -- Finalize bonuses for all unlocked winners in an epoch
+drop function if exists public.finalize_unlocked_winner_bonuses(uuid);
 create or replace function finalize_unlocked_winner_bonuses(p_epoch_id uuid)
 returns void as $$
+declare
+  v_distributed bigint;
 begin
+  perform pg_advisory_xact_lock(hashtextextended('bonus:' || p_epoch_id::text, 0));
+
   -- Mark spins unlocked once their unlock time has passed
   update public.spins
   set status = 'unlocked'
@@ -247,10 +382,33 @@ begin
   and unlocks_at <= now();
 
   -- Assign bonuses (idempotent)
-  update public.spins s
-  set bonus_amount = d.bonus_amount
-  from public.calculate_bonus_distribution(p_epoch_id) d
-  where s.id = d.spin_id;
+  with dist as (
+    select *
+    from public.calculate_bonus_distribution(p_epoch_id)
+  ), updated as (
+    update public.spins s
+    set bonus_amount = dist.bonus_amount
+    from dist
+    where s.id = dist.spin_id
+    and s.bonus_amount = 0
+    returning dist.bonus_amount as bonus_amount
+  )
+  select coalesce(sum(bonus_amount), 0) into v_distributed
+  from updated;
+
+  if v_distributed > 0 then
+    update public.epochs
+    set reward_pool = reward_pool - v_distributed
+    where id = p_epoch_id
+    and reward_pool >= v_distributed;
+
+    if not found then
+      raise exception 'Insufficient reward pool';
+    end if;
+
+    insert into public.reward_pool_ledger (epoch_id, type, amount, description)
+    values (p_epoch_id, 'bonus_out', v_distributed, 'Winner bonus distribution');
+  end if;
 end;
 $$ language plpgsql;
 
@@ -351,7 +509,7 @@ $$ language plpgsql;
    v_hash := encode(digest(p_server_seed || ':' || p_client_seed || ':' || v_nonce::text, 'sha256'), 'hex');
 
    v_int := to_number(substring(v_hash from 1 for 8), 'FMXXXXXXXX');
-   v_roll := v_int / 4294967295::numeric;
+   v_roll := v_int / 4294967296::numeric;
 
    -- Durations in HOURS (max 48h)
    if v_roll < 0.45 then
@@ -372,11 +530,11 @@ $$ language plpgsql;
    end if;
 
    v_int := to_number(substring(v_hash from 9 for 8), 'FMXXXXXXXX');
-   v_norm := v_int / 4294967295::numeric;
+   v_norm := v_int / 4294967296::numeric;
    v_duration := round(v_min_d + v_norm * (v_max_d - v_min_d))::int;
 
    v_int := to_number(substring(v_hash from 17 for 8), 'FMXXXXXXXX');
-   v_norm := v_int / 4294967295::numeric;
+   v_norm := v_int / 4294967296::numeric;
    v_multiplier := round((v_min_m + v_norm * (v_max_m - v_min_m))::numeric, 1);
 
    v_ticket_score := floor(p_stake_amount::numeric * v_multiplier)::bigint;
@@ -658,6 +816,50 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function mark_withdrawal_submitted(
+  p_tx_id uuid,
+  p_tx_signature text
+) returns void as $$
+declare
+  v_tx public.transactions;
+  v_status text;
+begin
+  select * into v_tx
+  from public.transactions
+  where id = p_tx_id
+  for update;
+
+  if v_tx.id is null then
+    raise exception 'Withdrawal tx not found';
+  end if;
+
+  if v_tx.type <> 'withdraw' then
+    raise exception 'Not a withdraw transaction';
+  end if;
+
+  v_status := coalesce(v_tx.metadata->>'status', '');
+  if v_status = 'confirmed' then
+    if v_tx.tx_signature is not null and v_tx.tx_signature <> p_tx_signature then
+      raise exception 'Withdrawal already confirmed with different signature';
+    end if;
+    return;
+  end if;
+
+  if v_status = 'failed' then
+    raise exception 'Withdrawal already failed';
+  end if;
+
+  if v_status <> 'pending' then
+    raise exception 'Withdrawal not pending';
+  end if;
+
+  update public.transactions
+  set tx_signature = p_tx_signature,
+      metadata = coalesce(metadata, '{}'::jsonb) || jsonb_build_object('status', 'submitted')
+  where id = p_tx_id;
+end;
+$$ language plpgsql;
+
 -- Finalize a pending withdrawal after on-chain confirmation
 create or replace function finalize_withdrawal(
   p_tx_id uuid,
@@ -682,7 +884,20 @@ begin
   end if;
 
   v_status := coalesce(v_tx.metadata->>'status', '');
-  if v_status <> 'pending' then
+  if v_status = 'confirmed' then
+    if v_tx.tx_signature is not null and v_tx.tx_signature <> p_tx_signature then
+      raise exception 'Withdrawal already confirmed with different signature';
+    end if;
+    if v_tx.tx_signature is null then
+      update public.transactions
+      set tx_signature = p_tx_signature,
+          metadata = coalesce(metadata, '{}'::jsonb) || jsonb_build_object('status', 'confirmed')
+      where id = p_tx_id;
+    end if;
+    return;
+  end if;
+
+  if v_status <> 'pending' and v_status <> 'submitted' then
     raise exception 'Withdrawal not pending';
   end if;
 
@@ -725,7 +940,24 @@ begin
   end if;
 
   v_status := coalesce(v_tx.metadata->>'status', '');
-  if v_status <> 'pending' then
+  if v_status = 'failed' then
+    select * into v_user
+    from public.users
+    where id = v_tx.user_id
+    for update;
+
+    if v_user.id is null then
+      raise exception 'User not found';
+    end if;
+
+    return v_user.balance;
+  end if;
+
+  if v_status = 'confirmed' then
+    raise exception 'Withdrawal already confirmed';
+  end if;
+
+  if v_status <> 'pending' and v_status <> 'submitted' then
     raise exception 'Withdrawal not pending';
   end if;
 
@@ -762,12 +994,18 @@ $$ language plpgsql;
 alter table public.users enable row level security;
 alter table public.spins enable row level security;
 alter table public.transactions enable row level security;
+alter table public.epochs enable row level security;
+alter table public.epoch_secrets enable row level security;
+alter table public.reward_pool_ledger enable row level security;
+alter table public.escrow_deposits enable row level security;
 
 -- Users can only see their own data
+drop policy if exists "Users can view own profile" on public.users;
 create policy "Users can view own profile"
   on public.users for select
   using (wallet_address = current_setting('app.wallet_address', true));
 
+drop policy if exists "Users can view own spins" on public.spins;
 create policy "Users can view own spins"
   on public.spins for select
   using (user_id in (
@@ -775,6 +1013,7 @@ create policy "Users can view own spins"
     where wallet_address = current_setting('app.wallet_address', true)
   ));
 
+drop policy if exists "Users can view own transactions" on public.transactions;
 create policy "Users can view own transactions"
   on public.transactions for select
   using (user_id in (
@@ -783,11 +1022,33 @@ create policy "Users can view own transactions"
   ));
 
 -- Epochs and reward ledger are public read
+drop policy if exists "Anyone can view epochs" on public.epochs;
 create policy "Anyone can view epochs"
   on public.epochs for select using (true);
 
+drop policy if exists "Anyone can view reward ledger" on public.reward_pool_ledger;
 create policy "Anyone can view reward ledger"
   on public.reward_pool_ledger for select using (true);
+
+revoke all on function public.perform_spin(text, bigint, text, text, int) from public;
+revoke all on function public.claim_unlocked_spin(text, uuid) from public;
+revoke all on function public.reserve_withdrawal(text, bigint) from public;
+revoke all on function public.finalize_withdrawal(uuid, text) from public;
+revoke all on function public.fail_withdrawal(uuid, text) from public;
+revoke all on function public.confirm_deposit(text, text, bigint, int) from public;
+revoke all on function public.mark_withdrawal_submitted(uuid, text) from public;
+revoke all on function public.finalize_unlocked_winner_bonuses(uuid) from public;
+revoke all on function public.calculate_bonus_distribution(uuid) from public;
+
+grant execute on function public.perform_spin(text, bigint, text, text, int) to service_role;
+grant execute on function public.claim_unlocked_spin(text, uuid) to service_role;
+grant execute on function public.reserve_withdrawal(text, bigint) to service_role;
+grant execute on function public.finalize_withdrawal(uuid, text) to service_role;
+grant execute on function public.fail_withdrawal(uuid, text) to service_role;
+grant execute on function public.confirm_deposit(text, text, bigint, int) to service_role;
+grant execute on function public.mark_withdrawal_submitted(uuid, text) to service_role;
+grant execute on function public.finalize_unlocked_winner_bonuses(uuid) to service_role;
+grant execute on function public.calculate_bonus_distribution(uuid) to service_role;
 
 -- ==========================================
 -- TRIGGERS
@@ -802,6 +1063,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists users_updated_at on public.users;
 create trigger users_updated_at
   before update on public.users
   for each row execute function update_updated_at();
