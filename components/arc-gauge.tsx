@@ -102,7 +102,7 @@ export function ArcGauge({
             ease: [0.34, 1.56, 0.64, 1] // easeOutBack
           }}
           style={{
-            filter: `drop-shadow(0 0 8px ${getColor()}) drop-shadow(0 0 16px ${getColor()})`
+            filter: `drop-shadow(0 0 4px ${getColor()})`
           }}
         />
       </svg>
