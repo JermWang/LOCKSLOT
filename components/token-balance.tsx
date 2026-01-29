@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useWallet } from "@/lib/wallet-context"
-import { Wallet, RefreshCw, TrendingUp, Coins } from "lucide-react"
+import { Wallet, RefreshCw, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 
 // Token decimals - adjust based on your token
 const TOKEN_DECIMALS = 9
@@ -81,8 +82,14 @@ export function TokenBalance() {
       <div className="cyber-panel cyber-corners p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#1a3a4a]/50 flex items-center justify-center">
-              <Wallet className="h-4 w-4 text-[#00d4aa]" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+              <Image 
+                src="/logo.png" 
+                alt="Lock Slot" 
+                width={32} 
+                height={32}
+                className="object-contain"
+              />
             </div>
             <div>
               <h3 className="text-xs font-semibold text-[#e8f4f8] uppercase tracking-wider">Token Balance</h3>
@@ -117,9 +124,14 @@ export function TokenBalance() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00d4aa]/20 to-[#00d4aa]/5 
-                          border border-[#00d4aa]/30 flex items-center justify-center">
-            <Coins className="h-4 w-4 text-[#00d4aa]" />
+          <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+            <Image 
+              src="/logo.png" 
+              alt="Lock Slot" 
+              width={32} 
+              height={32}
+              className="object-contain"
+            />
           </div>
           <div>
             <h3 className="text-xs font-semibold text-[#e8f4f8] uppercase tracking-wider">Your Balance</h3>
