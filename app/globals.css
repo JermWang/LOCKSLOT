@@ -713,24 +713,24 @@
 .cyber-panel {
   position: relative;
   background: 
-    /* Subtle brushed texture */
+    /* Subtle brushed texture - dark lines */
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      rgba(255, 255, 255, 0.015) 1px,
+      rgba(0, 0, 0, 0.06) 1px,
       transparent 2px,
-      transparent 4px
+      transparent 5px
     ),
     /* Diagonal grain for metal depth */
     repeating-linear-gradient(
       45deg,
       transparent 0px,
-      rgba(0, 212, 170, 0.008) 1px,
+      rgba(0, 212, 170, 0.015) 1px,
       transparent 2px,
-      transparent 6px
+      transparent 8px
     ),
     /* Main gradient */
-    linear-gradient(135deg, rgba(20, 45, 70, 0.92) 0%, rgba(12, 30, 50, 0.96) 100%);
+    linear-gradient(135deg, rgba(18, 38, 58, 0.94) 0%, rgba(12, 28, 45, 0.97) 100%);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 212, 170, 0.25);
   border-radius: 0.75rem;
@@ -791,29 +791,29 @@
 .slot-cabinet {
   position: relative;
   background: 
-    /* Brushed metal horizontal lines */
+    /* Brushed metal horizontal lines - dark on dark */
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      rgba(255, 255, 255, 0.02) 1px,
+      rgba(0, 0, 0, 0.08) 1px,
       transparent 2px,
-      transparent 4px
+      transparent 5px
     ),
-    /* Subtle noise grain effect */
+    /* Subtle cyan accent grain */
     repeating-linear-gradient(
       90deg,
       transparent 0px,
-      rgba(0, 212, 170, 0.015) 1px,
+      rgba(0, 212, 170, 0.02) 1px,
       transparent 2px,
-      transparent 3px
+      transparent 8px
     ),
     /* Main metallic gradient */
     linear-gradient(180deg, 
-      rgba(45, 65, 85, 0.98) 0%,
-      rgba(25, 45, 65, 0.99) 30%,
-      rgba(20, 38, 58, 1) 50%,
-      rgba(25, 45, 65, 0.99) 70%,
-      rgba(35, 55, 75, 0.98) 100%
+      rgba(22, 42, 62, 0.98) 0%,
+      rgba(18, 35, 52, 0.99) 30%,
+      rgba(15, 30, 48, 1) 50%,
+      rgba(18, 35, 52, 0.99) 70%,
+      rgba(22, 42, 62, 0.98) 100%
     );
   border: 2px solid transparent;
   border-radius: 1rem;
@@ -977,18 +977,18 @@
 .cyber-button {
   position: relative;
   background: 
-    /* Brushed metal texture */
+    /* Brushed metal texture - dark */
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      rgba(255, 255, 255, 0.03) 1px,
+      rgba(0, 0, 0, 0.05) 1px,
       transparent 2px,
-      transparent 3px
+      transparent 4px
     ),
     linear-gradient(180deg, 
-      rgba(25, 50, 65, 0.95) 0%,
-      rgba(18, 38, 52, 0.98) 50%,
-      rgba(22, 45, 60, 0.95) 100%
+      rgba(18, 38, 55, 0.95) 0%,
+      rgba(14, 30, 45, 0.98) 50%,
+      rgba(16, 34, 50, 0.95) 100%
     );
   border: 1px solid rgba(0, 212, 170, 0.4);
   border-radius: 0.5rem;
@@ -1029,28 +1029,28 @@
 .spin-button {
   position: relative;
   background: 
-    /* Brushed metal horizontal lines */
+    /* Brushed metal horizontal lines - dark */
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      rgba(255, 255, 255, 0.02) 1px,
+      rgba(0, 0, 0, 0.06) 1px,
       transparent 2px,
-      transparent 4px
+      transparent 5px
     ),
     /* Vertical grain */
     repeating-linear-gradient(
       90deg,
       transparent 0px,
-      rgba(0, 212, 170, 0.01) 1px,
+      rgba(0, 212, 170, 0.02) 1px,
       transparent 2px,
-      transparent 3px
+      transparent 6px
     ),
     /* Main metallic gradient */
     linear-gradient(180deg, 
-      rgba(40, 65, 85, 0.98) 0%,
-      rgba(25, 45, 62, 1) 40%,
-      rgba(22, 40, 58, 1) 60%,
-      rgba(35, 58, 78, 0.98) 100%
+      rgba(20, 40, 58, 0.98) 0%,
+      rgba(16, 32, 48, 1) 40%,
+      rgba(14, 28, 44, 1) 60%,
+      rgba(18, 36, 54, 0.98) 100%
     );
   border: 2px solid rgba(0, 212, 170, 0.45);
   border-radius: 0.75rem;
