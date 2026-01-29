@@ -11,7 +11,6 @@ import { gameSounds, isSoundEnabled, setSoundEnabled, isMusicEnabled, resumeAudi
 import { gameToast } from "@/lib/toast"
 import { TierSymbol, TIER_LABELS } from "@/components/reel-symbols"
 import { ArcGauge } from "@/components/arc-gauge"
-import { VaultMechanism } from "@/components/vault-mechanism"
 
 const DEFAULT_QUICK_AMOUNTS = [100, 500, 1000, 5000]
 const STORAGE_KEY = "lockslot_quick_amounts"
@@ -501,19 +500,73 @@ export function SlotMachine() {
         </Button>
       </div>
 
-      {/* Vault Mechanism - Central orbital staking visualization */}
-      <VaultMechanism 
-        isSpinning={reelsSpinning}
-        result={localResult?.tier ?? null}
-        onComplete={() => {
-          setReelsSpinning(false)
-          setShowResult(true)
-          const r = resultRef.current
-          if (r) {
-            gameToast.spin(r.tier, r.multiplier, r.duration)
-          }
-        }}
-      />
+      {/* Vault Slot Cabinet - Premium 3-reel design with vault frame */}
+      <div className="vault-cabinet relative">
+        {/* Vault Door Frame */}
+        <div className="absolute -inset-4 rounded-2xl border-4 border-primary/30 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none">
+          {/* Corner Lock Bolts */}
+          <div className="absolute top-2 left-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+          <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+          <div className="absolute bottom-2 left-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+          <div className="absolute bottom-2 right-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+          
+          {/* Top Vault Label */}
+          <div className="absolute -top-1 left-1/2 -translate-x-1/2 px-4 py-1 bg-background border border-primary/40 rounded-full">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Lock Vault</span>
+          </div>
+        </div>
+
+        {/* Slot Reels */}
+        <div className="grid grid-cols-3 gap-2 relative z-10">
+          <SlotReel 
+            isSpinning={reelsSpinning} 
+            spinKey={spinCount}
+            result={localResult?.tier ?? null}
+            reelIndex={0}
+            onStopped={handleReelStopped}
+          />
+          <SlotReel 
+            isSpinning={reelsSpinning} 
+            spinKey={spinCount}
+            result={localResult?.tier ?? null}
+            reelIndex={1}
+            onStopped={handleReelStopped}
+          />
+          <SlotReel 
+            isSpinning={reelsSpinning} 
+            spinKey={spinCount}
+            result={localResult?.tier ?? null}
+            reelIndex={2}
+            onStopped={handleReelStopped}
+          />
+        </div>
+
+        {/* Lock Mechanism Overlay - appears when reels stop */}
+        {showResult && localResult && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className={cn(
+              "absolute inset-0 rounded-lg transition-all duration-500",
+              isWinner 
+                ? "bg-gradient-to-t from-primary/20 via-transparent to-primary/10 animate-pulse" 
+                : "bg-gradient-to-t from-secondary/10 via-transparent to-transparent"
+            )} />
+            {/* Lock seal animation */}
+            <div className={cn(
+              "absolute -bottom-2 left-1/2 -translate-x-1/2 transition-all duration-300",
+              isWinner ? "opacity-100 scale-100" : "opacity-50 scale-90"
+            )}>
+              <div className={cn(
+                "px-3 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest",
+                isWinner 
+                  ? "bg-primary/20 border-primary/50 text-primary" 
+                  : "bg-secondary/50 border-border text-muted-foreground"
+              )}>
+                {isWinner ? "✦ Sealed ✦" : "Locked"}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Lock Result - Staking outcome display */}
       {showResult && localResult ? (

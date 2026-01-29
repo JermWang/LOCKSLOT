@@ -698,3 +698,68 @@
     0 0 20px oklch(0.7 0.15 195 / 0.2),
     0 8px 32px oklch(0.3 0.02 85 / 0.2);
 }
+
+/* Vault Slot Cabinet Styling */
+.vault-cabinet {
+  position: relative;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.vault-cabinet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at top, var(--primary) 0%, transparent 50%),
+    linear-gradient(to bottom, rgba(212, 175, 55, 0.03) 0%, transparent 100%);
+  opacity: 0.3;
+  border-radius: 1rem;
+  pointer-events: none;
+}
+
+.vault-cabinet::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.4) 0%,
+    rgba(212, 175, 55, 0.1) 25%,
+    rgba(212, 175, 55, 0.05) 50%,
+    rgba(212, 175, 55, 0.1) 75%,
+    rgba(212, 175, 55, 0.4) 100%
+  );
+  border-radius: 1.25rem;
+  z-index: -1;
+  mask: 
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 2px;
+}
+
+/* Vault lock bolts shine effect */
+.vault-cabinet .absolute.rounded-full {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.6) 0%,
+    rgba(212, 175, 55, 0.3) 50%,
+    rgba(212, 175, 55, 0.5) 100%
+  );
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Sealed state animation */
+@keyframes vault-seal {
+  0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+  50% { transform: translateX(-50%) scale(1.1); }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+.vault-cabinet [class*="Sealed"] {
+  animation: vault-seal 0.4s ease-out forwards;
+}
