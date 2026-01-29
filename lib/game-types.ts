@@ -2,7 +2,7 @@ export type Tier = "brick" | "mid" | "hot" | "legendary" | "mythic"
 
 export interface SpinResult {
   tier: Tier
-  duration: number // days
+  duration: number // hours
   multiplier: number
   timestamp: Date
 }

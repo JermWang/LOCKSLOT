@@ -10,12 +10,13 @@ import { cn } from "@/lib/utils"
 
 const STAKE_MARKS = ["100", "1K", "5K", "10K", "50K"]
 
+// Tier data - avgLock in HOURS (matching lib/rng.ts)
 const TIER_DATA = [
-  { name: "BRICK", probability: 0.55, avgLock: 17.5, color: "text-orange-400", bonus: false },
-  { name: "MID", probability: 0.30, avgLock: 10.5, color: "text-yellow-400", bonus: false },
-  { name: "HOT", probability: 0.12, avgLock: 5, color: "text-orange-500", bonus: false },
-  { name: "LEGENDARY", probability: 0.025, avgLock: 2, color: "text-emerald-400", bonus: true },
-  { name: "MYTHIC", probability: 0.005, avgLock: 1, color: "text-pink-400", bonus: true },
+  { name: "BRICK", probability: 0.45, avgLock: 42, color: "text-orange-400", bonus: false },      // 36-48h avg
+  { name: "MID", probability: 0.28, avgLock: 27, color: "text-yellow-400", bonus: false },        // 18-36h avg
+  { name: "HOT", probability: 0.15, avgLock: 13, color: "text-orange-500", bonus: false },        // 8-18h avg
+  { name: "LEGENDARY", probability: 0.09, avgLock: 5.5, color: "text-emerald-400", bonus: true }, // 3-8h avg
+  { name: "MYTHIC", probability: 0.03, avgLock: 2, color: "text-pink-400", bonus: true },         // 1-3h avg
 ]
 
 function formatNumber(num: number): string {
@@ -33,7 +34,7 @@ export function EarningsCalculator() {
   const feeRate = 5
 
   // Expected value calculation (negative because it's gambling)
-  const expectedLockDays = TIER_DATA.reduce((acc, tier) => acc + tier.probability * tier.avgLock, 0)
+  const expectedLockHours = TIER_DATA.reduce((acc, tier) => acc + tier.probability * tier.avgLock, 0)
   const winProbability = 0.03 // 2.5% + 0.5%
 
   return (
@@ -91,7 +92,7 @@ export function EarningsCalculator() {
                 <span className={cn("font-medium", tier.color)}>{tier.name}</span>
                 <div className="flex items-center gap-4">
                   <span className="font-mono text-muted-foreground">{(tier.probability * 100).toFixed(1)}%</span>
-                  <span className="font-mono text-muted-foreground w-16 text-right">~{tier.avgLock}d lock</span>
+                  <span className="font-mono text-muted-foreground w-16 text-right">~{tier.avgLock}h lock</span>
                   {tier.bonus ? (
                     <span className="text-primary text-xs">+ BONUS</span>
                   ) : (
@@ -110,7 +111,7 @@ export function EarningsCalculator() {
               Expected Lock
             </div>
             <div className="text-lg font-bold text-destructive font-mono">
-              ~{expectedLockDays.toFixed(0)} days
+              ~{expectedLockHours.toFixed(0)} hours
             </div>
           </div>
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-center">

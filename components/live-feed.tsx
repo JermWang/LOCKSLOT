@@ -74,7 +74,7 @@ function FeedEntry({ item, index }: { item: FeedItem; index: number }) {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{item.amount.toLocaleString()} tokens</span>
           <span>•</span>
-          <span>{item.duration}d lock</span>
+          <span>{item.duration}h lock</span>
         </div>
       </div>
 

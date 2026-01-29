@@ -191,7 +191,7 @@ export function ActiveLocks() {
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Clock className="h-3 w-3" />
-                  <span className="font-mono">{lock.duration}d lock</span>
+                  <span className="font-mono">{lock.duration}h lock</span>
                 </div>
                 <CountdownTimer endTime={lock.endTime} />
               </div>

@@ -555,7 +555,7 @@ export function SlotMachine() {
         {showResult && localResult && (
           <div className="flex justify-center mt-4">
             <div className="lock-badge">
-              <span className="duration">{localResult.duration}d</span>
+              <span className="duration">{localResult.duration}h</span>
               <span className="label">LOCK</span>
             </div>
           </div>

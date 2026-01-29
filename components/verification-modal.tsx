@@ -159,7 +159,7 @@ export function VerificationModal({ open, onOpenChange }: VerificationModalProps
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Duration:</span>
-                    <span className="font-mono text-foreground">{verificationResult.duration}d</span>
+                    <span className="font-mono text-foreground">{verificationResult.duration}h</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Multiplier:</span>

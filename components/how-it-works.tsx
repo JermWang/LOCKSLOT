@@ -62,13 +62,13 @@ const STEPS = [
   },
 ]
 
-// Tier visuals - losers muted, winners get distinct colors
+// Tier visuals - losers muted, winners get distinct colors (durations in HOURS)
 const TIERS_VISUAL = [
-  { name: "BRICK", prob: 45, days: "14-21d", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
-  { name: "MID", prob: 28, days: "7-14d", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
-  { name: "HOT", prob: 15, days: "3-7d", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
-  { name: "LEGENDARY", prob: 9, days: "1-3d", isWin: true, color: "bg-emerald-400", text: "text-emerald-400" },
-  { name: "MYTHIC", prob: 3, days: "~1d", isWin: true, color: "bg-pink-400", text: "text-pink-400" },
+  { name: "BRICK", prob: 45, duration: "36-48h", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
+  { name: "MID", prob: 28, duration: "18-36h", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
+  { name: "HOT", prob: 15, duration: "8-18h", isWin: false, color: "bg-muted-foreground/50", text: "text-muted-foreground" },
+  { name: "LEGENDARY", prob: 9, duration: "3-8h", isWin: true, color: "bg-emerald-400", text: "text-emerald-400" },
+  { name: "MYTHIC", prob: 3, duration: "1-3h", isWin: true, color: "bg-pink-400", text: "text-pink-400" },
 ]
 
 function StakeVisual() {
@@ -195,7 +195,7 @@ function LockVisual() {
             />
           </div>
           <span className="w-12 text-right text-xs font-mono text-muted-foreground">{tier.prob}%</span>
-          <span className="w-14 text-right text-xs font-mono text-muted-foreground">{tier.days}</span>
+          <span className="w-14 text-right text-xs font-mono text-muted-foreground">{tier.duration}</span>
           {tier.isWin && <Sparkles className={cn("h-3 w-3", tier.text)} />}
         </motion.div>
       ))}
