@@ -537,6 +537,7 @@
   opacity: 0;
   transition: opacity 0.4s ease;
   z-index: -2;
+  pointer-events: none;
 }
 
 .btn-premium::after {
@@ -547,6 +548,7 @@
   background: linear-gradient(135deg, oklch(0.97 0.02 85) 0%, oklch(0.93 0.025 85) 100%);
   z-index: -1;
   transition: background 0.3s ease;
+  pointer-events: none;
 }
 
 .btn-premium:hover {
