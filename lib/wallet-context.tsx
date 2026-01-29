@@ -281,17 +281,28 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   // Get user's SPL token balance
   const getTokenBalance = useCallback(async (): Promise<number> => {
-    if (!connected || !publicKey) return 0
+    if (!connected || !publicKey) {
+      console.log("[getTokenBalance] Not connected or no publicKey")
+      return 0
+    }
     
     const tokenMint = getTokenMint()
-    if (!tokenMint) return 0
+    if (!tokenMint) {
+      console.error("[getTokenBalance] NEXT_PUBLIC_TOKEN_MINT not configured:", process.env.NEXT_PUBLIC_TOKEN_MINT)
+      return 0
+    }
+    
+    console.log("[getTokenBalance] Token mint:", tokenMint.toBase58())
 
     try {
       const userPubkey = new PublicKey(publicKey)
       const userAta = await getAssociatedTokenAddress(tokenMint, userPubkey)
+      console.log("[getTokenBalance] User ATA:", userAta.toBase58())
       const balance = await connection.getTokenAccountBalance(userAta)
+      console.log("[getTokenBalance] Balance:", balance.value.amount, "uiAmount:", balance.value.uiAmountString)
       return Number(balance.value.amount)
-    } catch {
+    } catch (err) {
+      console.error("[getTokenBalance] Error fetching balance:", err)
       return 0
     }
   }, [connected, publicKey])

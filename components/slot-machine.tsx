@@ -12,8 +12,8 @@ import { TierSymbol } from "@/components/reel-symbols"
 const DEFAULT_QUICK_AMOUNTS = [100, 500, 1000, 5000]
 const STORAGE_KEY = "lockslot_quick_amounts"
 
-// DEV MODE: Enable free spins for testing
-const FREE_SPIN_MODE = true
+// DEV MODE: Enable free spins for testing (reads from env)
+const FREE_SPIN_MODE = process.env.NEXT_PUBLIC_FREE_SPIN_MODE === 'true'
 
 function getStoredAmounts(): number[] {
   if (typeof window === "undefined") return DEFAULT_QUICK_AMOUNTS
