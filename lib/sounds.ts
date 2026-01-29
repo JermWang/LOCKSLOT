@@ -211,48 +211,69 @@ class PremiumSoundManager {
   spinStart() {
     if (!this.enabled) return
     
-    // Satisfying whoosh with rising energy
-    this.playNoise({ duration: 0.4, volume: 0.15, filterFreq: 3000, attack: 0.02 })
+    // Loud satisfying whoosh with energy
+    this.playNoise({ duration: 0.5, volume: 0.35, filterFreq: 4000, attack: 0.01 })
     
-    // Rising sweep - builds anticipation
+    // Rising sweep - builds anticipation (louder)
     const ctx = this.getContext()
     if (!ctx || !this.masterGain) return
 
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
+    const filter = ctx.createBiquadFilter()
     
-    osc.type = "sine"
-    osc.frequency.setValueAtTime(150, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.35)
+    osc.type = "sawtooth"
+    osc.frequency.setValueAtTime(100, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.4)
+    
+    filter.type = "lowpass"
+    filter.frequency.setValueAtTime(2000, ctx.currentTime)
+    filter.frequency.linearRampToValueAtTime(5000, ctx.currentTime + 0.3)
     
     gain.gain.setValueAtTime(0, ctx.currentTime)
-    gain.gain.linearRampToValueAtTime(0.25 * this.volume, ctx.currentTime + 0.1)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+    gain.gain.linearRampToValueAtTime(0.4 * this.volume, ctx.currentTime + 0.08)
+    gain.gain.setValueAtTime(0.35 * this.volume, ctx.currentTime + 0.25)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
     
-    osc.connect(gain)
+    osc.connect(filter)
+    filter.connect(gain)
     gain.connect(this.masterGain)
     osc.start()
-    osc.stop(ctx.currentTime + 0.45)
+    osc.stop(ctx.currentTime + 0.55)
 
-    // Soft click at start
+    // Punchy click at start
     setTimeout(() => {
-      this.playTone({ frequency: 1200, duration: 0.05, volume: 0.15, attack: 0.001 })
-    }, 50)
+      this.playTone({ frequency: 1500, duration: 0.06, volume: 0.35, attack: 0.001 })
+    }, 30)
+    
+    // Secondary impact
+    setTimeout(() => {
+      this.playTone({ frequency: 800, duration: 0.08, volume: 0.25, attack: 0.005 })
+    }, 80)
   }
 
   reelTick() {
     if (!this.enabled) return
-    // Soft satisfying tick - like a reel clicking
+    // Louder mechanical reel click - casino slot machine feel
     this.playTone({
-      frequency: 1800 + Math.random() * 400,
-      type: "triangle",
-      duration: 0.03,
-      volume: 0.08,
+      frequency: 2200 + Math.random() * 600,
+      type: "square",
+      duration: 0.04,
+      volume: 0.22,
       attack: 0.001,
-      decay: 0.01,
-      sustain: 0.3,
-      release: 0.01,
-      pan: (Math.random() - 0.5) * 0.6
+      decay: 0.015,
+      sustain: 0.2,
+      release: 0.015,
+      pan: (Math.random() - 0.5) * 0.8
+    })
+    // Add subtle low thump for weight
+    this.playTone({
+      frequency: 150 + Math.random() * 50,
+      type: "sine",
+      duration: 0.03,
+      volume: 0.12,
+      attack: 0.002,
+      pan: (Math.random() - 0.5) * 0.4
     })
   }
 
