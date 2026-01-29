@@ -11,13 +11,50 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { UsernameModal } from "@/components/username-modal"
 import { gameSounds, resumeAudio } from "@/lib/sounds"
+import Image from "next/image"
+
+const TOKEN_DECIMALS = 9
+const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
+
+function formatBalance(rawBalance: number): string {
+  const balance = rawBalance / Math.pow(10, TOKEN_DECIMALS)
+  if (balance >= 1_000_000) return `${(balance / 1_000_000).toFixed(2)}M`
+  if (balance >= 1_000) return `${(balance / 1_000).toFixed(2)}K`
+  if (balance >= 1) return balance.toFixed(2)
+  return balance.toFixed(4)
+}
 
 export function Navbar() {
-  const { publicKey, disconnect, connected, connect, connecting, walletName } = useWallet()
+  const { publicKey, disconnect, connected, connect, connecting, walletName, getTokenBalance } = useWallet()
   const [copied, setCopied] = useState(false)
+  const [balance, setBalance] = useState<number | null>(null)
+
+  // Fetch token balance
+  const fetchBalance = useCallback(async () => {
+    if (!connected) {
+      setBalance(null)
+      return
+    }
+    try {
+      const bal = await getTokenBalance()
+      setBalance(bal)
+    } catch {
+      setBalance(null)
+    }
+  }, [connected, getTokenBalance])
+
+  useEffect(() => {
+    if (connected) {
+      fetchBalance()
+      const interval = setInterval(fetchBalance, 30000)
+      return () => clearInterval(interval)
+    } else {
+      setBalance(null)
+    }
+  }, [connected, fetchBalance])
 
   const truncatedAddress = publicKey
     ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`
@@ -69,6 +106,17 @@ export function Navbar() {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
+          {/* Token Balance - minimal inline display */}
+          {connected && balance !== null && (
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081420] border border-[#1a3a4a]/50">
+              <Image src="/logo.png" alt="" width={20} height={20} className="rounded" />
+              <span className="font-mono text-sm font-semibold text-[#00d4aa]">
+                {formatBalance(balance)}
+              </span>
+              <span className="text-[10px] text-[#6b8a9a] uppercase">{TOKEN_SYMBOL}</span>
+            </div>
+          )}
+
           {/* Username button - only show when connected */}
           {connected && <UsernameModal />}
 
