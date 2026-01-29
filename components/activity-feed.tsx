@@ -32,9 +32,8 @@ export function ActivityFeed() {
             <div
               key={item.id}
               className={cn(
-                "mb-2 rounded-lg border border-transparent px-3 py-2.5",
-                "bg-secondary/30 hover:bg-secondary/50 transition-colors",
-                isWinner && "border-primary/30 bg-primary/5"
+                "mb-2 rounded-lg px-3 py-2.5 hover-glow-border",
+                isWinner && "border-primary/30"
               )}
             >
               <div className="flex items-center justify-between">

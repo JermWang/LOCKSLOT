@@ -147,11 +147,9 @@ export function ActiveLocks() {
             <div
               key={lock.id}
               className={cn(
-                "rounded-xl border-2 p-4 transition-all duration-300",
-                getTierBgColor(lock.tier),
-                isWinner && lock.tier === "mythic" && "glow-mythic border-pink-400/50",
-                isWinner && lock.tier === "legendary" && "glow-legendary border-emerald-400/50",
-                !isWinner && "border-border/50"
+                "rounded-xl p-4 hover-glow-border",
+                isWinner && lock.tier === "mythic" && "glow-mythic",
+                isWinner && lock.tier === "legendary" && "glow-legendary"
               )}
             >
               {/* Top row */}

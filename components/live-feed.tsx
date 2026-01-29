@@ -49,9 +49,7 @@ function FeedEntry({ item, index }: { item: FeedItem; index: number }) {
       exit={{ opacity: 0, x: 20, height: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border transition-all",
-        style.bg,
-        style.border,
+        "flex items-center gap-3 p-3 rounded-lg hover-glow-border",
         isWin && "glow-pulse"
       )}
     >

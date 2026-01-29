@@ -392,19 +392,17 @@ export function HowItWorks({ onComplete }: HowItWorksProps) {
         </Button>
         
         {currentStep < STEPS.length - 1 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => { gameSounds.click(); onComplete() }}
-            className="text-muted-foreground border-muted-foreground/30 hover:border-primary hover:text-primary"
+          <button
+            onClick={() => { gameSounds.click(); onComplete?.() }}
+            className="btn-premium text-sm"
           >
             Skip Tutorial
-          </Button>
+          </button>
         )}
         
         {currentStep === STEPS.length - 1 ? (
           <Button
-            onClick={() => { gameSounds.success(); onComplete() }}
+            onClick={() => { gameSounds.success(); onComplete?.() }}
             className="gap-2 glow-primary"
           >
             <CheckCircle2 className="h-4 w-4" />
