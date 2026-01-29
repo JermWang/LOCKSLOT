@@ -15,7 +15,7 @@ import { UsernameModal } from "@/components/username-modal"
 import { gameSounds, resumeAudio } from "@/lib/sounds"
 import Image from "next/image"
 
-const TOKEN_DECIMALS = 9
+const TOKEN_DECIMALS = Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS) || 6 // pump.fun tokens use 6 decimals
 const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_MINT || ""
 

@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 
-// Token decimals - adjust based on your token
-const TOKEN_DECIMALS = 9
+// Token decimals - pump.fun tokens use 6 decimals
+const TOKEN_DECIMALS = Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS) || 6
 const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
 const TOKEN_MINT = process.env.NEXT_PUBLIC_TOKEN_MINT || "NOT_SET"
 
