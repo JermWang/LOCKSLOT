@@ -3,49 +3,54 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* LOCK SLOT - Cream Casino Theme */
+/* LOCK SLOT - Dark Teal Cyber Theme */
 :root {
-  --background: oklch(0.96 0.02 85);
-  --foreground: oklch(0.15 0.02 260);
-  --card: oklch(0.93 0.025 85);
-  --card-foreground: oklch(0.15 0.02 260);
-  --popover: oklch(0.94 0.02 85);
-  --popover-foreground: oklch(0.15 0.02 260);
-  --primary: oklch(0.45 0.18 160);
-  --primary-foreground: oklch(0.98 0.01 85);
-  --secondary: oklch(0.88 0.03 85);
-  --secondary-foreground: oklch(0.2 0.02 260);
-  --muted: oklch(0.90 0.02 85);
-  --muted-foreground: oklch(0.45 0.02 260);
-  --accent: oklch(0.55 0.2 330);
-  --accent-foreground: oklch(0.98 0.01 85);
-  --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.82 0.03 85);
-  --input: oklch(0.92 0.02 85);
-  --ring: oklch(0.45 0.18 160);
-  --chart-1: oklch(0.45 0.18 160);
-  --chart-2: oklch(0.55 0.2 330);
-  --chart-3: oklch(0.65 0.2 50);
-  --chart-4: oklch(0.5 0.15 200);
-  --chart-5: oklch(0.55 0.22 25);
-  --radius: 0.5rem;
+  --background: #0a1628;
+  --foreground: #e8f4f8;
+  --card: rgba(15, 35, 55, 0.8);
+  --card-foreground: #e8f4f8;
+  --popover: rgba(15, 35, 55, 0.95);
+  --popover-foreground: #e8f4f8;
+  --primary: #00d4aa;
+  --primary-foreground: #0a1628;
+  --secondary: rgba(0, 212, 170, 0.1);
+  --secondary-foreground: #b8d4e3;
+  --muted: rgba(30, 60, 90, 0.5);
+  --muted-foreground: #6b8a9a;
+  --accent: #f0c674;
+  --accent-foreground: #0a1628;
+  --destructive: #ff6b6b;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 212, 170, 0.2);
+  --input: rgba(15, 35, 55, 0.6);
+  --ring: #00d4aa;
+  --chart-1: #00d4aa;
+  --chart-2: #f0c674;
+  --chart-3: #ff6b6b;
+  --chart-4: #4ecdc4;
+  --chart-5: #a855f7;
+  --radius: 0.625rem;
   
-  /* Custom tier colors */
-  --brick: oklch(0.45 0.1 30);
-  --mid: oklch(0.55 0.15 50);
-  --hot: oklch(0.6 0.2 30);
-  --legendary: oklch(0.45 0.18 160);
-  --mythic: oklch(0.55 0.2 330);
+  /* Custom tier colors - cyberpunk style */
+  --brick: #4a5568;
+  --mid: #6b8a9a;
+  --hot: #f0c674;
+  --legendary: #00d4aa;
+  --mythic: #a855f7;
   
-  --sidebar: oklch(0.92 0.025 85);
-  --sidebar-foreground: oklch(0.15 0.02 260);
-  --sidebar-primary: oklch(0.45 0.18 160);
-  --sidebar-primary-foreground: oklch(0.98 0.01 85);
-  --sidebar-accent: oklch(0.88 0.03 85);
-  --sidebar-accent-foreground: oklch(0.15 0.02 260);
-  --sidebar-border: oklch(0.82 0.03 85);
-  --sidebar-ring: oklch(0.45 0.18 160);
+  /* Neon glow colors */
+  --neon-cyan: #00d4aa;
+  --neon-gold: #f0c674;
+  --neon-purple: #a855f7;
+  
+  --sidebar: rgba(10, 25, 45, 0.95);
+  --sidebar-foreground: #e8f4f8;
+  --sidebar-primary: #00d4aa;
+  --sidebar-primary-foreground: #0a1628;
+  --sidebar-accent: rgba(0, 212, 170, 0.1);
+  --sidebar-accent-foreground: #e8f4f8;
+  --sidebar-border: rgba(0, 212, 170, 0.2);
+  --sidebar-ring: #00d4aa;
 }
 
 @theme inline {
@@ -96,28 +101,31 @@
   --color-mythic: var(--mythic);
 }
 
-/* Neon glow utilities */
+/* Neon glow utilities - Cyber Theme */
 @layer utilities {
   .glow-primary {
-    box-shadow: 0 0 20px oklch(0.75 0.18 160 / 0.5), 0 0 40px oklch(0.75 0.18 160 / 0.3);
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.5), 0 0 40px rgba(0, 212, 170, 0.3);
   }
   .glow-accent {
-    box-shadow: 0 0 20px oklch(0.7 0.2 330 / 0.5), 0 0 40px oklch(0.7 0.2 330 / 0.3);
+    box-shadow: 0 0 20px rgba(240, 198, 116, 0.5), 0 0 40px rgba(240, 198, 116, 0.3);
   }
   .glow-legendary {
-    box-shadow: 0 0 30px oklch(0.75 0.18 160 / 0.6), 0 0 60px oklch(0.75 0.18 160 / 0.4);
+    box-shadow: 0 0 30px rgba(0, 212, 170, 0.6), 0 0 60px rgba(0, 212, 170, 0.4);
   }
   .glow-mythic {
-    box-shadow: 0 0 40px oklch(0.7 0.2 330 / 0.7), 0 0 80px oklch(0.7 0.2 330 / 0.5);
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.7), 0 0 80px rgba(168, 85, 247, 0.5);
   }
   .glow-gold {
-    box-shadow: 0 0 25px oklch(0.8 0.15 85 / 0.6), 0 0 50px oklch(0.8 0.15 85 / 0.3);
+    box-shadow: 0 0 25px rgba(240, 198, 116, 0.6), 0 0 50px rgba(240, 198, 116, 0.3);
+  }
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.6), 0 0 40px rgba(0, 212, 170, 0.3), 0 0 60px rgba(0, 212, 170, 0.2);
   }
   .text-glow-primary {
-    text-shadow: 0 0 10px oklch(0.75 0.18 160 / 0.8), 0 0 20px oklch(0.75 0.18 160 / 0.6);
+    text-shadow: 0 0 10px rgba(0, 212, 170, 0.8), 0 0 20px rgba(0, 212, 170, 0.6);
   }
   .text-glow-mythic {
-    text-shadow: 0 0 15px oklch(0.7 0.2 330 / 0.9), 0 0 30px oklch(0.7 0.2 330 / 0.7);
+    text-shadow: 0 0 15px rgba(168, 85, 247, 0.9), 0 0 30px rgba(168, 85, 247, 0.7);
   }
   .text-glow-gold {
     text-shadow: 0 0 10px oklch(0.8 0.15 85 / 0.9), 0 0 25px oklch(0.8 0.15 85 / 0.5);
@@ -699,67 +707,305 @@
     0 8px 32px oklch(0.3 0.02 85 / 0.2);
 }
 
-/* Vault Slot Cabinet Styling */
-.vault-cabinet {
+/* ========== CYBER GLASSMORPHISM PANELS ========== */
+
+/* Base glassmorphism panel */
+.cyber-panel {
   position: relative;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(15, 40, 65, 0.9) 0%, rgba(10, 25, 45, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  border-radius: 0.75rem;
 }
 
-.vault-cabinet::before {
+/* Decorative corner brackets */
+.cyber-panel::before,
+.cyber-panel::after,
+.cyber-corners::before,
+.cyber-corners::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: rgba(0, 212, 170, 0.6);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+
+.cyber-panel::before {
+  top: -1px;
+  left: -1px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+  border-top-left-radius: 4px;
+}
+
+.cyber-panel::after {
+  top: -1px;
+  right: -1px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+  border-top-right-radius: 4px;
+}
+
+.cyber-corners::before {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+  border-bottom-left-radius: 4px;
+}
+
+.cyber-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Slot machine cabinet - premium metallic look */
+.slot-cabinet {
+  position: relative;
+  background: linear-gradient(180deg, 
+    rgba(30, 50, 70, 0.95) 0%,
+    rgba(20, 35, 55, 0.98) 50%,
+    rgba(15, 28, 45, 1) 100%
+  );
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 
+    0 0 0 1px rgba(0, 212, 170, 0.3),
+    0 4px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Metallic frame effect */
+.slot-cabinet::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  background: linear-gradient(135deg, 
+    rgba(0, 212, 170, 0.4) 0%,
+    rgba(0, 212, 170, 0.1) 25%,
+    rgba(0, 212, 170, 0.05) 50%,
+    rgba(0, 212, 170, 0.1) 75%,
+    rgba(0, 212, 170, 0.4) 100%
+  );
+  border-radius: 1.1rem;
+  z-index: -1;
+}
+
+/* Inner glow */
+.slot-cabinet::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: 
-    radial-gradient(ellipse at top, var(--primary) 0%, transparent 50%),
-    linear-gradient(to bottom, rgba(212, 175, 55, 0.03) 0%, transparent 100%);
-  opacity: 0.3;
+  background: radial-gradient(ellipse at top center, rgba(0, 212, 170, 0.1) 0%, transparent 60%);
   border-radius: 1rem;
   pointer-events: none;
 }
 
-.vault-cabinet::after {
+/* Reel window styling */
+.reel-window {
+  background: linear-gradient(180deg, 
+    rgba(5, 15, 25, 0.95) 0%,
+    rgba(8, 20, 35, 0.9) 50%,
+    rgba(5, 15, 25, 0.95) 100%
+  );
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  border-radius: 0.5rem;
+  box-shadow: 
+    inset 0 2px 10px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(0, 212, 170, 0.05);
+  overflow: hidden;
+}
+
+/* Marble/stone texture base for slot machine */
+.marble-base {
+  background: 
+    linear-gradient(135deg, 
+      rgba(180, 190, 200, 0.15) 0%,
+      rgba(150, 160, 170, 0.1) 25%,
+      rgba(200, 210, 220, 0.12) 50%,
+      rgba(160, 170, 180, 0.08) 75%,
+      rgba(180, 190, 200, 0.15) 100%
+    ),
+    linear-gradient(180deg, rgba(20, 40, 60, 0.95) 0%, rgba(15, 30, 50, 1) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* LOCK SLOT title styling */
+.slot-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #f0c674;
+  text-shadow: 
+    0 0 10px rgba(240, 198, 116, 0.6),
+    0 0 20px rgba(240, 198, 116, 0.4),
+    0 0 30px rgba(240, 198, 116, 0.2);
+}
+
+/* Premium input styling */
+.cyber-input {
+  background: linear-gradient(180deg, rgba(15, 30, 50, 0.9) 0%, rgba(10, 22, 38, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  border-radius: 0.5rem;
+  color: #e8f4f8;
+  transition: all 0.2s ease;
+}
+
+.cyber-input:focus {
+  border-color: rgba(0, 212, 170, 0.6);
+  box-shadow: 0 0 15px rgba(0, 212, 170, 0.2);
+  outline: none;
+}
+
+/* Premium button styling */
+.cyber-button {
+  position: relative;
+  background: linear-gradient(180deg, 
+    rgba(0, 212, 170, 0.2) 0%,
+    rgba(0, 180, 150, 0.15) 50%,
+    rgba(0, 150, 130, 0.2) 100%
+  );
+  border: 1px solid rgba(0, 212, 170, 0.5);
+  border-radius: 0.5rem;
+  color: #00d4aa;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.cyber-button::before {
   content: '';
   position: absolute;
-  inset: -2px;
-  background: linear-gradient(
-    135deg,
-    rgba(212, 175, 55, 0.4) 0%,
-    rgba(212, 175, 55, 0.1) 25%,
-    rgba(212, 175, 55, 0.05) 50%,
-    rgba(212, 175, 55, 0.1) 75%,
-    rgba(212, 175, 55, 0.4) 100%
-  );
-  border-radius: 1.25rem;
-  z-index: -1;
-  mask: 
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  padding: 2px;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 170, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
 }
 
-/* Vault lock bolts shine effect */
-.vault-cabinet .absolute.rounded-full {
-  background: linear-gradient(
-    135deg,
-    rgba(212, 175, 55, 0.6) 0%,
-    rgba(212, 175, 55, 0.3) 50%,
-    rgba(212, 175, 55, 0.5) 100%
-  );
+.cyber-button:hover::before {
+  transform: translateX(100%);
+}
+
+.cyber-button:hover {
+  border-color: rgba(0, 212, 170, 0.8);
   box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.3),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.2);
+    0 0 20px rgba(0, 212, 170, 0.3),
+    inset 0 0 20px rgba(0, 212, 170, 0.1);
 }
 
-/* Sealed state animation */
-@keyframes vault-seal {
-  0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
-  50% { transform: translateX(-50%) scale(1.1); }
-  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+/* Spin button - extra premium */
+.spin-button {
+  position: relative;
+  background: 
+    linear-gradient(180deg, 
+      rgba(30, 50, 70, 0.95) 0%,
+      rgba(20, 35, 55, 0.98) 50%,
+      rgba(15, 28, 45, 1) 100%
+    );
+  border: 2px solid rgba(0, 212, 170, 0.4);
+  border-radius: 0.75rem;
+  padding: 1rem 2rem;
+  color: #00d4aa;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
 }
 
-.vault-cabinet [class*="Sealed"] {
-  animation: vault-seal 0.4s ease-out forwards;
+.spin-button:hover {
+  border-color: rgba(0, 212, 170, 0.8);
+  box-shadow: 
+    0 0 30px rgba(0, 212, 170, 0.4),
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  text-shadow: 0 0 10px rgba(0, 212, 170, 0.8);
+}
+
+.spin-button:active {
+  transform: translateY(2px);
+}
+
+/* Quick amount buttons */
+.quick-amount-btn {
+  background: linear-gradient(180deg, rgba(15, 35, 55, 0.9) 0%, rgba(10, 25, 40, 0.95) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.25);
+  border-radius: 0.5rem;
+  color: #b8d4e3;
+  transition: all 0.2s ease;
+}
+
+.quick-amount-btn:hover {
+  border-color: rgba(0, 212, 170, 0.5);
+  color: #00d4aa;
+  background: linear-gradient(180deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 180, 150, 0.05) 100%);
+}
+
+/* Live indicator */
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background: rgba(0, 212, 170, 0.15);
+  border: 1px solid rgba(0, 212, 170, 0.4);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #00d4aa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.live-indicator::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #00d4aa;
+  border-radius: 50%;
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Lock duration badge */
+.lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(15, 35, 55, 0.95) 0%, rgba(10, 25, 40, 0.98) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+}
+
+.lock-badge .duration {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00d4aa;
+  text-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
+}
+
+.lock-badge .label {
+  font-size: 0.625rem;
+  color: #6b8a9a;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }

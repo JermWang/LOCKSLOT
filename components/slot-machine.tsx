@@ -199,26 +199,22 @@ function SlotReel({
 
   return (
     <div className={cn(
-      "relative h-32 w-full overflow-hidden rounded-lg border slot-reel-glow transition-shadow duration-300",
-      "bg-gradient-to-b from-black/40 via-black/20 to-black/40",
-      "backdrop-blur-md",
-      isWinner && result === "mythic" && "glow-mythic border-pink-400/60",
-      isWinner && result === "legendary" && "glow-legendary border-emerald-400/60",
-      !isWinner && "border-white/10"
+      "relative h-32 w-full overflow-hidden rounded-md transition-shadow duration-300",
+      "bg-gradient-to-b from-[#050f19] via-[#081420] to-[#050f19]",
+      isWinner && result === "mythic" && "shadow-[0_0_30px_rgba(168,85,247,0.4)]",
+      isWinner && result === "legendary" && "shadow-[0_0_30px_rgba(0,212,170,0.4)]"
     )}>
-      {/* Glassmorphic inner glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 pointer-events-none" />
-      {/* Reel shine overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+      {/* Inner glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#00d4aa]/5 via-transparent to-[#00d4aa]/5 pointer-events-none" />
       
-      {/* Top/bottom fade */}
-      <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background/95 to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/95 to-transparent z-10 pointer-events-none" />
+      {/* Top/bottom fade for depth */}
+      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[#050f19] to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#050f19] to-transparent z-10 pointer-events-none" />
       
-      {/* Center highlight */}
+      {/* Center highlight line */}
       <div className={cn(
-        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-16 border-y pointer-events-none transition-all duration-200",
-        isWinner ? "border-primary/40 bg-primary/10" : "border-primary/20 bg-primary/5"
+        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-14 border-y pointer-events-none transition-all duration-200",
+        isWinner ? "border-[#00d4aa]/40 bg-[#00d4aa]/10" : "border-[#00d4aa]/10"
       )} />
 
       {/* Visible items with scaling effect */}
@@ -474,269 +470,209 @@ export function SlotMachine() {
   const isWinner = localResult && (localResult.tier === "legendary" || localResult.tier === "mythic")
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-4">
       {/* Sound & Music toggles */}
-      <div className="flex justify-end gap-1 mb-1">
-        <Button
-          variant="ghost"
-          size="sm"
+      <div className="flex justify-end gap-2 mb-3">
+        <button
           onClick={toggleMusic}
           className={cn(
-            "h-8 w-8 p-0 transition-colors",
-            musicEnabled ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            "h-8 w-8 flex items-center justify-center rounded-lg border transition-all",
+            musicEnabled 
+              ? "text-[#00d4aa] border-[#00d4aa]/40 bg-[#00d4aa]/10" 
+              : "text-[#6b8a9a] border-[#6b8a9a]/20 hover:border-[#00d4aa]/40 hover:text-[#00d4aa]"
           )}
           title={musicEnabled ? "Stop lo-fi music" : "Play lo-fi jazz"}
         >
-          {musicEnabled ? <Music className="h-4 w-4" /> : <Music2 className="h-4 w-4 opacity-50" />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
+          {musicEnabled ? <Music className="h-4 w-4" /> : <Music2 className="h-4 w-4" />}
+        </button>
+        <button
           onClick={toggleSound}
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          className={cn(
+            "h-8 w-8 flex items-center justify-center rounded-lg border transition-all",
+            soundEnabled 
+              ? "text-[#00d4aa] border-[#00d4aa]/40 bg-[#00d4aa]/10" 
+              : "text-[#6b8a9a] border-[#6b8a9a]/20 hover:border-[#00d4aa]/40 hover:text-[#00d4aa]"
+          )}
           title={soundEnabled ? "Mute sounds" : "Enable sounds"}
         >
           {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-        </Button>
+        </button>
       </div>
 
-      {/* Vault Slot Cabinet - Premium 3-reel design with vault frame */}
-      <div className="vault-cabinet relative">
-        {/* Vault Door Frame */}
-        <div className="absolute -inset-4 rounded-2xl border-4 border-primary/30 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none">
-          {/* Corner Lock Bolts */}
-          <div className="absolute top-2 left-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
-          <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
-          <div className="absolute bottom-2 left-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
-          <div className="absolute bottom-2 right-2 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
-          
-          {/* Top Vault Label */}
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 px-4 py-1 bg-background border border-primary/40 rounded-full">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Lock Vault</span>
+      {/* Premium Slot Cabinet */}
+      <div className="slot-cabinet mb-4">
+        {/* LOCK SLOT Title */}
+        <div className="text-center mb-4">
+          <h2 className="slot-title text-xl">LOCK SLOT</h2>
+        </div>
+
+        {/* Reel Container with metallic frame */}
+        <div className="relative">
+          {/* Decorative frame corners */}
+          <div className="absolute -inset-2 border border-[#00d4aa]/20 rounded-lg pointer-events-none">
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00d4aa]/60 rounded-tl" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00d4aa]/60 rounded-tr" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00d4aa]/60 rounded-bl" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00d4aa]/60 rounded-br" />
           </div>
+
+          {/* Slot Reels */}
+          <div className="grid grid-cols-3 gap-3 p-2">
+            <div className="reel-window">
+              <SlotReel 
+                isSpinning={reelsSpinning} 
+                spinKey={spinCount}
+                result={localResult?.tier ?? null}
+                reelIndex={0}
+                onStopped={handleReelStopped}
+              />
+            </div>
+            <div className="reel-window">
+              <SlotReel 
+                isSpinning={reelsSpinning} 
+                spinKey={spinCount}
+                result={localResult?.tier ?? null}
+                reelIndex={1}
+                onStopped={handleReelStopped}
+              />
+            </div>
+            <div className="reel-window">
+              <SlotReel 
+                isSpinning={reelsSpinning} 
+                spinKey={spinCount}
+                result={localResult?.tier ?? null}
+                reelIndex={2}
+                onStopped={handleReelStopped}
+              />
+            </div>
+          </div>
+
+          {/* Win line indicator */}
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-transparent via-[#00d4aa]/50 to-transparent pointer-events-none" />
         </div>
 
-        {/* Slot Reels */}
-        <div className="grid grid-cols-3 gap-2 relative z-10">
-          <SlotReel 
-            isSpinning={reelsSpinning} 
-            spinKey={spinCount}
-            result={localResult?.tier ?? null}
-            reelIndex={0}
-            onStopped={handleReelStopped}
-          />
-          <SlotReel 
-            isSpinning={reelsSpinning} 
-            spinKey={spinCount}
-            result={localResult?.tier ?? null}
-            reelIndex={1}
-            onStopped={handleReelStopped}
-          />
-          <SlotReel 
-            isSpinning={reelsSpinning} 
-            spinKey={spinCount}
-            result={localResult?.tier ?? null}
-            reelIndex={2}
-            onStopped={handleReelStopped}
-          />
-        </div>
-
-        {/* Lock Mechanism Overlay - appears when reels stop */}
+        {/* Lock Duration Badge - shown after spin */}
         {showResult && localResult && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className={cn(
-              "absolute inset-0 rounded-lg transition-all duration-500",
-              isWinner 
-                ? "bg-gradient-to-t from-primary/20 via-transparent to-primary/10 animate-pulse" 
-                : "bg-gradient-to-t from-secondary/10 via-transparent to-transparent"
-            )} />
-            {/* Lock seal animation */}
-            <div className={cn(
-              "absolute -bottom-2 left-1/2 -translate-x-1/2 transition-all duration-300",
-              isWinner ? "opacity-100 scale-100" : "opacity-50 scale-90"
-            )}>
-              <div className={cn(
-                "px-3 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest",
-                isWinner 
-                  ? "bg-primary/20 border-primary/50 text-primary" 
-                  : "bg-secondary/50 border-border text-muted-foreground"
-              )}>
-                {isWinner ? "✦ Sealed ✦" : "Locked"}
-              </div>
+          <div className="flex justify-center mt-4">
+            <div className="lock-badge">
+              <span className="duration">{localResult.duration}d</span>
+              <span className="label">LOCK</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Lock Result - Staking outcome display */}
+      {/* Result Display - Cyber themed */}
       {showResult && localResult ? (
-        <div className={cn(
-          "rounded-lg border p-4 mb-3",
-          isWinner ? "border-primary/50 bg-primary/5" : "border-border/50 bg-secondary/20"
-        )}>
-          {/* Header with lock status */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Lock className={cn("h-4 w-4", isWinner ? "text-primary" : "text-muted-foreground")} />
-              <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
-                Stake Locked
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TierSymbol tier={localResult.tier} size={24} isWinner={isWinner || undefined} />
-              <span className={cn("text-sm font-black tracking-wide", getTierColor(localResult.tier))}>
-                {TIER_CONFIG[localResult.tier].label}
-              </span>
-            </div>
-          </div>
-          
-          {/* Main stats row */}
-          <div className="grid grid-cols-3 gap-3">
-            {/* Lock Duration */}
-            <div className="text-center p-2 rounded-lg bg-secondary/30">
-              <Timer className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-              <div className="text-xl font-mono font-black text-foreground">
-                {localResult.duration}
-              </div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground">
-                Day Lock
+        <div className="cyber-panel cyber-corners p-4 mb-4">
+          {/* Tier result header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <TierSymbol tier={localResult.tier} size={32} isWinner={isWinner || undefined} />
+              <div>
+                <div className={cn(
+                  "text-lg font-bold uppercase tracking-wide",
+                  localResult.tier === "legendary" && "text-[#00d4aa]",
+                  localResult.tier === "mythic" && "text-[#a855f7]",
+                  localResult.tier === "hot" && "text-[#f0c674]",
+                  localResult.tier === "mid" && "text-[#6b8a9a]",
+                  localResult.tier === "brick" && "text-[#4a5568]"
+                )}>
+                  {TIER_CONFIG[localResult.tier].label}
+                </div>
+                <div className="text-[10px] text-[#6b8a9a] uppercase tracking-wider">Result</div>
               </div>
             </div>
-            
-            {/* Yield Multiplier */}
-            <div className={cn(
-              "text-center p-2 rounded-lg",
-              isWinner ? "bg-primary/10" : "bg-secondary/30"
-            )}>
-              <TrendingUp className={cn("h-4 w-4 mx-auto mb-1", isWinner ? "text-primary" : "text-muted-foreground")} />
+            <div className="text-right">
               <div className={cn(
-                "text-xl font-mono font-black",
-                isWinner ? "text-primary" : "text-foreground"
+                "text-2xl font-mono font-bold",
+                isWinner ? "text-[#00d4aa]" : "text-[#e8f4f8]"
               )}>
                 {localResult.multiplier}×
               </div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground">
-                Yield
-              </div>
-            </div>
-            
-            {/* Duration Gauge */}
-            <div className="flex items-center justify-center">
-              <ArcGauge 
-                value={localResult.duration} 
-                size={64} 
-                strokeWidth={5}
-                animated={true}
-              />
+              <div className="text-[10px] text-[#6b8a9a] uppercase tracking-wider">Multiplier</div>
             </div>
           </div>
           
           {/* Bonus eligibility */}
           {isWinner && (
-            <div className="mt-3 pt-3 border-t border-primary/20 text-center">
-              <span className="text-xs uppercase tracking-widest text-primary font-bold">
-                ✦ Eligible for Epoch Bonus Distribution ✦
+            <div className="pt-3 border-t border-[#00d4aa]/20 text-center">
+              <span className="text-xs uppercase tracking-widest text-[#00d4aa] font-bold">
+                ✦ Eligible for Epoch Bonus ✦
               </span>
             </div>
           )}
         </div>
       ) : (
-        <div className="rounded-lg border border-border/30 bg-secondary/10 p-4 mb-3">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Vault className="h-5 w-5 text-primary" />
-            </div>
-            <div className="text-left">
-              <div className="text-foreground text-sm font-semibold">Stake to Earn</div>
-              <div className="text-[10px] text-muted-foreground">Lock tokens → Get multiplied rewards</div>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-            <div className="p-2 rounded bg-secondary/30">
-              <Timer className="h-3 w-3 mx-auto mb-1 text-muted-foreground" />
-              <span className="text-muted-foreground">Lock Duration</span>
-            </div>
-            <div className="p-2 rounded bg-secondary/30">
-              <TrendingUp className="h-3 w-3 mx-auto mb-1 text-muted-foreground" />
-              <span className="text-muted-foreground">Yield Multiplier</span>
-            </div>
-            <div className="p-2 rounded bg-secondary/30">
-              <Lock className="h-3 w-3 mx-auto mb-1 text-muted-foreground" />
-              <span className="text-muted-foreground">Tier Bonus</span>
+        <div className="cyber-panel cyber-corners p-4 mb-4">
+          <div className="text-center">
+            <div className="text-[#6b8a9a] text-sm mb-2">Spin to determine your lock tier</div>
+            <div className="flex justify-center gap-4 text-[10px] text-[#4a5568]">
+              <span>BRICK • MID • HOT • LEGENDARY • MYTHIC</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Stake Amount */}
-      <div className="mt-auto space-y-2">
-        {/* Balance indicator with vault icon */}
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Vault className="h-3 w-3" />
-            Available to Lock
-          </span>
-          <span className="font-mono font-bold text-foreground">{userBalance.toLocaleString()} $LOCK</span>
+      {/* Stake Controls - Cyber themed */}
+      <div className="mt-auto space-y-3">
+        {/* Balance indicator */}
+        <div className="flex items-center justify-between text-xs px-1">
+          <span className="text-[#6b8a9a]">Your Balance</span>
+          <span className="font-mono font-bold text-[#e8f4f8]">{userBalance.toLocaleString()} tokens</span>
         </div>
 
-        {/* Input with quick amounts */}
+        {/* Input with MAX button */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Input
+            <input
               type="number"
-              placeholder="Stake amount"
+              placeholder="500"
               value={stakeAmount}
               onChange={(e) => setStakeAmount(e.target.value)}
-              className="h-10 bg-black/40 backdrop-blur-sm border-white/10 pr-16 text-base font-mono font-bold"
+              className="cyber-input w-full h-11 px-4 pr-16 text-base font-mono font-bold"
               disabled={isSpinning}
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-              $LOCK
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6b8a9a]">
+              tokens
             </span>
           </div>
-          <Button
-            variant="outline"
+          <button
             onClick={() => handleQuickAmount(userBalance)}
             disabled={isSpinning}
-            className="h-10 px-3 text-xs font-bold bg-black/30 backdrop-blur-sm border-white/10 hover:bg-white/10 hover:border-white/20"
+            className="cyber-button h-11 px-4 text-xs"
           >
             MAX
-          </Button>
+          </button>
         </div>
 
-        {/* Quick amount buttons - Customizable */}
+        {/* Quick amount buttons */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Amounts</span>
+            <span className="text-[10px] text-[#6b8a9a] uppercase tracking-wider">Quick Amounts</span>
             {!isEditingAmounts ? (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={startEditing}
-                className="h-5 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+                className="text-[10px] text-[#6b8a9a] hover:text-[#00d4aa] flex items-center gap-1 transition-colors"
               >
-                <Settings className="h-3 w-3 mr-1" />
+                <Settings className="h-3 w-3" />
                 Edit
-              </Button>
+              </button>
             ) : (
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              <div className="flex gap-2">
+                <button
                   onClick={saveEditing}
-                  className="h-5 px-2 text-[10px] text-primary hover:text-primary"
+                  className="text-[10px] text-[#00d4aa] flex items-center gap-1"
                 >
-                  <Check className="h-3 w-3 mr-1" />
+                  <Check className="h-3 w-3" />
                   Save
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                </button>
+                <button
                   onClick={cancelEditing}
-                  className="h-5 px-2 text-[10px] text-muted-foreground hover:text-destructive"
+                  className="text-[10px] text-[#6b8a9a] hover:text-[#ff6b6b]"
                 >
                   <X className="h-3 w-3" />
-                </Button>
+                </button>
               </div>
             )}
           </div>
@@ -744,12 +680,12 @@ export function SlotMachine() {
           {isEditingAmounts ? (
             <div className="grid grid-cols-4 gap-2">
               {editingAmounts.map((value, index) => (
-                <Input
+                <input
                   key={index}
                   type="number"
                   value={value}
                   onChange={(e) => updateEditingAmount(index, e.target.value)}
-                  className="h-8 text-xs font-mono text-center bg-secondary/50 border-primary/50"
+                  className="cyber-input h-9 text-xs font-mono text-center"
                   placeholder="0"
                 />
               ))}
@@ -757,16 +693,14 @@ export function SlotMachine() {
           ) : (
             <div className="grid grid-cols-4 gap-2">
               {quickAmounts.map((amount, index) => (
-                <Button
+                <button
                   key={index}
-                  variant="ghost"
-                  size="sm"
                   onClick={() => handleQuickAmount(amount)}
                   disabled={isSpinning || amount > userBalance}
-                  className="font-mono text-xs h-8 bg-black/30 backdrop-blur-sm border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
+                  className="quick-amount-btn h-9 font-mono text-xs transition-all disabled:opacity-30"
                 >
                   {amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}K` : amount}
-                </Button>
+                </button>
               ))}
             </div>
           )}
@@ -774,35 +708,33 @@ export function SlotMachine() {
 
         {/* Protocol fee preview */}
         {stakeNum > 0 && (
-          <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-            <span>Protocol fee (5%): -{feeAmount.toFixed(0)}</span>
-            <span className="text-foreground font-medium">Locked: {(stakeNum - feeAmount).toFixed(0)} $LOCK</span>
+          <div className="flex items-center justify-between text-xs text-[#6b8a9a] px-1">
+            <span>5% fee: -{feeAmount.toFixed(0)}</span>
+            <span className="text-[#e8f4f8] font-medium">You lock: {(stakeNum - feeAmount).toFixed(0)} tokens</span>
           </div>
         )}
 
-        {/* Lock Stake Button - Staking-focused */}
-        <div className="flex justify-center">
-          <button
-            onClick={handleSpin}
-            disabled={isButtonDisabled}
-            className={cn(
-              "btn-premium px-8 py-3 text-sm font-bold uppercase tracking-widest",
-              isButtonDisabled && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            {isSpinning || reelsSpinning ? (
-              <span className="flex items-center gap-2">
-                <Unlock className="h-4 w-4 animate-pulse" />
-                LOCKING...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                LOCK STAKE
-              </span>
-            )}
-          </button>
-        </div>
+        {/* SPIN Button - Premium styled */}
+        <button
+          onClick={handleSpin}
+          disabled={isButtonDisabled}
+          className={cn(
+            "spin-button w-full flex items-center justify-center gap-3",
+            isButtonDisabled && "opacity-40 cursor-not-allowed"
+          )}
+        >
+          {isSpinning || reelsSpinning ? (
+            <>
+              <Unlock className="h-5 w-5 animate-pulse" />
+              SPINNING...
+            </>
+          ) : (
+            <>
+              <Lock className="h-5 w-5" />
+              SPIN
+            </>
+          )}
+        </button>
       </div>
     </div>
   )
