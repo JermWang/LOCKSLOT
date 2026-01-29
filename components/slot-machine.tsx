@@ -45,8 +45,8 @@ const REEL_ITEMS: { tier: Tier; label: string }[] = [
   { tier: "mythic", label: "MYTHIC" },
 ]
 
-const REEL_ITEM_HEIGHT = 80
-const REEL_VIEWPORT_HEIGHT = 160
+const REEL_ITEM_HEIGHT = 64
+const REEL_VIEWPORT_HEIGHT = 128
 
 // Easing with slight overshoot for satisfying stop
 function easeOutBack(t: number) {
@@ -199,7 +199,7 @@ function SlotReel({
 
   return (
     <div className={cn(
-      "relative h-32 w-full overflow-hidden rounded-md transition-shadow duration-300",
+      "relative h-28 w-full overflow-hidden rounded-md transition-shadow duration-300",
       "bg-gradient-to-b from-[#050f19] via-[#081420] to-[#050f19]",
       isWinner && result === "mythic" && "shadow-[0_0_30px_rgba(168,85,247,0.4)]",
       isWinner && result === "legendary" && "shadow-[0_0_30px_rgba(0,212,170,0.4)]"
@@ -208,12 +208,12 @@ function SlotReel({
       <div className="absolute inset-0 bg-gradient-to-b from-[#00d4aa]/5 via-transparent to-[#00d4aa]/5 pointer-events-none" />
       
       {/* Top/bottom fade for depth */}
-      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[#050f19] to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#050f19] to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-[#050f19] to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-[#050f19] to-transparent z-10 pointer-events-none" />
       
       {/* Center highlight line */}
       <div className={cn(
-        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-14 border-y pointer-events-none transition-all duration-200",
+        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-12 border-y pointer-events-none transition-all duration-200",
         isWinner ? "border-[#00d4aa]/40 bg-[#00d4aa]/10" : "border-[#00d4aa]/10"
       )} />
 
@@ -226,7 +226,7 @@ function SlotReel({
         return (
           <div
             key={key}
-            className="absolute left-0 right-0 h-20 flex flex-col items-center justify-center gap-1.5"
+            className="absolute left-0 right-0 h-16 flex flex-col items-center justify-center gap-1"
             style={{ 
               transform: `translateY(${centerY + yOffset}px) scale(${scale}) translateZ(0)`,
               opacity,
@@ -239,7 +239,7 @@ function SlotReel({
             )}>
               <TierSymbol 
                 tier={item.tier} 
-                size={44} 
+                size={36} 
                 isCenter={isCenter}
                 isWinner={isCenter && isWinner || undefined}
               />
@@ -470,13 +470,13 @@ export function SlotMachine() {
   const isWinner = localResult && (localResult.tier === "legendary" || localResult.tier === "mythic")
 
   return (
-    <div className="flex flex-col h-full p-4">
+    <div className="flex flex-col h-full p-3">
       {/* Sound & Music toggles */}
-      <div className="flex justify-end gap-2 mb-3">
+      <div className="flex justify-end gap-2 mb-2">
         <button
           onClick={toggleMusic}
           className={cn(
-            "h-8 w-8 flex items-center justify-center rounded-lg border transition-all",
+            "h-7 w-7 flex items-center justify-center rounded-lg border transition-all",
             musicEnabled 
               ? "text-[#00d4aa] border-[#00d4aa]/40 bg-[#00d4aa]/10" 
               : "text-[#6b8a9a] border-[#6b8a9a]/20 hover:border-[#00d4aa]/40 hover:text-[#00d4aa]"
@@ -488,7 +488,7 @@ export function SlotMachine() {
         <button
           onClick={toggleSound}
           className={cn(
-            "h-8 w-8 flex items-center justify-center rounded-lg border transition-all",
+            "h-7 w-7 flex items-center justify-center rounded-lg border transition-all",
             soundEnabled 
               ? "text-[#00d4aa] border-[#00d4aa]/40 bg-[#00d4aa]/10" 
               : "text-[#6b8a9a] border-[#6b8a9a]/20 hover:border-[#00d4aa]/40 hover:text-[#00d4aa]"
@@ -500,10 +500,10 @@ export function SlotMachine() {
       </div>
 
       {/* Premium Slot Cabinet */}
-      <div className="slot-cabinet mb-4">
+      <div className="slot-cabinet mb-3">
         {/* LOCK SLOT Title */}
-        <div className="text-center mb-4">
-          <h2 className="slot-title text-xl">LOCK SLOT</h2>
+        <div className="text-center mb-2">
+          <h2 className="slot-title text-lg">LOCK SLOT</h2>
         </div>
 
         {/* Reel Container with metallic frame */}
@@ -517,7 +517,7 @@ export function SlotMachine() {
           </div>
 
           {/* Slot Reels */}
-          <div className="grid grid-cols-3 gap-3 p-2">
+          <div className="grid grid-cols-3 gap-2 p-1.5">
             <div className="reel-window">
               <SlotReel 
                 isSpinning={reelsSpinning} 
@@ -553,7 +553,7 @@ export function SlotMachine() {
 
         {/* Lock Duration Badge - shown after spin */}
         {showResult && localResult && (
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-3">
             <div className="lock-badge">
               <span className="duration">{localResult.duration}h</span>
               <span className="label">LOCK</span>
@@ -564,14 +564,14 @@ export function SlotMachine() {
 
       {/* Result Display - Cyber themed */}
       {showResult && localResult ? (
-        <div className="cyber-panel cyber-corners p-4 mb-4">
+        <div className="cyber-panel cyber-corners p-3 mb-3">
           {/* Tier result header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <TierSymbol tier={localResult.tier} size={32} isWinner={isWinner || undefined} />
+              <TierSymbol tier={localResult.tier} size={28} isWinner={isWinner || undefined} />
               <div>
                 <div className={cn(
-                  "text-lg font-bold uppercase tracking-wide",
+                  "text-base font-bold uppercase tracking-wide",
                   localResult.tier === "legendary" && "text-[#00d4aa]",
                   localResult.tier === "mythic" && "text-[#a855f7]",
                   localResult.tier === "hot" && "text-[#f0c674]",
@@ -585,7 +585,7 @@ export function SlotMachine() {
             </div>
             <div className="text-right">
               <div className={cn(
-                "text-2xl font-mono font-bold",
+                "text-xl font-mono font-bold",
                 isWinner ? "text-[#00d4aa]" : "text-[#e8f4f8]"
               )}>
                 {localResult.multiplier}×
@@ -596,17 +596,17 @@ export function SlotMachine() {
           
           {/* Bonus eligibility */}
           {isWinner && (
-            <div className="pt-3 border-t border-[#00d4aa]/20 text-center">
-              <span className="text-xs uppercase tracking-widest text-[#00d4aa] font-bold">
+            <div className="pt-2 border-t border-[#00d4aa]/20 text-center">
+              <span className="text-[10px] uppercase tracking-widest text-[#00d4aa] font-bold">
                 ✦ Eligible for Epoch Bonus ✦
               </span>
             </div>
           )}
         </div>
       ) : (
-        <div className="cyber-panel cyber-corners p-4 mb-4">
+        <div className="cyber-panel cyber-corners p-3 mb-3">
           <div className="text-center">
-            <div className="text-[#6b8a9a] text-sm mb-2">Spin to determine your lock tier</div>
+            <div className="text-[#6b8a9a] text-xs mb-1">Spin to determine your lock tier</div>
             <div className="flex justify-center gap-4 text-[10px] text-[#4a5568]">
               <span>BRICK • MID • HOT • LEGENDARY • MYTHIC</span>
             </div>
@@ -615,7 +615,7 @@ export function SlotMachine() {
       )}
 
       {/* Stake Controls - Cyber themed */}
-      <div className="mt-auto space-y-3">
+      <div className="mt-auto space-y-2">
         {/* Balance indicator */}
         <div className="flex items-center justify-between text-xs px-1">
           <span className="text-[#6b8a9a]">Your Balance</span>
@@ -630,7 +630,7 @@ export function SlotMachine() {
               placeholder="500"
               value={stakeAmount}
               onChange={(e) => setStakeAmount(e.target.value)}
-              className="cyber-input w-full h-11 px-4 pr-16 text-base font-mono font-bold"
+              className="cyber-input w-full h-10 px-3 pr-14 text-sm font-mono font-bold"
               disabled={isSpinning}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6b8a9a]">
@@ -640,14 +640,14 @@ export function SlotMachine() {
           <button
             onClick={() => handleQuickAmount(userBalance)}
             disabled={isSpinning}
-            className="cyber-button h-11 px-4 text-xs"
+            className="cyber-button h-10 px-3 text-xs"
           >
             MAX
           </button>
         </div>
 
         {/* Quick amount buttons */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-[#6b8a9a] uppercase tracking-wider">Quick Amounts</span>
             {!isEditingAmounts ? (
@@ -685,7 +685,7 @@ export function SlotMachine() {
                   type="number"
                   value={value}
                   onChange={(e) => updateEditingAmount(index, e.target.value)}
-                  className="cyber-input h-9 text-xs font-mono text-center"
+                  className="cyber-input h-8 text-xs font-mono text-center"
                   placeholder="0"
                 />
               ))}
@@ -697,7 +697,7 @@ export function SlotMachine() {
                   key={index}
                   onClick={() => handleQuickAmount(amount)}
                   disabled={isSpinning || amount > userBalance}
-                  className="quick-amount-btn h-9 font-mono text-xs transition-all disabled:opacity-30"
+                  className="quick-amount-btn h-8 font-mono text-xs transition-all disabled:opacity-30"
                 >
                   {amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}K` : amount}
                 </button>
