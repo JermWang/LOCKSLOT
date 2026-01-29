@@ -6,13 +6,12 @@ import {
   PublicKey, 
   Transaction, 
   VersionedTransaction,
-  TransactionInstruction 
 } from "@solana/web3.js"
 import { 
   getAssociatedTokenAddress, 
   createTransferInstruction,
-  createAssociatedTokenAccountInstruction,
   TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID
 } from "@solana/spl-token"
 
@@ -25,6 +24,11 @@ function getRpcUrl(): string {
 
 const connection = new Connection(getRpcUrl(), "confirmed")
 
+let cachedTokenProgramId: {
+  mint: string
+  programId: PublicKey
+} | null = null
+
 // Token mint from env
 function getTokenMint(): PublicKey | null {
   const mint = process.env.NEXT_PUBLIC_TOKEN_MINT
@@ -34,6 +38,20 @@ function getTokenMint(): PublicKey | null {
   } catch {
     return null
   }
+}
+
+async function getTokenProgramIdForMint(mint: PublicKey): Promise<PublicKey> {
+  const mintKey = mint.toBase58()
+  if (cachedTokenProgramId?.mint === mintKey) return cachedTokenProgramId.programId
+
+  const info = await connection.getAccountInfo(mint)
+  if (!info) {
+    throw new Error("Token mint account not found")
+  }
+
+  const programId = info.owner.equals(TOKEN_2022_PROGRAM_ID) ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID
+  cachedTokenProgramId = { mint: mintKey, programId }
+  return programId
 }
 
 export interface TransactionPreview {
@@ -220,9 +238,17 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     const userPubkey = new PublicKey(publicKey)
     const escrowAta = new PublicKey(escrowTokenAccount)
+
+    const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
     
     // Get user's associated token account
-    const userAta = await getAssociatedTokenAddress(tokenMint, userPubkey)
+    const userAta = await getAssociatedTokenAddress(
+      tokenMint,
+      userPubkey,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
     
     // Check if user has the token account
     const userAtaInfo = await connection.getAccountInfo(userAta)
@@ -244,7 +270,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       userPubkey,        // owner/authority
       amount,            // amount in base units
       [],                // no multisig
-      TOKEN_PROGRAM_ID
+      tokenProgramId
     )
 
     // Build transaction
@@ -292,11 +318,24 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return 0
     }
     
-    console.log("[getTokenBalance] Token mint:", tokenMint.toBase58())
+    const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
+
+    console.log(
+      "[getTokenBalance] Token mint:",
+      tokenMint.toBase58(),
+      "program:",
+      tokenProgramId.toBase58()
+    )
 
     try {
       const userPubkey = new PublicKey(publicKey)
-      const userAta = await getAssociatedTokenAddress(tokenMint, userPubkey)
+      const userAta = await getAssociatedTokenAddress(
+        tokenMint,
+        userPubkey,
+        false,
+        tokenProgramId,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      )
       console.log("[getTokenBalance] User ATA:", userAta.toBase58())
       
       // Check if the token account exists first

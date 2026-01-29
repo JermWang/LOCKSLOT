@@ -1,5 +1,5 @@
-import { Connection, Keypair, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js'
-import { getAssociatedTokenAddress, createTransferInstruction, createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js'
+import { getAssociatedTokenAddress, createTransferInstruction, createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import bs58 from 'bs58'
 
 // Initialize connection
@@ -14,6 +14,11 @@ function getRpcUrl(): string {
 }
 
 const connection = new Connection(getRpcUrl(), 'confirmed')
+
+let cachedTokenProgramId: {
+  mint: string
+  programId: PublicKey
+} | null = null
 
 // Load escrow wallet from env
 function getEscrowKeypair(): Keypair {
@@ -31,6 +36,20 @@ function getTokenMint(): PublicKey {
     throw new Error('NEXT_PUBLIC_TOKEN_MINT not configured')
   }
   return new PublicKey(mint)
+}
+
+async function getTokenProgramIdForMint(mint: PublicKey): Promise<PublicKey> {
+  const mintKey = mint.toBase58()
+  if (cachedTokenProgramId?.mint === mintKey) return cachedTokenProgramId.programId
+
+  const info = await connection.getAccountInfo(mint)
+  if (!info) {
+    throw new Error('Token mint account not found')
+  }
+
+  const programId = info.owner.equals(TOKEN_2022_PROGRAM_ID) ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID
+  cachedTokenProgramId = { mint: mintKey, programId }
+  return programId
 }
 
 // Get fee wallet
@@ -66,6 +85,8 @@ export async function verifyDeposit(
     const escrowWallet = getEscrowKeypair()
     const tokenMint = getTokenMint()
 
+    const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
+
     if (!Number.isSafeInteger(minAmount) || minAmount < 0) {
       return { valid: false, amount: 0, error: 'Invalid minimum amount' }
     }
@@ -84,7 +105,13 @@ export async function verifyDeposit(
     }
     
     // Find token transfer to escrow
-    const escrowAta = await getAssociatedTokenAddress(tokenMint, escrowWallet.publicKey)
+    const escrowAta = await getAssociatedTokenAddress(
+      tokenMint,
+      escrowWallet.publicKey,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
     
     let depositAmount = 0
     let depositAmountBig = BigInt(0)
@@ -187,11 +214,24 @@ export async function processWithdrawal(
   try {
     const escrowKeypair = getEscrowKeypair()
     const tokenMint = getTokenMint()
+    const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
     const userPubkey = new PublicKey(userWallet)
     
     // Get ATAs
-    const escrowAta = await getAssociatedTokenAddress(tokenMint, escrowKeypair.publicKey)
-    const userAta = await getAssociatedTokenAddress(tokenMint, userPubkey)
+    const escrowAta = await getAssociatedTokenAddress(
+      tokenMint,
+      escrowKeypair.publicKey,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
+    const userAta = await getAssociatedTokenAddress(
+      tokenMint,
+      userPubkey,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
 
     const userAtaInfo = await connection.getAccountInfo(userAta)
     
@@ -210,7 +250,7 @@ export async function processWithdrawal(
           userAta,
           userPubkey,
           tokenMint,
-          TOKEN_PROGRAM_ID,
+          tokenProgramId,
           ASSOCIATED_TOKEN_PROGRAM_ID
         )
       )
@@ -223,7 +263,7 @@ export async function processWithdrawal(
       escrowKeypair.publicKey,
       amount,
       [],
-      TOKEN_PROGRAM_ID
+      tokenProgramId
     )
     
     // Build and send transaction
@@ -252,10 +292,23 @@ export async function transferFees(amount: number): Promise<{ success: boolean; 
   try {
     const escrowKeypair = getEscrowKeypair()
     const tokenMint = getTokenMint()
+    const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
     const feeWallet = getFeeWallet()
     
-    const escrowAta = await getAssociatedTokenAddress(tokenMint, escrowKeypair.publicKey)
-    const feeAta = await getAssociatedTokenAddress(tokenMint, feeWallet)
+    const escrowAta = await getAssociatedTokenAddress(
+      tokenMint,
+      escrowKeypair.publicKey,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
+    const feeAta = await getAssociatedTokenAddress(
+      tokenMint,
+      feeWallet,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
 
     const feeAtaInfo = await connection.getAccountInfo(feeAta)
 
@@ -268,7 +321,7 @@ export async function transferFees(amount: number): Promise<{ success: boolean; 
           feeAta,
           feeWallet,
           tokenMint,
-          TOKEN_PROGRAM_ID,
+          tokenProgramId,
           ASSOCIATED_TOKEN_PROGRAM_ID
         )
       )
@@ -280,7 +333,7 @@ export async function transferFees(amount: number): Promise<{ success: boolean; 
       escrowKeypair.publicKey,
       amount,
       [],
-      TOKEN_PROGRAM_ID
+      tokenProgramId
     )
     
     const tx = new Transaction().add(...ixs, transferIx)
@@ -309,6 +362,13 @@ export function getEscrowPublicKey(): string {
 export async function getEscrowTokenAccount(): Promise<string> {
   const escrowKeypair = getEscrowKeypair()
   const tokenMint = getTokenMint()
-  const ata = await getAssociatedTokenAddress(tokenMint, escrowKeypair.publicKey)
+  const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
+  const ata = await getAssociatedTokenAddress(
+    tokenMint,
+    escrowKeypair.publicKey,
+    false,
+    tokenProgramId,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  )
   return ata.toBase58()
 }

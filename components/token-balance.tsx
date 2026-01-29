@@ -13,7 +13,7 @@ const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
 const TOKEN_MINT = process.env.NEXT_PUBLIC_TOKEN_MINT || "NOT_SET"
 
 // Debug flag - set to true to show debug info in UI
-const SHOW_DEBUG = true
+const SHOW_DEBUG = process.env.NEXT_PUBLIC_SHOW_TOKEN_DEBUG === "true"
 
 function formatBalance(rawBalance: number): string {
   const balance = rawBalance / Math.pow(10, TOKEN_DECIMALS)
