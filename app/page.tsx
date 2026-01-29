@@ -137,17 +137,17 @@ export default function LockSlotPage() {
                   </summary>
                   <div className="px-4 pb-4 grid grid-cols-5 gap-2 text-center">
                     {[
-                      { name: "BRICK", prob: "45%", days: "14-21d", color: "text-muted-foreground", dot: "bg-muted-foreground/50" },
-                      { name: "MID", prob: "28%", days: "7-14d", color: "text-muted-foreground", dot: "bg-muted-foreground/50" },
-                      { name: "HOT", prob: "15%", days: "3-7d", color: "text-muted-foreground", dot: "bg-muted-foreground/50" },
-                      { name: "LEGEND", prob: "9%", days: "1-3d", color: "text-emerald-400", dot: "bg-emerald-400" },
-                      { name: "MYTHIC", prob: "3%", days: "~1d", color: "text-pink-400", dot: "bg-pink-400" },
+                      { name: "BRICK", prob: "45%", days: "14-21d", color: "text-[#4a5568]", dot: "bg-[#4a5568]" },
+                      { name: "MID", prob: "28%", days: "7-14d", color: "text-[#6b8a9a]", dot: "bg-[#6b8a9a]" },
+                      { name: "HOT", prob: "15%", days: "3-7d", color: "text-[#f0c674]", dot: "bg-[#f0c674]" },
+                      { name: "LEGEND", prob: "9%", days: "1-3d", color: "text-[#00d4aa]", dot: "bg-[#00d4aa]" },
+                      { name: "MYTHIC", prob: "3%", days: "~1d", color: "text-[#a855f7]", dot: "bg-[#a855f7]" },
                     ].map((tier) => (
-                      <div key={tier.name} className="p-2 rounded-lg bg-secondary/30">
+                      <div key={tier.name} className="p-2 rounded-lg bg-[#0a1628]/80 border border-[#1a3a4a]/30">
                         <div className={cn("w-2 h-2 rounded-full mx-auto mb-1", tier.dot)} />
                         <div className={cn("text-[10px] font-bold", tier.color)}>{tier.name}</div>
-                        <div className="text-xs font-mono text-foreground">{tier.prob}</div>
-                        <div className="text-[10px] font-mono text-muted-foreground">{tier.days}</div>
+                        <div className="text-xs font-mono text-[#e8f4f8]">{tier.prob}</div>
+                        <div className="text-[10px] font-mono text-[#6b8a9a]">{tier.days}</div>
                       </div>
                     ))}
                   </div>

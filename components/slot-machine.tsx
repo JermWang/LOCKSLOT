@@ -293,26 +293,26 @@ function ReelDisplay({
     <div className={cn(
       "flex flex-col items-center gap-2 rounded-xl border p-4 transition-all",
       highlight 
-        ? "border-primary/50 bg-primary/10" 
-        : "border-border bg-secondary/30"
+        ? "border-[#00d4aa]/50 bg-[#00d4aa]/10" 
+        : "border-[#1a3a4a]/50 bg-[#0a1628]/80"
     )}>
       <div className="flex items-center gap-1.5">
-        {Icon && <Icon className={cn("h-3 w-3", highlight ? "text-primary" : "text-muted-foreground")} />}
+        {Icon && <Icon className={cn("h-3 w-3", highlight ? "text-[#00d4aa]" : "text-[#6b8a9a]")} />}
         <span className={cn(
           "text-xs uppercase tracking-wider font-semibold",
-          highlight ? "text-primary" : "text-muted-foreground"
+          highlight ? "text-[#00d4aa]" : "text-[#6b8a9a]"
         )}>{label}</span>
       </div>
       <div className="font-mono">
         <span className={cn(
           "text-3xl font-black",
-          highlight ? "text-primary text-glow-primary" : "text-foreground"
+          highlight ? "text-[#00d4aa]" : "text-[#e8f4f8]"
         )}>
           {displayValue}
         </span>
         <span className={cn(
           "text-lg font-bold ml-0.5",
-          highlight ? "text-primary/70" : "text-muted-foreground"
+          highlight ? "text-[#00d4aa]/70" : "text-[#6b8a9a]"
         )}>{suffix}</span>
       </div>
     </div>

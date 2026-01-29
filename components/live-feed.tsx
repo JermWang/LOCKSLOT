@@ -21,13 +21,13 @@ interface FeedItem {
   isWin: boolean
 }
 
-// Losers muted, winners get distinct colors (emerald for legendary, pink for mythic)
+// Losers muted, winners get distinct colors (cyan for legendary, purple for mythic)
 const TIER_STYLES: Record<Tier, { color: string; bg: string; border: string; icon: typeof Trophy; isWin: boolean }> = {
-  brick: { color: "text-muted-foreground", bg: "bg-secondary/30", border: "border-border", icon: Skull, isWin: false },
-  mid: { color: "text-muted-foreground", bg: "bg-secondary/30", border: "border-border", icon: Clock, isWin: false },
-  hot: { color: "text-muted-foreground", bg: "bg-secondary/30", border: "border-border", icon: Flame, isWin: false },
-  legendary: { color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/30", icon: Trophy, isWin: true },
-  mythic: { color: "text-pink-400", bg: "bg-pink-400/10", border: "border-pink-400/30", icon: Sparkles, isWin: true },
+  brick: { color: "text-[#4a5568]", bg: "bg-[#0a1628]/80", border: "border-[#1a3a4a]/30", icon: Skull, isWin: false },
+  mid: { color: "text-[#6b8a9a]", bg: "bg-[#0a1628]/80", border: "border-[#1a3a4a]/30", icon: Clock, isWin: false },
+  hot: { color: "text-[#f0c674]", bg: "bg-[#f0c674]/10", border: "border-[#f0c674]/30", icon: Flame, isWin: false },
+  legendary: { color: "text-[#00d4aa]", bg: "bg-[#00d4aa]/10", border: "border-[#00d4aa]/30", icon: Trophy, isWin: true },
+  mythic: { color: "text-[#a855f7]", bg: "bg-[#a855f7]/10", border: "border-[#a855f7]/30", icon: Sparkles, isWin: true },
 }
 
 function formatTimeAgo(date: Date): string {
@@ -138,19 +138,19 @@ export function LiveFeed() {
     <div className="h-full flex flex-col">
       <div className="rounded-xl glass-panel overflow-hidden flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-secondary/30">
+        <div className="flex items-center justify-between p-4 border-b border-[#1a3a4a]/50 bg-[#0a1628]/80">
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <h3 className="text-sm font-semibold uppercase tracking-widest text-foreground">
+            <div className="h-2 w-2 rounded-full bg-[#00d4aa] animate-pulse" />
+            <h3 className="text-sm font-semibold uppercase tracking-widest text-[#e8f4f8]">
               Live Feed
             </h3>
           </div>
           <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1 text-muted-foreground">
+            <span className="flex items-center gap-1 text-[#6b8a9a]">
               <TrendingUp className="h-3 w-3" />
               {total} spins
             </span>
-            <span className="flex items-center gap-1 text-primary">
+            <span className="flex items-center gap-1 text-[#00d4aa]">
               <Trophy className="h-3 w-3" />
               {wins} wins
             </span>
@@ -173,19 +173,19 @@ export function LiveFeed() {
         </div>
 
         {/* Legend - distinct winner colors */}
-        <div className="p-3 border-t border-border bg-secondary/20">
-          <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+        <div className="p-3 border-t border-[#1a3a4a]/50 bg-[#0a1628]/60">
+          <div className="flex items-center justify-center gap-6 text-xs text-[#6b8a9a]">
             <span className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-muted-foreground/50" />
+              <div className="w-2 h-2 rounded-full bg-[#4a5568]" />
               Loss (88%)
             </span>
             <span className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-emerald-400">Legendary (9%)</span>
+              <div className="w-2 h-2 rounded-full bg-[#00d4aa]" />
+              <span className="text-[#00d4aa]">Legendary (9%)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-pink-400" />
-              <span className="text-pink-400">Mythic (3%)</span>
+              <div className="w-2 h-2 rounded-full bg-[#a855f7]" />
+              <span className="text-[#a855f7]">Mythic (3%)</span>
             </span>
           </div>
         </div>

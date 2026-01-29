@@ -60,12 +60,12 @@ export function LiveChat() {
   return (
     <div className="flex flex-col h-full glass-panel rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 p-3 border-b border-border bg-secondary/30">
-        <MessageCircle className="h-4 w-4 text-primary" />
-        <span className="text-sm font-semibold">Live Chat</span>
+      <div className="flex items-center gap-2 p-3 border-b border-[#1a3a4a]/50 bg-[#0a1628]/80">
+        <MessageCircle className="h-4 w-4 text-[#00d4aa]" />
+        <span className="text-sm font-semibold text-[#e8f4f8]">Live Chat</span>
         <div className="ml-auto flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-xs text-muted-foreground">{messages.length}</span>
+          <div className="w-2 h-2 rounded-full bg-[#00d4aa] animate-pulse" />
+          <span className="text-xs text-[#6b8a9a]">{messages.length}</span>
         </div>
       </div>
 
