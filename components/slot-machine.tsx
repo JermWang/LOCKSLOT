@@ -9,7 +9,8 @@ import { gameSounds, isSoundEnabled, setSoundEnabled, isMusicEnabled, resumeAudi
 import { gameToast } from "@/lib/toast"
 import { TierSymbol } from "@/components/reel-symbols"
 
-const DEFAULT_QUICK_AMOUNTS = [100, 500, 1000, 5000]
+const TOKEN_DECIMALS = Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS) || 6
+const DEFAULT_QUICK_AMOUNTS = [100000, 500000, 1000000, 5000000] // 100K, 500K, 1M, 5M tokens
 const STORAGE_KEY = "lockslot_quick_amounts"
 
 // DEV MODE: Enable free spins for testing (reads from env)
@@ -70,6 +71,13 @@ const ReelItem = memo(function ReelItem({ tier, label }: { tier: Tier; label: st
 // Smooth cubic ease-out (no overshoot to avoid jank)
 function easeOutCubic(t: number) {
   return 1 - Math.pow(1 - t, 3)
+}
+
+function formatTokenAmount(amount: number): string {
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(2)}M`
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(2)}K`
+  if (amount >= 1) return amount.toFixed(0)
+  return amount.toFixed(2)
 }
 
 function SlotReel({ 
@@ -667,7 +675,7 @@ export function SlotMachine() {
         {/* Balance indicator */}
         <div className="flex items-center justify-between text-xs px-1">
           <span className="text-[#6b8a9a]">Your Balance</span>
-          <span className="font-mono font-bold text-[#e8f4f8]">{userBalance.toLocaleString()} tokens</span>
+          <span className="font-mono font-bold text-[#e8f4f8]">{formatTokenAmount(userBalance)} tokens</span>
         </div>
 
         {/* Input with MAX button */}
@@ -675,7 +683,7 @@ export function SlotMachine() {
           <div className="relative flex-1">
             <input
               type="number"
-              placeholder="500"
+              placeholder="100000"
               value={stakeAmount}
               onChange={(e) => setStakeAmount(e.target.value)}
               className="cyber-input w-full h-10 px-3 pr-14 text-sm font-mono font-bold"
@@ -747,7 +755,7 @@ export function SlotMachine() {
                   disabled={isSpinning || amount > userBalance}
                   className="quick-amount-btn h-8 font-mono text-xs transition-all disabled:opacity-30"
                 >
-                  {amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}K` : amount}
+                  {formatTokenAmount(amount)}
                 </button>
               ))}
             </div>
@@ -757,8 +765,8 @@ export function SlotMachine() {
         {/* Protocol fee preview */}
         {stakeNum > 0 && (
           <div className="flex items-center justify-between text-xs text-[#6b8a9a] px-1">
-            <span>5% fee: -{feeAmount.toFixed(0)}</span>
-            <span className="text-[#e8f4f8] font-medium">You lock: {(stakeNum - feeAmount).toFixed(0)} tokens</span>
+            <span>5% fee: -{formatTokenAmount(feeAmount)}</span>
+            <span className="text-[#e8f4f8] font-medium">You lock: {formatTokenAmount(stakeNum - feeAmount)} tokens</span>
           </div>
         )}
 
