@@ -122,36 +122,80 @@ export function HotSymbol({ className, size = 48, isCenter, isWinner }: SymbolPr
     >
       <defs>
         <linearGradient id="fire-outer" x1="0%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#ff4500" />
-          <stop offset="50%" stopColor="#ff6b35" />
-          <stop offset="100%" stopColor="#ffa500" />
+          <stop offset="0%" stopColor="#cc2200" />
+          <stop offset="30%" stopColor="#ff4500" />
+          <stop offset="60%" stopColor="#ff6a00" />
+          <stop offset="100%" stopColor="#ffaa00" />
+        </linearGradient>
+        <linearGradient id="fire-mid" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#ff6600" />
+          <stop offset="50%" stopColor="#ff9900" />
+          <stop offset="100%" stopColor="#ffcc00" />
         </linearGradient>
         <linearGradient id="fire-inner" x1="0%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#ffcc00" />
-          <stop offset="100%" stopColor="#fff176" />
+          <stop offset="0%" stopColor="#ffdd00" />
+          <stop offset="100%" stopColor="#ffffaa" />
         </linearGradient>
         <filter id="fire-glow">
-          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feGaussianBlur stdDeviation="1.5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
       </defs>
-      {/* Outer flame */}
+      {/* Main outer flame body */}
       <path 
-        d="M32 6 C32 6 42 18 44 28 C46 38 40 50 32 56 C24 50 18 38 20 28 C22 18 32 6 32 6 Z
-           M32 6 C28 14 26 20 28 26 C30 32 32 28 32 28 C32 28 34 32 36 26 C38 20 36 14 32 6 Z" 
+        d="M32 4
+           C38 12 46 22 46 34
+           C46 46 40 56 32 60
+           C24 56 18 46 18 34
+           C18 22 26 12 32 4Z"
         fill="url(#fire-outer)"
         filter="url(#fire-glow)"
       />
-      {/* Inner bright flame */}
+      {/* Left flicker */}
       <path 
-        d="M32 20 C32 20 38 28 38 36 C38 44 35 50 32 52 C29 50 26 44 26 36 C26 28 32 20 32 20 Z" 
+        d="M22 28
+           C20 22 22 16 26 12
+           C24 20 23 26 24 32
+           C25 38 26 42 28 44
+           C24 42 22 36 22 28Z"
+        fill="#ff5500"
+        opacity="0.8"
+      />
+      {/* Right flicker */}
+      <path 
+        d="M42 28
+           C44 22 42 16 38 12
+           C40 20 41 26 40 32
+           C39 38 38 42 36 44
+           C40 42 42 36 42 28Z"
+        fill="#ff5500"
+        opacity="0.8"
+      />
+      {/* Middle flame layer */}
+      <path 
+        d="M32 14
+           C36 20 40 28 40 38
+           C40 48 36 54 32 56
+           C28 54 24 48 24 38
+           C24 28 28 20 32 14Z"
+        fill="url(#fire-mid)"
+      />
+      {/* Inner bright core */}
+      <path 
+        d="M32 26
+           C35 30 37 36 37 42
+           C37 48 35 52 32 54
+           C29 52 27 48 27 42
+           C27 36 29 30 32 26Z"
         fill="url(#fire-inner)"
       />
-      {/* Core */}
-      <ellipse cx="32" cy="42" rx="4" ry="6" fill="#fff9c4" />
+      {/* Hot white center */}
+      <ellipse cx="32" cy="46" rx="4" ry="6" fill="#fffef0" opacity="0.95" />
+      {/* Tip highlight */}
+      <ellipse cx="32" cy="10" rx="2" ry="3" fill="#ffdd44" opacity="0.7" />
     </svg>
   )
 }

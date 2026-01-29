@@ -8,6 +8,7 @@ import { SlotMachine } from "@/components/slot-machine"
 import { RewardPool } from "@/components/reward-pool"
 import { LiveFeed } from "@/components/live-feed"
 import { LiveChat } from "@/components/live-chat"
+import { TokenBalance } from "@/components/token-balance"
 import { Dices, ChevronDown } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -102,6 +103,9 @@ export default function LockSlotPage() {
               
               {/* LEFT: Gambling Widget - Simplified */}
               <div className="space-y-4">
+                {/* Token Balance - Live feed of user's balance */}
+                <TokenBalance />
+                
                 {/* Reward Pool */}
                 <RewardPool />
                 
@@ -137,17 +141,17 @@ export default function LockSlotPage() {
                   </summary>
                   <div className="px-4 pb-4 grid grid-cols-5 gap-2 text-center">
                     {[
-                      { name: "BRICK", prob: "45%", days: "14-21d", color: "text-[#4a5568]", dot: "bg-[#4a5568]" },
-                      { name: "MID", prob: "28%", days: "7-14d", color: "text-[#6b8a9a]", dot: "bg-[#6b8a9a]" },
-                      { name: "HOT", prob: "15%", days: "3-7d", color: "text-[#f0c674]", dot: "bg-[#f0c674]" },
-                      { name: "LEGEND", prob: "9%", days: "1-3d", color: "text-[#00d4aa]", dot: "bg-[#00d4aa]" },
-                      { name: "MYTHIC", prob: "3%", days: "~1d", color: "text-[#a855f7]", dot: "bg-[#a855f7]" },
+                      { name: "BRICK", prob: "45%", duration: "36-48h", color: "text-[#4a5568]", dot: "bg-[#4a5568]" },
+                      { name: "MID", prob: "28%", duration: "18-36h", color: "text-[#6b8a9a]", dot: "bg-[#6b8a9a]" },
+                      { name: "HOT", prob: "15%", duration: "8-18h", color: "text-[#f0c674]", dot: "bg-[#f0c674]" },
+                      { name: "LEGEND", prob: "9%", duration: "3-8h", color: "text-[#00d4aa]", dot: "bg-[#00d4aa]" },
+                      { name: "MYTHIC", prob: "3%", duration: "1-3h", color: "text-[#a855f7]", dot: "bg-[#a855f7]" },
                     ].map((tier) => (
                       <div key={tier.name} className="p-2 rounded-lg bg-[#0a1628]/80 border border-[#1a3a4a]/30">
                         <div className={cn("w-2 h-2 rounded-full mx-auto mb-1", tier.dot)} />
                         <div className={cn("text-[10px] font-bold", tier.color)}>{tier.name}</div>
                         <div className="text-xs font-mono text-[#e8f4f8]">{tier.prob}</div>
-                        <div className="text-[10px] font-mono text-[#6b8a9a]">{tier.days}</div>
+                        <div className="text-[10px] font-mono text-[#6b8a9a]">{tier.duration}</div>
                       </div>
                     ))}
                   </div>
