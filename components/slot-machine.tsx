@@ -11,6 +11,7 @@ import { gameSounds, isSoundEnabled, setSoundEnabled, isMusicEnabled, resumeAudi
 import { gameToast } from "@/lib/toast"
 import { TierSymbol, TIER_LABELS } from "@/components/reel-symbols"
 import { ArcGauge } from "@/components/arc-gauge"
+import { VaultMechanism } from "@/components/vault-mechanism"
 
 const DEFAULT_QUICK_AMOUNTS = [100, 500, 1000, 5000]
 const STORAGE_KEY = "lockslot_quick_amounts"
@@ -500,30 +501,19 @@ export function SlotMachine() {
         </Button>
       </div>
 
-      {/* Vault Reels - Staking Lock Mechanism */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        <SlotReel 
-          isSpinning={reelsSpinning} 
-          spinKey={spinCount}
-          result={localResult?.tier ?? null}
-          reelIndex={0}
-          onStopped={handleReelStopped}
-        />
-        <SlotReel 
-          isSpinning={reelsSpinning} 
-          spinKey={spinCount}
-          result={localResult?.tier ?? null}
-          reelIndex={1}
-          onStopped={handleReelStopped}
-        />
-        <SlotReel 
-          isSpinning={reelsSpinning} 
-          spinKey={spinCount}
-          result={localResult?.tier ?? null}
-          reelIndex={2}
-          onStopped={handleReelStopped}
-        />
-      </div>
+      {/* Vault Mechanism - Central orbital staking visualization */}
+      <VaultMechanism 
+        isSpinning={reelsSpinning}
+        result={localResult?.tier ?? null}
+        onComplete={() => {
+          setReelsSpinning(false)
+          setShowResult(true)
+          const r = resultRef.current
+          if (r) {
+            gameToast.spin(r.tier, r.multiplier, r.duration)
+          }
+        }}
+      />
 
       {/* Lock Result - Staking outcome display */}
       {showResult && localResult ? (
