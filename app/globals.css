@@ -462,6 +462,8 @@
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: -1;
+  pointer-events: none;
+  will-change: opacity;
 }
 
 .hover-glow-border::after {
@@ -471,6 +473,7 @@
   border-radius: calc(0.75rem - 1px);
   background: oklch(0.97 0.015 85 / 0.95);
   z-index: -1;
+  pointer-events: none;
 }
 
 .hover-glow-border:hover {

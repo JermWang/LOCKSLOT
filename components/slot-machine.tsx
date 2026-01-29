@@ -232,9 +232,9 @@ function SlotReel({
             key={key}
             className="absolute left-0 right-0 h-20 flex flex-col items-center justify-center gap-1.5"
             style={{ 
-              transform: `translateY(${centerY + yOffset}px) scale(${scale})`,
+              transform: `translateY(${centerY + yOffset}px) scale(${scale}) translateZ(0)`,
               opacity,
-              filter: isHighSpeed && !isCenter ? 'blur(1px)' : 'none',
+              willChange: isSpinning ? 'transform, opacity' : 'auto',
             }}
           >
             <div className={cn(
