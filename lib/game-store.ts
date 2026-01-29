@@ -94,12 +94,12 @@ function generateMockActivity(): ActivityItem[] {
 
 export const useGameStore = create<GameState>((set, get) => ({
   walletAddress: null,
-  userBalance: IS_DEMO ? 10000 : 0,
+  userBalance: 0,
   locks: [],
-  rewardPool: IS_DEMO ? 847293 : 0,
-  totalSpins: IS_DEMO ? 500 : 0,
-  activeWinners: IS_DEMO ? 12 : 0,
-  activityFeed: generateMockActivity(),
+  rewardPool: 0,
+  totalSpins: 0,
+  activeWinners: 0,
+  activityFeed: [],
   leaderboard: [],
   isSpinning: false,
   isLoading: false,

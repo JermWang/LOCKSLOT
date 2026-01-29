@@ -16,16 +16,9 @@ interface ChatMessage {
   isSystem?: boolean
 }
 
-const DEMO_MESSAGES: ChatMessage[] = [
-  { id: "1", user: "anon_whale", message: "just hit legendary 🎉", timestamp: new Date(Date.now() - 120000) },
-  { id: "2", user: "degen_42", message: "gg nice hit", timestamp: new Date(Date.now() - 90000) },
-  { id: "3", user: "sol_maxi", message: "been bricking all day lol", timestamp: new Date(Date.now() - 60000) },
-  { id: "4", user: "lock_lord", message: "12% odds feeling good today", timestamp: new Date(Date.now() - 30000) },
-]
-
 export function LiveChat() {
   const { connected, publicKey } = useWallet()
-  const [messages, setMessages] = useState<ChatMessage[]>(DEMO_MESSAGES)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { TrendingUp, Users, Trophy, Sigma } from "lucide-react"
 
 export function RewardPool() {
-  const { rewardPool, totalSpins = 500, activeWinners = 12 } = useGameStore()
+  const { rewardPool, totalSpins, activeWinners } = useGameStore()
   const [displayValue, setDisplayValue] = useState(rewardPool)
 
   useEffect(() => {
