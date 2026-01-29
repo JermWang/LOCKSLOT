@@ -199,7 +199,7 @@ function SlotReel({
 
   return (
     <div className={cn(
-      "relative h-40 w-full overflow-hidden rounded-xl border slot-reel-glow transition-shadow duration-300",
+      "relative h-32 w-full overflow-hidden rounded-lg border slot-reel-glow transition-shadow duration-300",
       "bg-gradient-to-b from-black/40 via-black/20 to-black/40",
       "backdrop-blur-md",
       isWinner && result === "mythic" && "glow-mythic border-pink-400/60",
@@ -212,12 +212,12 @@ function SlotReel({
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
       
       {/* Top/bottom fade */}
-      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background/95 to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background/95 to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background/95 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/95 to-transparent z-10 pointer-events-none" />
       
       {/* Center highlight */}
       <div className={cn(
-        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y pointer-events-none transition-all duration-200",
+        "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-16 border-y pointer-events-none transition-all duration-200",
         isWinner ? "border-primary/40 bg-primary/10" : "border-primary/20 bg-primary/5"
       )} />
 
@@ -476,7 +476,7 @@ export function SlotMachine() {
   return (
     <div className="flex flex-col h-full">
       {/* Sound & Music toggles */}
-      <div className="flex justify-end gap-1 mb-2">
+      <div className="flex justify-end gap-1 mb-1">
         <Button
           variant="ghost"
           size="sm"
@@ -501,7 +501,7 @@ export function SlotMachine() {
       </div>
 
       {/* Slot Reels - Main visual focus */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-3">
         <SlotReel 
           isSpinning={reelsSpinning} 
           spinKey={spinCount}
@@ -528,7 +528,7 @@ export function SlotMachine() {
       {/* Result Display - Redesigned with Arc Gauge */}
       {showResult && localResult ? (
         <div className={cn(
-          "rounded-xl border-2 p-4 mb-4",
+          "rounded-lg border p-3 mb-3",
           isWinner ? "border-primary/50 bg-primary/5" : "border-border/50 bg-secondary/20"
         )}>
           <div className="flex items-center justify-between gap-4">
@@ -567,7 +567,7 @@ export function SlotMachine() {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-border/30 bg-secondary/10 p-4 mb-4 text-center">
+        <div className="rounded-lg border border-border/30 bg-secondary/10 p-3 mb-3 text-center">
           <div className="text-muted-foreground text-sm">Enter amount and spin</div>
           <div className="text-[10px] text-muted-foreground/60 mt-1 uppercase tracking-wider">
             Short locks win big
@@ -576,7 +576,7 @@ export function SlotMachine() {
       )}
 
       {/* Stake Input - Simplified */}
-      <div className="mt-auto space-y-3">
+      <div className="mt-auto space-y-2">
         {/* Balance indicator */}
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Your Balance</span>
@@ -591,7 +591,7 @@ export function SlotMachine() {
               placeholder="Amount"
               value={stakeAmount}
               onChange={(e) => setStakeAmount(e.target.value)}
-              className="h-12 bg-black/40 backdrop-blur-sm border-white/10 pr-16 text-lg font-mono font-bold"
+              className="h-10 bg-black/40 backdrop-blur-sm border-white/10 pr-16 text-base font-mono font-bold"
               disabled={isSpinning}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -602,7 +602,7 @@ export function SlotMachine() {
             variant="outline"
             onClick={() => handleQuickAmount(userBalance)}
             disabled={isSpinning}
-            className="h-12 px-4 text-xs font-bold bg-black/30 backdrop-blur-sm border-white/10 hover:bg-white/10 hover:border-white/20"
+            className="h-10 px-3 text-xs font-bold bg-black/30 backdrop-blur-sm border-white/10 hover:bg-white/10 hover:border-white/20"
           >
             MAX
           </Button>
@@ -694,7 +694,7 @@ export function SlotMachine() {
             onClick={handleSpin}
             disabled={isButtonDisabled}
             className={cn(
-              "relative w-full h-16 overflow-hidden transition-all duration-300",
+              "relative w-full h-14 overflow-hidden transition-all duration-300",
               "rounded-xl border",
               isButtonDisabled 
                 ? "bg-gray-800/50 border-gray-700/50 cursor-not-allowed" 
