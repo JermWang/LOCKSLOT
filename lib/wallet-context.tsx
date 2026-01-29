@@ -1,6 +1,48 @@
 "use client"
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
+import { 
+  Connection, 
+  PublicKey, 
+  Transaction, 
+  VersionedTransaction,
+  TransactionInstruction 
+} from "@solana/web3.js"
+import { 
+  getAssociatedTokenAddress, 
+  createTransferInstruction,
+  createAssociatedTokenAccountInstruction,
+  TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID
+} from "@solana/spl-token"
+
+// RPC connection
+function getRpcUrl(): string {
+  const urls = process.env.NEXT_PUBLIC_SOLANA_RPC_URLS || process.env.NEXT_PUBLIC_SOLANA_RPC_URL
+  if (!urls) return "https://api.mainnet-beta.solana.com"
+  return urls.split(",").map(u => u.trim()).filter(Boolean)[0] || "https://api.mainnet-beta.solana.com"
+}
+
+const connection = new Connection(getRpcUrl(), "confirmed")
+
+// Token mint from env
+function getTokenMint(): PublicKey | null {
+  const mint = process.env.NEXT_PUBLIC_TOKEN_MINT
+  if (!mint) return null
+  try {
+    return new PublicKey(mint)
+  } catch {
+    return null
+  }
+}
+
+export interface TransactionPreview {
+  amount: number           // Amount in token base units
+  displayAmount: string    // Human-readable amount
+  recipient: string        // Escrow token account
+  tokenMint: string        // Token mint address
+  estimatedFee: number     // Estimated SOL fee in lamports
+}
 
 interface WalletContextType {
   connected: boolean
@@ -9,6 +51,10 @@ interface WalletContextType {
   connect: () => Promise<void>
   disconnect: () => void
   walletName: string | null
+  // SPL Token transactions
+  signAndSendTransaction: (tx: Transaction | VersionedTransaction) => Promise<string>
+  buildDepositTransaction: (amount: number, escrowTokenAccount: string) => Promise<{ tx: Transaction; preview: TransactionPreview }>
+  getTokenBalance: () => Promise<number>
 }
 
 const WalletContext = createContext<WalletContextType>({
@@ -18,6 +64,9 @@ const WalletContext = createContext<WalletContextType>({
   connect: async () => {},
   disconnect: () => {},
   walletName: null,
+  signAndSendTransaction: async () => { throw new Error("Not connected") },
+  buildDepositTransaction: async () => { throw new Error("Not connected") },
+  getTokenBalance: async () => 0,
 })
 
 export function useWallet() {
@@ -31,16 +80,20 @@ declare global {
       connect: () => Promise<{ publicKey: { toString: () => string } }>
       disconnect: () => Promise<void>
       on: (event: string, callback: () => void) => void
-      publicKey?: { toString: () => string }
+      publicKey?: { toString: () => string; toBytes: () => Uint8Array }
       isConnected?: boolean
+      signAndSendTransaction: (tx: Transaction | VersionedTransaction, options?: any) => Promise<{ signature: string }>
+      signTransaction: (tx: Transaction | VersionedTransaction) => Promise<Transaction | VersionedTransaction>
     }
     solflare?: {
       isSolflare?: boolean
       connect: () => Promise<{ publicKey: { toString: () => string } }>
       disconnect: () => Promise<void>
       on: (event: string, callback: () => void) => void
-      publicKey?: { toString: () => string }
+      publicKey?: { toString: () => string; toBytes: () => Uint8Array }
       isConnected?: boolean
+      signAndSendTransaction: (tx: Transaction | VersionedTransaction, options?: any) => Promise<{ signature: string }>
+      signTransaction: (tx: Transaction | VersionedTransaction) => Promise<Transaction | VersionedTransaction>
     }
   }
 }
@@ -133,6 +186,116 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setWalletName(null)
   }, [])
 
+  // Sign and send a transaction using the connected wallet
+  const signAndSendTransaction = useCallback(async (tx: Transaction | VersionedTransaction): Promise<string> => {
+    if (typeof window === "undefined") throw new Error("Not in browser")
+    if (!connected || !publicKey) throw new Error("Wallet not connected")
+
+    let signature: string
+
+    if (window.solana?.isPhantom) {
+      const result = await window.solana.signAndSendTransaction(tx)
+      signature = result.signature
+    } else if (window.solflare?.isSolflare) {
+      const result = await window.solflare.signAndSendTransaction(tx)
+      signature = result.signature
+    } else {
+      throw new Error("No compatible wallet found")
+    }
+
+    // Wait for confirmation
+    await connection.confirmTransaction(signature, "confirmed")
+    return signature
+  }, [connected, publicKey])
+
+  // Build a deposit transaction for SPL token transfer to escrow
+  const buildDepositTransaction = useCallback(async (
+    amount: number, 
+    escrowTokenAccount: string
+  ): Promise<{ tx: Transaction; preview: TransactionPreview }> => {
+    if (!connected || !publicKey) throw new Error("Wallet not connected")
+    
+    const tokenMint = getTokenMint()
+    if (!tokenMint) throw new Error("Token mint not configured")
+
+    const userPubkey = new PublicKey(publicKey)
+    const escrowAta = new PublicKey(escrowTokenAccount)
+    
+    // Get user's associated token account
+    const userAta = await getAssociatedTokenAddress(tokenMint, userPubkey)
+    
+    // Check if user has the token account
+    const userAtaInfo = await connection.getAccountInfo(userAta)
+    if (!userAtaInfo) {
+      throw new Error("You don't have a token account. Please ensure you have tokens first.")
+    }
+
+    // Verify user has enough balance
+    const userTokenBalance = await connection.getTokenAccountBalance(userAta)
+    const userBalance = Number(userTokenBalance.value.amount)
+    if (userBalance < amount) {
+      throw new Error(`Insufficient token balance. You have ${userTokenBalance.value.uiAmountString} tokens.`)
+    }
+
+    // Build transfer instruction
+    const transferIx = createTransferInstruction(
+      userAta,           // source (user's token account)
+      escrowAta,         // destination (escrow token account)
+      userPubkey,        // owner/authority
+      amount,            // amount in base units
+      [],                // no multisig
+      TOKEN_PROGRAM_ID
+    )
+
+    // Build transaction
+    const tx = new Transaction()
+    tx.add(transferIx)
+    tx.feePayer = userPubkey
+    
+    // Get recent blockhash
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed")
+    tx.recentBlockhash = blockhash
+    tx.lastValidBlockHeight = lastValidBlockHeight
+
+    // Calculate display amount (assuming 9 decimals, adjust as needed)
+    const decimals = userTokenBalance.value.decimals
+    const displayAmount = (amount / Math.pow(10, decimals)).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimals
+    })
+
+    // Estimate transaction fee
+    const feeEstimate = await connection.getFeeForMessage(tx.compileMessage(), "confirmed")
+    const estimatedFee = feeEstimate.value || 5000 // default 5000 lamports
+
+    const preview: TransactionPreview = {
+      amount,
+      displayAmount,
+      recipient: escrowTokenAccount,
+      tokenMint: tokenMint.toBase58(),
+      estimatedFee,
+    }
+
+    return { tx, preview }
+  }, [connected, publicKey])
+
+  // Get user's SPL token balance
+  const getTokenBalance = useCallback(async (): Promise<number> => {
+    if (!connected || !publicKey) return 0
+    
+    const tokenMint = getTokenMint()
+    if (!tokenMint) return 0
+
+    try {
+      const userPubkey = new PublicKey(publicKey)
+      const userAta = await getAssociatedTokenAddress(tokenMint, userPubkey)
+      const balance = await connection.getTokenAccountBalance(userAta)
+      return Number(balance.value.amount)
+    } catch {
+      return 0
+    }
+  }, [connected, publicKey])
+
   return (
     <WalletContext.Provider
       value={{
@@ -142,6 +305,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         connect,
         disconnect,
         walletName,
+        signAndSendTransaction,
+        buildDepositTransaction,
+        getTokenBalance,
       }}
     >
       {children}
