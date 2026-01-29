@@ -44,7 +44,7 @@ export function Navbar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-[#1a3a4a]/50 bg-[#0a1628]/95 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Logo */}
         <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export function Navbar() {
             <Input
               type="search"
               placeholder="Search wallets, epochs..."
-              className="w-full pl-10 bg-secondary border-border text-sm"
+              className="w-full pl-10 bg-[#081420] border-[#1a3a4a]/50 text-sm text-[#e8f4f8] placeholder:text-[#6b8a9a]"
             />
           </div>
         </div>
@@ -79,7 +79,7 @@ export function Navbar() {
           {connected && publicKey ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2 border-border bg-secondary">
+                <Button variant="outline" className="gap-2 border-[#1a3a4a]/50 bg-[#081420] hover:bg-[#0a1628]">
                   <Wallet className="h-4 w-4 text-primary" />
                   <span className="font-mono text-sm">{truncatedAddress}</span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -109,7 +109,7 @@ export function Navbar() {
             <Button
               onClick={handleConnect}
               disabled={connecting}
-              className="gap-2 bg-secondary text-foreground border border-border hover:bg-secondary/80"
+              className="gap-2 bg-[#081420] text-[#e8f4f8] border border-[#1a3a4a]/50 hover:bg-[#0a1628] hover:border-[#00d4aa]/30"
             >
               <Wallet className="h-4 w-4" />
               {connecting ? "Connecting..." : "Select Wallet"}
