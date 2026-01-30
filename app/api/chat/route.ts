@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase"
 import { verifyAuth } from "@/lib/auth-server"
+import { getSessionFromRequest } from "@/lib/session"
 import { rateLimitGate } from "@/lib/api-guard"
 
 export const runtime = "nodejs"
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     const { walletAddress, message, auth } = await request.json()
 
-    if (!walletAddress || !message || !auth) {
+    if (!walletAddress || !message) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
@@ -78,15 +79,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Message too long" }, { status: 400 })
     }
 
-    const authResult = verifyAuth({
-      action: "chat_send",
-      walletAddress,
-      payload: { message: cleanMessage },
-      auth,
-    })
+    if (auth) {
+      const authResult = verifyAuth({
+        action: "chat_send",
+        walletAddress,
+        payload: { message: cleanMessage },
+        auth,
+      })
 
-    if (!authResult.ok) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 })
+      if (!authResult.ok) {
+        return NextResponse.json({ error: authResult.error }, { status: 401 })
+      }
+    } else {
+      const session = getSessionFromRequest(request)
+      if (!session.ok) {
+        return NextResponse.json({ error: session.error }, { status: 401 })
+      }
+      if (session.walletAddress !== walletAddress) {
+        return NextResponse.json({ error: "Session wallet mismatch" }, { status: 401 })
+      }
     }
 
     const supabase = createServerClient()

@@ -21,9 +21,11 @@ export function LiveChat() {
   const { connected, publicKey } = useWallet()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
+  const [isSending, setIsSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const lastCreatedAtRef = useRef<string | null>(null)
+  const seenIdsRef = useRef<Set<string>>(new Set())
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -61,6 +63,7 @@ export function LiveChat() {
         lastCreatedAtRef.current = String(rows[rows.length - 1].createdAt)
       }
 
+      seenIdsRef.current = new Set(mapped.map((msg) => msg.id))
       setMessages(mapped)
     } catch (err) {
       console.error("Failed to load chat:", err)
@@ -89,8 +92,12 @@ export function LiveChat() {
         }
       })
 
+      const newItems = mapped.filter((msg) => !seenIdsRef.current.has(msg.id))
+      if (!newItems.length) return
+
+      newItems.forEach((msg) => seenIdsRef.current.add(msg.id))
       lastCreatedAtRef.current = String(rows[rows.length - 1].createdAt)
-      setMessages((prev) => [...prev, ...mapped])
+      setMessages((prev) => [...prev, ...newItems])
     } catch (err) {
       console.error("Failed to poll chat:", err)
     }
@@ -109,21 +116,17 @@ export function LiveChat() {
 
   const handleSend = async () => {
     const clean = input.trim()
-    if (!clean || !connected || !publicKey) return
+    if (!clean || !connected || !publicKey || isSending) return
 
     gameSounds.click()
 
     try {
-      const auth = await signAuth({
-        action: "chat_send",
-        walletAddress: publicKey,
-        payload: { message: clean },
-      })
+      setIsSending(true)
 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress: publicKey, message: clean, auth }),
+        body: JSON.stringify({ walletAddress: publicKey, message: clean }),
       })
 
       const data = await res.json()
@@ -138,18 +141,22 @@ export function LiveChat() {
 
       lastCreatedAtRef.current = createdAt
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: String(row?.id || Date.now().toString()),
-          user: formatUser(walletAddress, username),
-          message: String(row?.message || clean),
-          timestamp: new Date(createdAt),
-        },
-      ])
+      const nextMessage: ChatMessage = {
+        id: String(row?.id || Date.now().toString()),
+        user: formatUser(walletAddress, username),
+        message: String(row?.message || clean),
+        timestamp: new Date(createdAt),
+      }
+
+      if (!seenIdsRef.current.has(nextMessage.id)) {
+        seenIdsRef.current.add(nextMessage.id)
+        setMessages((prev) => [...prev, nextMessage])
+      }
       setInput("")
     } catch (err) {
       console.error("Chat send error:", err)
+    } finally {
+      setIsSending(false)
     }
   }
 
