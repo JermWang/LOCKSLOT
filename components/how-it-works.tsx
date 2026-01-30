@@ -24,7 +24,7 @@ const STEPS = [
   {
     id: 1,
     title: "Stake Your Tokens",
-    description: "Choose how many tokens to risk. A 5% fee funds the reward pool (not a house fee — it all goes to winners!).",
+    description: "Choose how many tokens to risk. A 5% reward pool fee funds the pool (not a house fee — it all goes to winners!).",
     icon: Coins,
     visual: "stake",
     highlight: "Your principal is always returned after the lock expires.",
@@ -112,7 +112,7 @@ function StakeVisual() {
         <div className="flex gap-2">
           <div className="rounded-lg bg-destructive/20 border border-destructive/30 px-3 py-2 text-center">
             <div className="text-lg font-bold font-mono text-destructive">-50</div>
-            <div className="text-[10px] text-muted-foreground">FEE (5%)</div>
+            <div className="text-[10px] text-muted-foreground">REWARD POOL FEE (5%)</div>
           </div>
           <div className="rounded-lg bg-primary/20 border border-primary/30 px-3 py-2 text-center">
             <div className="text-lg font-bold font-mono text-primary">+50</div>

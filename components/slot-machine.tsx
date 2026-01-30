@@ -780,10 +780,10 @@ export function SlotMachine() {
           )}
         </div>
 
-        {/* Protocol fee preview */}
+        {/* Reward pool fee preview */}
         {stakeTokens > 0 && (
           <div className="flex items-center justify-between text-xs text-[#6b8a9a] px-1">
-            <span>5% fee: -{formatTokenAmount(feeAmount)}</span>
+            <span>Reward pool fee (5%): -{formatTokenAmount(feeAmount)}</span>
             <span className="text-[#e8f4f8] font-medium">You lock: {formatTokenAmount(stakeTokens - feeAmount)} tokens</span>
           </div>
         )}

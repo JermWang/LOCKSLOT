@@ -271,24 +271,24 @@ export default function DocsPage() {
             </div>
           </div>
 
-          {/* Fee Structure */}
+          {/* Reward Pool Fee Structure */}
           <div className="cyber-panel p-6">
             <h2 className="text-2xl font-bold text-[#e8f4f8] mb-6 flex items-center gap-3">
               <Percent className="h-6 w-6 text-[#00d4aa]" />
-              Fee Structure
+              Reward Pool Fee Structure
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="p-4 rounded-xl bg-[#1a3a4a]/30 border border-[#1a3a4a]/50">
                 <div className="flex items-center gap-3 mb-3">
                   <CircleDollarSign className="h-6 w-6 text-[#00d4aa]" />
-                  <span className="font-semibold text-[#e8f4f8]">5% Spin Fee</span>
+                  <span className="font-semibold text-[#e8f4f8]">5% Reward Pool Fee</span>
                 </div>
                 <p className="text-sm text-[#6b8a9a]">
-                  A 5% fee is taken from each spin and added to the reward pool. This funds winner bonuses.
+                  A 5% reward pool fee is taken from each spin and added to the reward pool. This funds winner bonuses.
                 </p>
                 <div className="mt-3 p-2 rounded-lg bg-[#00d4aa]/10 border border-[#00d4aa]/30">
-                  <div className="text-xs font-semibold text-[#00d4aa]">🎯 NOT A HOUSE FEE</div>
-                  <div className="text-xs text-[#6b8a9a]">100% of this fee goes to Legendary & Mythic winners!</div>
+                  <div className="text-xs font-semibold text-[#00d4aa]">🎯 NOT A HOUSE FEE — REWARD POOL FEE</div>
+                  <div className="text-xs text-[#6b8a9a]">100% of this reward pool fee goes to Legendary & Mythic winners!</div>
                 </div>
                 <div className="mt-2 p-2 rounded-lg bg-[#0a1628]">
                   <div className="text-xs text-[#6b8a9a]">Example: 1000 token stake</div>
@@ -572,12 +572,12 @@ export default function DocsPage() {
               <div className="p-4 rounded-xl bg-[#1a3a4a]/30 border border-[#1a3a4a]/50 text-center">
                 <Users className="h-10 w-10 text-[#6b8a9a] mx-auto mb-3" />
                 <h4 className="font-semibold text-[#e8f4f8] mb-1">Players Spin</h4>
-                <p className="text-xs text-[#6b8a9a]">Each spin pays a 5% fee</p>
+                <p className="text-xs text-[#6b8a9a]">Each spin pays a 5% reward pool fee</p>
               </div>
               <div className="p-4 rounded-xl bg-[#00d4aa]/10 border border-[#00d4aa]/30 text-center">
                 <Coins className="h-10 w-10 text-[#00d4aa] mx-auto mb-3" />
                 <h4 className="font-semibold text-[#e8f4f8] mb-1">Pool Grows</h4>
-                <p className="text-xs text-[#6b8a9a]">Fees accumulate in reward pool</p>
+                <p className="text-xs text-[#6b8a9a]">Reward pool fees accumulate in the reward pool</p>
               </div>
               <div className="p-4 rounded-xl bg-pink-400/10 border border-pink-400/30 text-center">
                 <Trophy className="h-10 w-10 text-pink-400 mx-auto mb-3" />
@@ -593,7 +593,7 @@ export default function DocsPage() {
               </div>
               <p className="text-sm text-[#6b8a9a]">
                 Because most players (88%) land on losing tiers, the reward pool constantly grows. 
-                When you hit Legendary or Mythic, you&apos;re claiming a share of everyone else&apos;s fees!
+                When you hit Legendary or Mythic, you&apos;re claiming a share of everyone else&apos;s reward pool fees!
               </p>
             </div>
           </div>
@@ -614,7 +614,7 @@ export default function DocsPage() {
                 <ul className="space-y-2 text-sm text-[#e8f4f8]">
                   <li className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#00d4aa]" />
-                    5% fee on every spin
+                    5% reward pool fee on every spin
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#00d4aa]" />

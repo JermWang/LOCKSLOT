@@ -70,7 +70,7 @@ export function EarningsCalculator() {
         {/* Fee Display */}
         <div className="mb-6 rounded-lg border border-border bg-secondary/30 p-4">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Fee ({feeRate}%)</span>
+            <span className="text-sm text-muted-foreground">Reward pool fee ({feeRate}%)</span>
             <span className="font-mono text-destructive font-semibold">-{formatTokenAmount(feeAmount)} TOKENS</span>
           </div>
           <div className="flex justify-between items-center mt-2">
@@ -125,7 +125,7 @@ export function EarningsCalculator() {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
           <p>
             97% of spins result in long locks with no bonus. Your principal is always returned, 
-            but you lose the fee and your time.
+            but you lose the reward pool fee and your time.
           </p>
         </div>
 
