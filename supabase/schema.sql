@@ -169,6 +169,20 @@ create index if not exists idx_escrow_deposits_status on public.escrow_deposits(
 create index if not exists idx_escrow_deposits_tx on public.escrow_deposits(tx_signature);
 
 -- ==========================================
+-- CHAT MESSAGES (Global chat history)
+-- ==========================================
+create table if not exists public.chat_messages (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references public.users(id),
+  wallet_address text not null,
+  message text not null,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_chat_messages_created_at on public.chat_messages(created_at);
+create index if not exists idx_chat_messages_wallet on public.chat_messages(wallet_address);
+
+-- ==========================================
 -- FUNCTIONS
 -- ==========================================
 
@@ -998,6 +1012,7 @@ alter table public.epochs enable row level security;
 alter table public.epoch_secrets enable row level security;
 alter table public.reward_pool_ledger enable row level security;
 alter table public.escrow_deposits enable row level security;
+alter table public.chat_messages enable row level security;
 
 -- Users can only see their own data
 drop policy if exists "Users can view own profile" on public.users;
@@ -1029,6 +1044,10 @@ create policy "Anyone can view epochs"
 drop policy if exists "Anyone can view reward ledger" on public.reward_pool_ledger;
 create policy "Anyone can view reward ledger"
   on public.reward_pool_ledger for select using (true);
+
+drop policy if exists "Anyone can view chat messages" on public.chat_messages;
+create policy "Anyone can view chat messages"
+  on public.chat_messages for select using (true);
 
 revoke all on function public.perform_spin(text, bigint, text, text, int) from public;
 revoke all on function public.claim_unlocked_spin(text, uuid) from public;

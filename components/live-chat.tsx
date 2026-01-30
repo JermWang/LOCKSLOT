@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useWallet } from "@/lib/wallet-context"
+import { signAuth } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Send, MessageCircle } from "lucide-react"
@@ -22,6 +23,8 @@ export function LiveChat() {
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  const lastCreatedAtRef = useRef<string | null>(null)
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -30,20 +33,124 @@ export function LiveChat() {
     scrollToBottom()
   }, [messages])
 
-  const handleSend = () => {
-    if (!input.trim() || !connected) return
+  const formatUser = useCallback((walletAddress: string, username: string | null) => {
+    if (username) return username
+    return `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`
+  }, [])
+
+  const loadInitial = useCallback(async () => {
+    try {
+      const res = await fetch("/api/chat?limit=50")
+      if (!res.ok) return
+      const data = await res.json()
+      const rows = (data?.messages || []) as Array<any>
+
+      const mapped: ChatMessage[] = rows.map((row) => {
+        const walletAddress = String(row.walletAddress || "")
+        const username = row.username ?? null
+        const createdAt = String(row.createdAt || "")
+        return {
+          id: String(row.id),
+          user: formatUser(walletAddress, username),
+          message: String(row.message || ""),
+          timestamp: createdAt ? new Date(createdAt) : new Date(),
+        }
+      })
+
+      if (rows.length) {
+        lastCreatedAtRef.current = String(rows[rows.length - 1].createdAt)
+      }
+
+      setMessages(mapped)
+    } catch (err) {
+      console.error("Failed to load chat:", err)
+    }
+  }, [formatUser])
+
+  const pollNew = useCallback(async () => {
+    try {
+      const after = lastCreatedAtRef.current
+      const url = after ? `/api/chat?after=${encodeURIComponent(after)}&limit=50` : "/api/chat?limit=50"
+      const res = await fetch(url)
+      if (!res.ok) return
+      const data = await res.json()
+      const rows = (data?.messages || []) as Array<any>
+      if (!rows.length) return
+
+      const mapped: ChatMessage[] = rows.map((row) => {
+        const walletAddress = String(row.walletAddress || "")
+        const username = row.username ?? null
+        const createdAt = String(row.createdAt || "")
+        return {
+          id: String(row.id),
+          user: formatUser(walletAddress, username),
+          message: String(row.message || ""),
+          timestamp: createdAt ? new Date(createdAt) : new Date(),
+        }
+      })
+
+      lastCreatedAtRef.current = String(rows[rows.length - 1].createdAt)
+      setMessages((prev) => [...prev, ...mapped])
+    } catch (err) {
+      console.error("Failed to poll chat:", err)
+    }
+  }, [formatUser])
+
+  useEffect(() => {
+    void loadInitial()
+  }, [loadInitial])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      void pollNew()
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [pollNew])
+
+  const handleSend = async () => {
+    const clean = input.trim()
+    if (!clean || !connected || !publicKey) return
 
     gameSounds.click()
-    
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      user: publicKey ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : "anon",
-      message: input.trim(),
-      timestamp: new Date(),
-    }
 
-    setMessages(prev => [...prev, newMessage])
-    setInput("")
+    try {
+      const auth = await signAuth({
+        action: "chat_send",
+        walletAddress: publicKey,
+        payload: { message: clean },
+      })
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress: publicKey, message: clean, auth }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to send message")
+      }
+
+      const row = data?.message
+      const walletAddress = String(row?.walletAddress || publicKey)
+      const username = row?.username ?? null
+      const createdAt = String(row?.createdAt || new Date().toISOString())
+
+      lastCreatedAtRef.current = createdAt
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: String(row?.id || Date.now().toString()),
+          user: formatUser(walletAddress, username),
+          message: String(row?.message || clean),
+          timestamp: new Date(createdAt),
+        },
+      ])
+      setInput("")
+    } catch (err) {
+      console.error("Chat send error:", err)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
