@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback } from "react"
 import { UsernameModal } from "@/components/username-modal"
 import { gameSounds, resumeAudio } from "@/lib/sounds"
 import Image from "next/image"
-import { formatTokenAmountFromBase } from "@/lib/token-utils"
+import { formatTokenAmount } from "@/lib/token-utils"
 
 const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_MINT || ""
@@ -135,7 +135,7 @@ export function Navbar() {
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081420] border border-[#1a3a4a]/50">
               <Image src="/logo.png" alt="" width={20} height={20} className="rounded" />
               <span className="font-mono text-sm font-semibold text-[#00d4aa]">
-                {balance !== null ? formatTokenAmountFromBase(balance) : "..."}
+                {balance !== null ? formatTokenAmount(balance) : "..."}
               </span>
               <span className="text-[10px] text-[#6b8a9a] uppercase">{TOKEN_SYMBOL}</span>
             </div>

@@ -349,25 +349,38 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       )
 
       const userPubkey = new PublicKey(publicKey)
-      const userAta = await getAssociatedTokenAddress(
-        tokenMint,
+      const parsedAccounts = await connection.getParsedTokenAccountsByOwner(
         userPubkey,
-        false,
-        tokenProgramId,
-        ASSOCIATED_TOKEN_PROGRAM_ID
+        { programId: tokenProgramId },
+        "confirmed"
       )
-      console.log("[getTokenBalance] User ATA:", userAta.toBase58())
-      
-      // Check if the token account exists first
-      const accountInfo = await connection.getAccountInfo(userAta)
-      if (!accountInfo) {
-        console.log("[getTokenBalance] No token account exists for this mint - user has 0 balance")
+
+      const mintAddress = tokenMint.toBase58()
+      const matchingAccounts = parsedAccounts.value.filter((account) => {
+        const info = (account.account.data as any)?.parsed?.info
+        return info?.mint === mintAddress
+      })
+
+      if (!matchingAccounts.length) {
+        console.log("[getTokenBalance] No token accounts found for mint:", mintAddress)
         return 0
       }
-      
-      const balance = await connection.getTokenAccountBalance(userAta)
-      console.log("[getTokenBalance] Balance:", balance.value.amount, "uiAmount:", balance.value.uiAmountString)
-      return Number(balance.value.amount)
+
+      let totalRaw = 0
+      let decimals = 0
+      for (const account of matchingAccounts) {
+        const info = (account.account.data as any)?.parsed?.info
+        const tokenAmount = info?.tokenAmount
+        if (!tokenAmount?.amount) continue
+        decimals = tokenAmount.decimals ?? decimals
+        const raw = Number(tokenAmount.amount)
+        if (!Number.isFinite(raw)) continue
+        totalRaw += raw
+      }
+
+      const tokens = totalRaw / Math.pow(10, decimals)
+      console.log("[getTokenBalance] Raw total:", totalRaw, "decimals:", decimals, "tokens:", tokens)
+      return tokens
     } catch (err: any) {
       // Handle specific RPC errors
       if (err?.message?.includes("could not find account") || err?.message?.includes("Invalid param") || err?.message?.includes("Token mint account not found")) {

@@ -66,21 +66,24 @@ export function DepositWithdraw() {
     }
   }, [connected, getTokenBalance])
 
+  const fetchEscrowAccount = useCallback(async () => {
+    try {
+      const res = await fetch("/api/deposit")
+      if (res.ok) {
+        const data = await res.json()
+        setEscrowAccount(data.escrowTokenAccount)
+        return data.escrowTokenAccount as string
+      }
+    } catch (err) {
+      console.error("Failed to fetch escrow account:", err)
+    }
+    return null
+  }, [])
+
   // Fetch escrow account on mount
   useEffect(() => {
-    const fetchEscrow = async () => {
-      try {
-        const res = await fetch("/api/deposit")
-        if (res.ok) {
-          const data = await res.json()
-          setEscrowAccount(data.escrowTokenAccount)
-        }
-      } catch (err) {
-        console.error("Failed to fetch escrow account:", err)
-      }
-    }
-    fetchEscrow()
-  }, [])
+    void fetchEscrowAccount()
+  }, [fetchEscrowAccount])
 
   // Fetch wallet balance on connect
   useEffect(() => {
@@ -102,29 +105,33 @@ export function DepositWithdraw() {
   const parsedAmount = parseFloat(amount) || 0
   const amountInBaseUnits = toBaseUnits(parsedAmount)
 
-  const maxDeposit = walletBalance !== null ? fromBaseUnits(walletBalance) : 0
+  const maxDeposit = walletBalance !== null ? walletBalance : 0
   const maxWithdraw = fromBaseUnits(userBalance)
 
-  const canDeposit = parsedAmount > 0 && escrowAccount
+  const canDeposit = parsedAmount > 0 && (walletBalance === null || parsedAmount <= walletBalance)
   const canWithdraw = parsedAmount > 0 && amountInBaseUnits <= userBalance
 
   const handleSetMax = () => {
     if (activeTab === "deposit" && walletBalance !== null) {
-      setAmount(fromBaseUnits(walletBalance).toString())
+      setAmount(walletBalance.toString())
     } else if (activeTab === "withdraw") {
       setAmount(fromBaseUnits(userBalance).toString())
     }
   }
 
   const handleDeposit = async () => {
-    if (!canDeposit || !escrowAccount) return
+    if (!canDeposit) return
     setError(null)
     setLoading(true)
     gameSounds.click()
 
     try {
+      const escrow = escrowAccount || (await fetchEscrowAccount())
+      if (!escrow) {
+        throw new Error("Escrow account unavailable")
+      }
       // Build transaction
-      const { tx, preview } = await buildDepositTransaction(amountInBaseUnits, escrowAccount)
+      const { tx, preview } = await buildDepositTransaction(amountInBaseUnits, escrow)
       
       // Sign and send
       const txSignature = await signAndSendTransaction(tx)
@@ -279,7 +286,7 @@ export function DepositWithdraw() {
         <div className="p-3 rounded-lg bg-[#081420] border border-[#1a3a4a]/50">
           <p className="text-[10px] text-[#6b8a9a] uppercase mb-1">Wallet Balance</p>
           <p className="font-mono text-sm font-bold text-[#e8f4f8]">
-            {walletBalance !== null ? formatTokenAmountFromBase(walletBalance) : "..."}
+            {walletBalance !== null ? formatTokenAmount(walletBalance) : "..."}
           </p>
           <p className="text-[9px] text-[#6b8a9a]">{TOKEN_SYMBOL}</p>
         </div>
