@@ -62,6 +62,14 @@ export async function POST(request: NextRequest) {
     }
     
     const supabase = createServerClient()
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    let supabaseHost = ''
+    try {
+      supabaseHost = new URL(supabaseUrl).host
+    } catch {
+      supabaseHost = ''
+    }
+    const hasServiceRoleKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
 
     const { data: epoch, error: epochError } = await supabase
       .from('epochs')
@@ -80,6 +88,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No active game epoch' }, { status: 400 })
     }
 
+    console.info('spin_debug', {
+      supabaseHost,
+      hasServiceRoleKey,
+      epochId: epoch.id,
+      epochStart: epoch.start_time,
+      epochEnd: epoch.end_time,
+    })
+
     const { data: secretRow, error: secretError } = await supabase
       .from('epoch_secrets')
       .select('server_seed')
@@ -89,6 +105,10 @@ export async function POST(request: NextRequest) {
     if (secretError) {
       return NextResponse.json({ error: 'Failed to load epoch secret' }, { status: 500 })
     }
+    console.info('spin_debug', {
+      epochId: epoch.id,
+      hasSecretRow: Boolean((secretRow as any)?.server_seed),
+    })
     const serverSeed =
       ((secretRow as any)?.server_seed as string | undefined) ||
       ((epoch as any)?.server_seed as string | undefined)
