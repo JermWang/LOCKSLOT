@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     const { data: epoch, error: epochError } = await supabase
       .from('epochs')
-      .select('id, server_seed_hash')
+      .select('id, server_seed_hash, server_seed')
       .eq('status', 'active')
       .lte('start_time', new Date().toISOString())
       .gte('end_time', new Date().toISOString())
@@ -89,9 +89,11 @@ export async function POST(request: NextRequest) {
     if (secretError) {
       return NextResponse.json({ error: 'Failed to load epoch secret' }, { status: 500 })
     }
-    const serverSeed = (secretRow as any)?.server_seed as string | undefined
+    const serverSeed =
+      ((secretRow as any)?.server_seed as string | undefined) ||
+      ((epoch as any)?.server_seed as string | undefined)
     if (!serverSeed) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+      return NextResponse.json({ error: 'Server configuration error: missing server seed' }, { status: 500 })
     }
 
     const { data: spinRows, error: spinError } = await supabase.rpc('perform_spin', {
