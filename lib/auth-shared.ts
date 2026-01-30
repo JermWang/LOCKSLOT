@@ -1,6 +1,7 @@
 export type AuthAction =
   | "spin"
   | "withdraw"
+  | "withdraw_submit"
   | "claim"
   | "get_user"
   | "get_claimable"

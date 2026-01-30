@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Gift, Wallet, Clock, CheckCircle, Coins } from "lucide-react"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 interface ClaimableReward {
   epoch: number
@@ -66,7 +67,7 @@ export default function ClaimsPage() {
               <div>
                 <div className="text-sm text-muted-foreground">Total Claimable</div>
                 <div className="text-3xl font-bold font-mono text-primary flex items-center gap-2">
-                  {totalClaimable.toLocaleString()} <span className="text-xl">$LOCK</span>
+                  {formatTokenAmountFromBase(totalClaimable)} <span className="text-xl">$LOCK</span>
                 </div>
               </div>
             </div>
@@ -103,7 +104,7 @@ export default function ClaimsPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-mono text-primary">{reward.amount.toLocaleString()} $LOCK</span>
+                    <span className="font-mono text-primary">{formatTokenAmountFromBase(reward.amount)} $LOCK</span>
                     <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent">
                       Claim
                     </Button>
@@ -143,7 +144,7 @@ export default function ClaimsPage() {
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-muted-foreground">{reward.claimedAt}</span>
-                  <span className="font-mono">{reward.amount.toLocaleString()} $LOCK</span>
+                  <span className="font-mono">{formatTokenAmountFromBase(reward.amount)} $LOCK</span>
                 </div>
               </div>
             ))}

@@ -6,35 +6,13 @@ import { Wallet, RefreshCw, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import { formatTokenAmountFromBase, formatTokenAmountFullFromBase } from "@/lib/token-utils"
 
-// Token decimals - pump.fun tokens use 6 decimals
-const TOKEN_DECIMALS = Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS) || 6
 const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
 const TOKEN_MINT = process.env.NEXT_PUBLIC_TOKEN_MINT || "NOT_SET"
 
 // Debug flag - set to true to show debug info in UI
 const SHOW_DEBUG = process.env.NEXT_PUBLIC_SHOW_TOKEN_DEBUG === "true"
-
-function formatBalance(rawBalance: number): string {
-  const balance = rawBalance / Math.pow(10, TOKEN_DECIMALS)
-  if (balance >= 1_000_000) {
-    return `${(balance / 1_000_000).toFixed(2)}M`
-  } else if (balance >= 1_000) {
-    return `${(balance / 1_000).toFixed(2)}K`
-  } else if (balance >= 1) {
-    return balance.toFixed(2)
-  } else {
-    return balance.toFixed(4)
-  }
-}
-
-function formatFullBalance(rawBalance: number): string {
-  const balance = rawBalance / Math.pow(10, TOKEN_DECIMALS)
-  return balance.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  })
-}
 
 export function TokenBalance() {
   const { connected, publicKey, getTokenBalance, connect, connecting } = useWallet()
@@ -195,7 +173,7 @@ export function TokenBalance() {
               {/* Main balance */}
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-black font-mono text-[#e8f4f8] tracking-tight">
-                  {balance !== null ? formatBalance(balance) : "0.00"}
+                  {balance !== null ? formatTokenAmountFromBase(balance) : "0.00"}
                 </span>
                 <span className="text-sm font-semibold text-[#00d4aa]">{TOKEN_SYMBOL}</span>
               </div>
@@ -203,7 +181,7 @@ export function TokenBalance() {
               {/* Full balance tooltip */}
               {balance !== null && balance > 0 && (
                 <p className="text-[10px] font-mono text-[#6b8a9a]">
-                  ≈ {formatFullBalance(balance)} tokens
+                  ≈ {formatTokenAmountFullFromBase(balance)} tokens
                 </p>
               )}
             </motion.div>

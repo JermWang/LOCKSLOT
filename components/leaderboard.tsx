@@ -4,6 +4,7 @@ import { useGameStore } from "@/lib/game-store"
 import { getTierColor, TIER_CONFIG } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 export function Leaderboard() {
   const { leaderboard } = useGameStore()
@@ -68,7 +69,7 @@ export function Leaderboard() {
                 {/* Potential Bonus */}
                 <div className="text-right">
                   <span className="text-xs font-mono text-foreground">
-                    {entry.potentialBonus.toLocaleString()}
+                    {formatTokenAmountFromBase(entry.potentialBonus)}
                   </span>
                   <span className="block text-[10px] text-muted-foreground/60">
                     potential

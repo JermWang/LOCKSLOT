@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react"
 import { 
   Connection, 
   PublicKey, 
@@ -97,7 +97,7 @@ declare global {
       isPhantom?: boolean
       connect: () => Promise<{ publicKey: { toString: () => string } }>
       disconnect: () => Promise<void>
-      on: (event: string, callback: () => void) => void
+      on: (event: string, callback: (...args: any[]) => void) => void
       publicKey?: { toString: () => string; toBytes: () => Uint8Array }
       isConnected?: boolean
       signAndSendTransaction: (tx: Transaction | VersionedTransaction, options?: any) => Promise<{ signature: string }>
@@ -107,7 +107,7 @@ declare global {
       isSolflare?: boolean
       connect: () => Promise<{ publicKey: { toString: () => string } }>
       disconnect: () => Promise<void>
-      on: (event: string, callback: () => void) => void
+      on: (event: string, callback: (...args: any[]) => void) => void
       publicKey?: { toString: () => string; toBytes: () => Uint8Array }
       isConnected?: boolean
       signAndSendTransaction: (tx: Transaction | VersionedTransaction, options?: any) => Promise<{ signature: string }>
@@ -121,6 +121,34 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [publicKey, setPublicKey] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
   const [walletName, setWalletName] = useState<string | null>(null)
+  const listenersBoundRef = useRef({ phantom: false, solflare: false })
+
+  const bindWalletListeners = useCallback((provider: any, name: "Phantom" | "Solflare") => {
+    if (!provider?.on) return
+
+    const walletKey = name === "Phantom" ? "phantom" : "solflare"
+    if (listenersBoundRef.current[walletKey]) return
+    listenersBoundRef.current[walletKey] = true
+
+    provider.on("accountChanged", (nextKey: PublicKey | null) => {
+      if (!nextKey) {
+        setConnected(false)
+        setPublicKey(null)
+        setWalletName(null)
+        return
+      }
+
+      setConnected(true)
+      setPublicKey(nextKey.toString())
+      setWalletName(name)
+    })
+
+    provider.on("disconnect", () => {
+      setConnected(false)
+      setPublicKey(null)
+      setWalletName(null)
+    })
+  }, [])
 
   // Check for existing connection on mount
   useEffect(() => {
@@ -132,17 +160,19 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setConnected(true)
         setPublicKey(window.solana.publicKey.toString())
         setWalletName("Phantom")
+        bindWalletListeners(window.solana, "Phantom")
       }
       // Check Solflare
       else if (window.solflare?.isSolflare && window.solflare.isConnected && window.solflare.publicKey) {
         setConnected(true)
         setPublicKey(window.solflare.publicKey.toString())
         setWalletName("Solflare")
+        bindWalletListeners(window.solflare, "Solflare")
       }
     }
     
     checkConnection()
-  }, [])
+  }, [bindWalletListeners])
 
   const connect = useCallback(async () => {
     if (typeof window === "undefined") return
@@ -155,12 +185,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setConnected(true)
         setPublicKey(response.publicKey.toString())
         setWalletName("Phantom")
-        
-        window.solana.on("disconnect", () => {
-          setConnected(false)
-          setPublicKey(null)
-          setWalletName(null)
-        })
+        bindWalletListeners(window.solana, "Phantom")
       }
       // Try Solflare
       else if (window.solflare?.isSolflare) {
@@ -168,12 +193,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setConnected(true)
         setPublicKey(response.publicKey.toString())
         setWalletName("Solflare")
-        
-        window.solflare.on("disconnect", () => {
-          setConnected(false)
-          setPublicKey(null)
-          setWalletName(null)
-        })
+        bindWalletListeners(window.solflare, "Solflare")
       }
       // No wallet found
       else {

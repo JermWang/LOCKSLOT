@@ -1,6 +1,7 @@
 import { toast } from "sonner"
 import { triggerWinConfetti, triggerDepositConfetti } from "./confetti"
 import { gameSounds } from "./sounds"
+import { formatTokenAmountFromBase } from "./token-utils"
 
 const SOLSCAN_BASE = "https://solscan.io/tx"
 
@@ -14,8 +15,19 @@ export const gameToast = {
     gameSounds.deposit()
     toast.success("Deposit Confirmed", {
       description: txSignature 
-        ? `${amount.toLocaleString()} tokens added` 
-        : `${amount.toLocaleString()} tokens added to your balance`,
+        ? `${formatTokenAmountFromBase(amount)} tokens added` 
+        : `${formatTokenAmountFromBase(amount)} tokens added to your balance`,
+      action: txSignature ? {
+        label: "View TX",
+        onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
+      } : undefined,
+      duration: 4000,
+    })
+  },
+
+  depositPending: (amount: number, txSignature?: string) => {
+    toast.info("Deposit Pending", {
+      description: `${formatTokenAmountFromBase(amount)} tokens pending confirmations`,
       action: txSignature ? {
         label: "View TX",
         onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
@@ -27,7 +39,7 @@ export const gameToast = {
   withdraw: (amount: number, txSignature?: string) => {
     gameSounds.withdraw()
     toast.success("Withdrawal Sent", {
-      description: `${amount.toLocaleString()} tokens sent to your wallet`,
+      description: `${formatTokenAmountFromBase(amount)} tokens sent to your wallet`,
       action: txSignature ? {
         label: "View TX",
         onClick: () => window.open(getSolscanLink(txSignature), "_blank"),
@@ -66,7 +78,7 @@ export const gameToast = {
     const total = principal + bonus
     gameSounds.claim()
     toast.success("Claim Successful!", {
-      description: `${principal.toLocaleString()} principal + ${bonus.toLocaleString()} bonus = ${total.toLocaleString()} tokens`,
+      description: `${formatTokenAmountFromBase(principal)} principal + ${formatTokenAmountFromBase(bonus)} bonus = ${formatTokenAmountFromBase(total)} tokens`,
       action: txSignature ? {
         label: "View TX",
         onClick: () => window.open(getSolscanLink(txSignature), "_blank"),

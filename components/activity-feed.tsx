@@ -4,6 +4,7 @@ import { useGameStore } from "@/lib/game-store"
 import { getTierColor, TIER_CONFIG } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 function formatTimeAgo(date: Date): string {
   const now = new Date()
@@ -64,7 +65,7 @@ export function ActivityFeed() {
                   {item.multiplier}x
                 </span>
                 <span className="ml-auto text-muted-foreground/60 font-mono">
-                  {item.amount.toLocaleString()}
+                  {formatTokenAmountFromBase(item.amount)}
                 </span>
               </div>
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useGameStore } from "@/lib/game-store"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 export function FooterStats() {
   const { rewardPool, totalSpins, activeWinners } = useGameStore()
@@ -10,7 +11,7 @@ export function FooterStats() {
       <div className="flex items-center gap-2">
         <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
         <span className="text-muted-foreground">Reward Pool:</span>
-        <span className="text-primary font-mono font-semibold">{rewardPool.toLocaleString()}</span>
+        <span className="text-primary font-mono font-semibold">{formatTokenAmountFromBase(rewardPool)}</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-muted-foreground">Total Spins:</span>

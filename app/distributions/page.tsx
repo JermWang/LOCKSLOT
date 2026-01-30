@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Coins, Clock, Users, TrendingUp } from "lucide-react"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 interface Distribution {
   epoch: number
@@ -46,7 +47,7 @@ export default function DistributionsPage() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Total Distributed</div>
-                <div className="text-lg font-bold font-mono">{stats.totalDistributed.toLocaleString()} $LOCK</div>
+                <div className="text-lg font-bold font-mono">{formatTokenAmountFromBase(stats.totalDistributed)} $LOCK</div>
               </div>
             </div>
           </CardContent>
@@ -85,7 +86,7 @@ export default function DistributionsPage() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Avg per Epoch</div>
-                <div className="text-lg font-bold font-mono">{stats.avgPerEpoch.toLocaleString()} $LOCK</div>
+                <div className="text-lg font-bold font-mono">{formatTokenAmountFromBase(stats.avgPerEpoch)} $LOCK</div>
               </div>
             </div>
           </CardContent>
@@ -124,7 +125,7 @@ export default function DistributionsPage() {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Amount: </span>
-                      <span className="font-mono text-primary">{dist.amount.toLocaleString()} $LOCK</span>
+                      <span className="font-mono text-primary">{formatTokenAmountFromBase(dist.amount)} $LOCK</span>
                     </div>
                   </div>
                 </div>

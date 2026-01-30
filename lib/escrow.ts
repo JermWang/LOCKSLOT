@@ -13,6 +13,84 @@ function getRpcUrl(): string {
   return first || 'https://api.mainnet-beta.solana.com'
 }
 
+// Build a withdrawal transaction that the user signs/pays for
+export async function buildWithdrawalTransaction(
+  userWallet: string,
+  amount: number
+): Promise<WithdrawBuildResult> {
+  try {
+    const escrowKeypair = getEscrowKeypair()
+    const tokenMint = getTokenMint()
+    const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
+    const userPubkey = new PublicKey(userWallet)
+
+    const escrowAta = await getAssociatedTokenAddress(
+      tokenMint,
+      escrowKeypair.publicKey,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
+    const userAta = await getAssociatedTokenAddress(
+      tokenMint,
+      userPubkey,
+      false,
+      tokenProgramId,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )
+
+    const userAtaInfo = await connection.getAccountInfo(userAta)
+
+    const escrowBalance = await connection.getTokenAccountBalance(escrowAta)
+    if (Number(escrowBalance.value.amount) < amount) {
+      return { success: false, error: "Insufficient escrow balance" }
+    }
+
+    const ixs = [] as any[]
+    if (!userAtaInfo) {
+      ixs.push(
+        createAssociatedTokenAccountInstruction(
+          userPubkey,
+          userAta,
+          userPubkey,
+          tokenMint,
+          tokenProgramId,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        )
+      )
+    }
+
+    const transferIx = createTransferInstruction(
+      escrowAta,
+      userAta,
+      escrowKeypair.publicKey,
+      amount,
+      [],
+      tokenProgramId
+    )
+
+    const tx = new Transaction().add(...ixs, transferIx)
+    tx.feePayer = userPubkey
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed")
+    tx.recentBlockhash = blockhash
+    tx.lastValidBlockHeight = lastValidBlockHeight
+
+    tx.partialSign(escrowKeypair)
+
+    const serialized = tx.serialize({ requireAllSignatures: false })
+
+    return {
+      success: true,
+      transaction: Buffer.from(serialized).toString("base64"),
+      blockhash,
+      lastValidBlockHeight,
+    }
+  } catch (error) {
+    console.error("Build withdrawal transaction error:", error)
+    return { success: false, error: "Withdrawal build failed" }
+  }
+}
+
 const connection = new Connection(getRpcUrl(), 'confirmed')
 
 let cachedTokenProgramId: {
@@ -72,6 +150,14 @@ export interface WithdrawResult {
   success: boolean
   txSignature?: string
   amount?: number
+  error?: string
+}
+
+export interface WithdrawBuildResult {
+  success: boolean
+  transaction?: string
+  blockhash?: string
+  lastValidBlockHeight?: number
   error?: string
 }
 

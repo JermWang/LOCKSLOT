@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { processWithdrawal } from '@/lib/escrow'
+import { buildWithdrawalTransaction } from '@/lib/escrow'
 import { verifyAuth } from '@/lib/auth-server'
 import { maintenanceGate, rateLimitGate } from '@/lib/api-guard'
 
@@ -14,9 +14,48 @@ export async function POST(request: NextRequest) {
     const limited = await rateLimitGate(request, { id: 'withdraw', windowMs: 30_000, max: 5 })
     if (limited) return limited
 
-    const { walletAddress, amount, auth } = await request.json()
+    const { walletAddress, amount, auth, txId, txSignature } = await request.json()
     
-    if (!walletAddress || !amount || !auth) {
+    if (!walletAddress || !auth) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    if (txId || txSignature) {
+      if (!txId || !txSignature) {
+        return NextResponse.json({ error: 'Missing withdrawal submission fields' }, { status: 400 })
+      }
+
+      if (typeof txSignature !== 'string' || txSignature.length < 20) {
+        return NextResponse.json({ error: 'Invalid transaction signature' }, { status: 400 })
+      }
+
+      const authResult = verifyAuth({
+        action: "withdraw_submit",
+        walletAddress,
+        payload: { txId, txSignature },
+        auth,
+      })
+      if (!authResult.ok) {
+        return NextResponse.json({ error: authResult.error }, { status: 401 })
+      }
+
+      const supabase = createServerClient()
+      const { error: markError } = await supabase.rpc('mark_withdrawal_submitted', {
+        p_tx_id: txId,
+        p_tx_signature: txSignature,
+      })
+
+      if (markError) {
+        return NextResponse.json(
+          { error: markError.message || 'Failed to mark withdrawal submitted' },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({ success: true, status: 'submitted', txId, txSignature })
+    }
+
+    if (amount === undefined || amount === null) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -77,76 +116,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = await processWithdrawal(walletAddress, withdrawAmount)
+    const buildResult = await buildWithdrawalTransaction(walletAddress, withdrawAmount)
 
-    if (!result.success) {
-      if (result.txSignature) {
-        const { error: markError } = await supabase.rpc('mark_withdrawal_submitted', {
-          p_tx_id: reserved.tx_id,
-          p_tx_signature: result.txSignature,
-        })
-
-        if (markError) {
-          return NextResponse.json(
-            {
-              error: 'Withdrawal submitted on-chain but failed to persist submission in database',
-              txSignature: result.txSignature,
-            },
-            { status: 500 }
-          )
-        }
-
-        return NextResponse.json(
-          {
-            success: true,
-            amount: withdrawAmount,
-            newBalance: reserved.balance_after,
-            txSignature: result.txSignature,
-            status: 'submitted',
-          },
-          { status: 202 }
-        )
-      }
-
+    if (!buildResult.success || !buildResult.transaction) {
       const { data: refundedBalance } = await supabase.rpc('fail_withdrawal', {
         p_tx_id: reserved.tx_id,
-        p_reason: result.error || 'Withdrawal failed',
+        p_reason: buildResult.error || 'Withdrawal build failed',
       })
 
       return NextResponse.json(
         {
-          error: result.error || 'Withdrawal failed',
+          error: buildResult.error || 'Withdrawal build failed',
           newBalance: refundedBalance ?? null,
-        },
-        { status: 500 }
-      )
-    }
-
-    const { error: markError } = await supabase.rpc('mark_withdrawal_submitted', {
-      p_tx_id: reserved.tx_id,
-      p_tx_signature: result.txSignature,
-    })
-
-    if (markError) {
-      return NextResponse.json(
-        {
-          error: 'Withdrawal submitted on-chain but failed to persist submission in database',
-          txSignature: result.txSignature,
-        },
-        { status: 500 }
-      )
-    }
-
-    const { error: finalizeError } = await supabase.rpc('finalize_withdrawal', {
-      p_tx_id: reserved.tx_id,
-      p_tx_signature: result.txSignature,
-    })
-
-    if (finalizeError) {
-      return NextResponse.json(
-        {
-          error: 'Withdrawal finalized on-chain but failed to finalize in database',
-          txSignature: result.txSignature,
         },
         { status: 500 }
       )
@@ -156,7 +137,10 @@ export async function POST(request: NextRequest) {
       success: true,
       amount: withdrawAmount,
       newBalance: reserved.balance_after,
-      txSignature: result.txSignature,
+      txId: reserved.tx_id,
+      transaction: buildResult.transaction,
+      blockhash: buildResult.blockhash,
+      lastValidBlockHeight: buildResult.lastValidBlockHeight,
     })
     
   } catch (error) {

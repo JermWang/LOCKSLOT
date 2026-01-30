@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Trophy, Lock, Flame, Skull, Sparkles, Clock, TrendingUp } from "lucide-react"
 import type { Tier } from "@/lib/game-types"
 import { gameSounds } from "@/lib/sounds"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 interface FeedItem {
   id: string
@@ -72,7 +73,7 @@ function FeedEntry({ item, index }: { item: FeedItem; index: number }) {
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{item.amount.toLocaleString()} tokens</span>
+          <span>{formatTokenAmountFromBase(item.amount)} tokens</span>
           <span>•</span>
           <span>{item.duration}h lock</span>
         </div>
@@ -85,7 +86,7 @@ function FeedEntry({ item, index }: { item: FeedItem; index: number }) {
         </div>
         {isWin && (
           <div className={cn("text-xs font-mono", style.color)}>
-            S={item.ticketScore.toLocaleString()}
+            S={formatTokenAmountFromBase(item.ticketScore)}
           </div>
         )}
       </div>

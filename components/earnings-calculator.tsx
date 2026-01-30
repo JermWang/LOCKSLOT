@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Dices, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { formatTokenAmount } from "@/lib/token-utils"
 
 const STAKE_MARKS = ["100", "1K", "5K", "10K", "50K"]
 
@@ -18,11 +19,6 @@ const TIER_DATA = [
   { name: "LEGENDARY", probability: 0.09, avgLock: 5.5, color: "text-cyan-400", bonus: true },    // 3-8h avg
   { name: "MYTHIC", probability: 0.03, avgLock: 2, color: "text-pink-400", bonus: true },         // 1-3h avg
 ]
-
-function formatNumber(num: number): string {
-  if (num >= 1000) return `${(num / 1000).toFixed(0)}K`
-  return num.toFixed(0)
-}
 
 export function EarningsCalculator() {
   const [stakeSlider, setStakeSlider] = useState([50])
@@ -54,7 +50,7 @@ export function EarningsCalculator() {
               Stake Amount
             </div>
             <span className="text-primary font-mono font-semibold">
-              {formatNumber(stakeAmount)} TOKENS
+              {formatTokenAmount(stakeAmount)} TOKENS
             </span>
           </div>
           <Slider
@@ -75,11 +71,11 @@ export function EarningsCalculator() {
         <div className="mb-6 rounded-lg border border-border bg-secondary/30 p-4">
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">Fee ({feeRate}%)</span>
-            <span className="font-mono text-destructive font-semibold">-{formatNumber(feeAmount)} TOKENS</span>
+            <span className="font-mono text-destructive font-semibold">-{formatTokenAmount(feeAmount)} TOKENS</span>
           </div>
           <div className="flex justify-between items-center mt-2">
             <span className="text-sm text-muted-foreground">Principal Locked</span>
-            <span className="font-mono text-foreground font-semibold">{formatNumber(stakeAmount - feeAmount)} TOKENS</span>
+            <span className="font-mono text-foreground font-semibold">{formatTokenAmount(stakeAmount - feeAmount)} TOKENS</span>
           </div>
         </div>
 

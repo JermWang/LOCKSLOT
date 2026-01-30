@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useGameStore } from "@/lib/game-store"
 import { cn } from "@/lib/utils"
 import { TrendingUp, Users, Trophy, Sigma } from "lucide-react"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 export function RewardPool() {
   const { rewardPool, totalSpins, activeWinners } = useGameStore()
@@ -58,7 +59,7 @@ export function RewardPool() {
           <div className="mb-4">
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black font-mono text-foreground tracking-tight">
-                {displayValue.toLocaleString()}
+                {formatTokenAmountFromBase(displayValue)}
               </span>
               <span className="text-lg text-muted-foreground font-semibold">TOKENS</span>
             </div>
@@ -85,7 +86,7 @@ export function RewardPool() {
                 <Trophy className="h-3 w-3" />
                 <span className="text-[10px] uppercase tracking-wider">Avg Share</span>
               </div>
-              <div className="font-mono text-sm font-bold text-foreground">~{Math.round(avgSharePerWinner).toLocaleString()}</div>
+              <div className="font-mono text-sm font-bold text-foreground">~{formatTokenAmountFromBase(avgSharePerWinner)}</div>
             </div>
           </div>
         </div>

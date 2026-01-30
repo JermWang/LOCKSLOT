@@ -8,6 +8,7 @@ import { SlotMachine } from "@/components/slot-machine"
 import { RewardPool } from "@/components/reward-pool"
 import { LiveFeed } from "@/components/live-feed"
 import { LiveChat } from "@/components/live-chat"
+import { DepositWithdraw } from "@/components/deposit-withdraw"
 import { Dices, ChevronDown } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -103,6 +104,9 @@ export default function LockSlotPage() {
               
               {/* LEFT: Gambling Widget - Simplified */}
               <div className="space-y-4">
+                {/* Deposit/Withdraw */}
+                <DepositWithdraw />
+                
                 {/* Reward Pool */}
                 <RewardPool />
                 

@@ -5,6 +5,7 @@ import { useGameStore } from "@/lib/game-store"
 import { getTierColor, getTierBgColor, TIER_CONFIG } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
 import { Clock, Lock, Zap, Trophy, Timer, ExternalLink } from "lucide-react"
+import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 const SOLSCAN_BASE = "https://solscan.io/tx"
 
@@ -131,7 +132,7 @@ export function ActiveLocks() {
       <div className="grid grid-cols-2 gap-3 mb-4 p-3 rounded-lg bg-secondary/30 border border-border">
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Total Locked</div>
-          <div className="font-mono text-sm font-bold text-foreground">{totalLocked.toLocaleString()}</div>
+          <div className="font-mono text-sm font-bold text-foreground">{formatTokenAmountFromBase(totalLocked)}</div>
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Bonus Eligible</div>
@@ -175,11 +176,11 @@ export function ActiveLocks() {
               {/* Amount and score */}
               <div className="flex items-center justify-between mb-3 text-xs">
                 <div className="text-muted-foreground">
-                  <span className="font-mono font-semibold text-foreground">{lock.amount.toLocaleString()}</span> TOKENS
+                  <span className="font-mono font-semibold text-foreground">{formatTokenAmountFromBase(lock.amount)}</span> TOKENS
                 </div>
                 {isWinner && (
                   <div className="text-primary font-mono">
-                    S = {ticketScore.toLocaleString()}
+                    S = {formatTokenAmountFromBase(ticketScore)}
                   </div>
                 )}
               </div>

@@ -9,6 +9,23 @@ const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 // DEV MODE: Enable free spins (no balance deduction)
 const FREE_SPIN_MODE = process.env.NEXT_PUBLIC_FREE_SPIN_MODE === 'true'
 
+type WithdrawalBuildResult =
+  | {
+      status: "ready"
+      txId: string
+      transaction: string
+      blockhash?: string
+      lastValidBlockHeight?: number
+    }
+  | {
+      status: "manual_review"
+      txId: string
+    }
+  | {
+      status: "submitted"
+      txSignature: string
+    }
+
 let cachedGetUserAuth:
   | {
       walletAddress: string
@@ -52,7 +69,8 @@ interface GameState {
   fetchUserData: (address: string) => Promise<void>
   spin: (amount: number) => Promise<SpinResult>
   deposit: (txSignature: string, amount: number) => Promise<void>
-  withdraw: (amount: number) => Promise<{ txSignature: string }>
+  withdraw: (amount: number) => Promise<WithdrawalBuildResult>
+  submitWithdrawal: (txId: string, txSignature: string) => Promise<void>
   claimLock: (spinId: string) => Promise<void>
   setSpinning: (spinning: boolean) => void
   addActivity: (activity: ActivityItem) => void
@@ -114,7 +132,22 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastResult: null,
   error: null,
 
-  setWallet: (address) => set({ walletAddress: address }),
+  setWallet: (address) =>
+    set((state) => {
+      if (state.walletAddress === address) {
+        return { walletAddress: address }
+      }
+
+      return {
+        walletAddress: address,
+        userBalance: 0,
+        locks: [],
+        lastResult: null,
+        error: null,
+        isSpinning: false,
+        isLoading: false,
+      }
+    }),
 
   fetchUserData: async (address: string) => {
     if (IS_DEMO) {
@@ -306,6 +339,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       gameToast.error(data.error)
       throw new Error(data.error)
     }
+
+    if (data.status === "pending") {
+      gameToast.depositPending(amount, txSignature)
+      return
+    }
+
+    if (data.newBalance === null || data.newBalance === undefined) {
+      gameToast.error("Deposit confirmation missing balance")
+      throw new Error("Deposit confirmation missing balance")
+    }
     
     set({ userBalance: data.newBalance })
     gameToast.deposit(amount, txSignature)
@@ -318,8 +361,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     if (IS_DEMO) {
       set(state => ({ userBalance: state.userBalance - amount }))
-      gameToast.withdraw(amount)
-      return { txSignature: 'demo_tx_' + Date.now() }
+      return { status: "submitted", txSignature: 'demo_tx_' + Date.now() }
     }
 
     const auth = await signAuth({
@@ -341,8 +383,46 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     
     set({ userBalance: data.newBalance })
-    gameToast.withdraw(amount, data.txSignature)
-    return { txSignature: data.txSignature }
+
+    if (data.status === 'manual_review') {
+      return { status: "manual_review", txId: data.txId }
+    }
+
+    if (!data.transaction || !data.txId) {
+      throw new Error('Withdrawal build failed')
+    }
+
+    return {
+      status: "ready",
+      txId: data.txId,
+      transaction: data.transaction,
+      blockhash: data.blockhash,
+      lastValidBlockHeight: data.lastValidBlockHeight,
+    }
+  },
+
+  submitWithdrawal: async (txId: string, txSignature: string) => {
+    const { walletAddress } = get()
+    if (!walletAddress) throw new Error('Wallet not connected')
+    if (IS_DEMO) return
+
+    const auth = await signAuth({
+      action: "withdraw_submit",
+      walletAddress,
+      payload: { txId, txSignature },
+    })
+
+    const res = await fetch('/api/withdraw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ walletAddress, txId, txSignature, auth }),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      gameToast.error(data.error)
+      throw new Error(data.error)
+    }
   },
 
   claimLock: async (spinId: string) => {

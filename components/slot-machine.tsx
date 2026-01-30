@@ -4,12 +4,13 @@ import { useState, useEffect, useRef, useMemo, memo, useCallback } from "react"
 import { useGameStore } from "@/lib/game-store"
 import { TIER_CONFIG, getTierColor, type SpinResult, type Tier } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
-import { Lock, Unlock, Settings, Check, X, Volume2, VolumeX, Music, Music2 } from "lucide-react"
+import { Lock, Unlock, Settings, Check, X, Volume2, VolumeX, Music, Music2, Share2 } from "lucide-react"
 import { gameSounds, isSoundEnabled, setSoundEnabled, isMusicEnabled, resumeAudio } from "@/lib/sounds"
 import { gameToast } from "@/lib/toast"
 import { TierSymbol } from "@/components/reel-symbols"
+import { TOKEN_DECIMALS, toBaseUnits, fromBaseUnits, formatTokenAmount } from "@/lib/token-utils"
+import { VideoPreview } from "@/components/video-preview"
 
-const TOKEN_DECIMALS = Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS) || 6
 const DEFAULT_QUICK_AMOUNTS = [100000, 500000, 1000000, 5000000] // 100K, 500K, 1M, 5M tokens
 const STORAGE_KEY = "lockslot_quick_amounts"
 
@@ -73,11 +74,9 @@ function easeOutCubic(t: number) {
   return 1 - Math.pow(1 - t, 3)
 }
 
-function formatTokenAmount(amount: number): string {
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(2)}M`
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(2)}K`
-  if (amount >= 1) return amount.toFixed(0)
-  return amount.toFixed(2)
+function formatInputAmount(amountTokens: number): string {
+  const fixed = amountTokens.toFixed(TOKEN_DECIMALS)
+  return fixed.replace(/\.?0+$/, "")
 }
 
 function SlotReel({ 
@@ -349,6 +348,7 @@ export function SlotMachine() {
   const spin = useGameStore((s) => s.spin)
   const [localResult, setLocalResult] = useState<SpinResult | null>(null)
   const [showResult, setShowResult] = useState(false)
+  const [showVideoPreview, setShowVideoPreview] = useState(false)
   const [spinCount, setSpinCount] = useState(0)
   const [reelsSpinning, setReelsSpinning] = useState(false)
   const cabinetRef = useRef<HTMLDivElement | null>(null)
@@ -430,9 +430,12 @@ export function SlotMachine() {
   }
 
   const handleSpin = async () => {
-    const amount = Number.parseFloat(stakeAmount) || 100 // Default to 100 in free mode
-    if (!FREE_SPIN_MODE && (Number.isNaN(amount) || amount <= 0)) return
-    if (!FREE_SPIN_MODE && amount > userBalance) return
+    const parsedAmount = Number.parseFloat(stakeAmount)
+    const amountTokens = Number.isFinite(parsedAmount) ? parsedAmount : (FREE_SPIN_MODE ? 100 : 0)
+    const amountBaseUnits = toBaseUnits(amountTokens)
+    if (!FREE_SPIN_MODE && (!Number.isFinite(parsedAmount) || parsedAmount <= 0)) return
+    if (!FREE_SPIN_MODE && amountBaseUnits <= 0) return
+    if (!FREE_SPIN_MODE && amountBaseUnits > userBalance) return
 
     if (stopPulseTimeoutRef.current) {
       clearTimeout(stopPulseTimeoutRef.current)
@@ -458,7 +461,7 @@ export function SlotMachine() {
     gameSounds.spinStart()
 
     try {
-      const result = await spin(amount)
+      const result = await spin(amountBaseUnits)
       setLocalResult(result)
       resultRef.current = result
     } catch {
@@ -509,12 +512,16 @@ export function SlotMachine() {
 
   const handleQuickAmount = (amount: number) => {
     gameSounds.click()
-    setStakeAmount(amount.toString())
+    setStakeAmount(formatInputAmount(amount))
   }
 
-  const stakeNum = Number.parseFloat(stakeAmount) || 0
-  const feeAmount = stakeNum * 0.05
-  const isButtonDisabled = isSpinning || reelsSpinning || (!FREE_SPIN_MODE && (!stakeAmount || stakeNum <= 0 || stakeNum > userBalance))
+  const stakeTokens = Number.parseFloat(stakeAmount) || 0
+  const stakeBaseUnits = toBaseUnits(stakeTokens)
+  const feeAmount = stakeTokens * 0.05
+  const isButtonDisabled =
+    isSpinning ||
+    reelsSpinning ||
+    (!FREE_SPIN_MODE && (!stakeAmount || stakeTokens <= 0 || stakeBaseUnits > userBalance))
   const isWinner = localResult && (localResult.tier === "legendary" || localResult.tier === "mythic")
 
   return (
@@ -658,6 +665,17 @@ export function SlotMachine() {
               </span>
             </div>
           )}
+          
+          {/* Share button */}
+          <button
+            onClick={() => setShowVideoPreview(true)}
+            className="mt-3 w-full py-2 rounded-lg bg-[#1a3a4a]/50 border border-[#1a3a4a] 
+                       text-[#e8f4f8] text-xs font-semibold flex items-center justify-center gap-2
+                       hover:bg-[#1a3a4a] hover:border-[#00d4aa]/30 transition-all"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Share Result
+          </button>
         </div>
       ) : (
         <div className="cyber-panel p-3 mb-3">
@@ -675,7 +693,7 @@ export function SlotMachine() {
         {/* Balance indicator */}
         <div className="flex items-center justify-between text-xs px-1">
           <span className="text-[#6b8a9a]">Your Balance</span>
-          <span className="font-mono font-bold text-[#e8f4f8]">{formatTokenAmount(userBalance)} tokens</span>
+          <span className="font-mono font-bold text-[#e8f4f8]">{formatTokenAmount(fromBaseUnits(userBalance))} tokens</span>
         </div>
 
         {/* Input with MAX button */}
@@ -694,7 +712,7 @@ export function SlotMachine() {
             </span>
           </div>
           <button
-            onClick={() => handleQuickAmount(userBalance)}
+            onClick={() => handleQuickAmount(fromBaseUnits(userBalance))}
             disabled={isSpinning}
             className="cyber-button h-10 px-3 text-xs"
           >
@@ -763,10 +781,10 @@ export function SlotMachine() {
         </div>
 
         {/* Protocol fee preview */}
-        {stakeNum > 0 && (
+        {stakeTokens > 0 && (
           <div className="flex items-center justify-between text-xs text-[#6b8a9a] px-1">
             <span>5% fee: -{formatTokenAmount(feeAmount)}</span>
-            <span className="text-[#e8f4f8] font-medium">You lock: {formatTokenAmount(stakeNum - feeAmount)} tokens</span>
+            <span className="text-[#e8f4f8] font-medium">You lock: {formatTokenAmount(stakeTokens - feeAmount)} tokens</span>
           </div>
         )}
 
@@ -792,6 +810,18 @@ export function SlotMachine() {
           )}
         </button>
       </div>
+
+      {/* Video Preview Modal */}
+      {localResult && (
+        <VideoPreview
+          isOpen={showVideoPreview}
+          onClose={() => setShowVideoPreview(false)}
+          tier={localResult.tier}
+          amount={toBaseUnits(stakeTokens)}
+          multiplier={localResult.multiplier}
+          duration={localResult.duration}
+        />
+      )}
     </div>
   )
 }
