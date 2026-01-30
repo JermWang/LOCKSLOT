@@ -2,7 +2,7 @@
 
 import { useWallet } from "@/lib/wallet-context"
 import { Button } from "@/components/ui/button"
-import { Bell, Wallet, ChevronDown, Copy, LogOut, RefreshCw } from "lucide-react"
+import { Bell, Wallet, ChevronDown, Copy, LogOut, RefreshCw, Twitter } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -143,6 +143,22 @@ export function Navbar() {
 
           {/* Username button - only show when connected */}
           {connected && <UsernameModal />}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+            asChild
+          >
+            <a
+              href="https://twitter.com/LockSlotSolana"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Lock Slot on Twitter"
+            >
+              <Twitter className="h-5 w-5" />
+            </a>
+          </Button>
 
           <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
             <Bell className="h-5 w-5" />

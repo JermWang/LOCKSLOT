@@ -6,6 +6,10 @@
   <img src="https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
 </p>
 
+<p align="center">
+  <img src="public/LOCK-SLOT-BANNER-optimized.gif" alt="LOCK SLOT banner" />
+</p>
+
 <h1 align="center">🎰 LOCK SLOT</h1>
 
 <p align="center">

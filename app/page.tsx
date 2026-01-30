@@ -9,14 +9,32 @@ import { RewardPool } from "@/components/reward-pool"
 import { LiveFeed } from "@/components/live-feed"
 import { LiveChat } from "@/components/live-chat"
 import { DepositWithdraw } from "@/components/deposit-withdraw"
-import { Dices, ChevronDown } from "lucide-react"
+import { Dices, ChevronDown, Copy } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { TIER_CONFIG, formatTierDurationRange, getTierColor, getTierDotColor, type Tier } from "@/lib/game-types"
 
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_MINT || ""
+
 export default function LockSlotPage() {
   const [showGame, setShowGame] = useState(false)
+  const [contractCopied, setContractCopied] = useState(false)
   const gameRef = useRef<HTMLDivElement>(null)
+
+  const truncatedContract = CONTRACT_ADDRESS
+    ? `${CONTRACT_ADDRESS.slice(0, 4)}...${CONTRACT_ADDRESS.slice(-4)}`
+    : null
+
+  const copyContract = async () => {
+    if (!CONTRACT_ADDRESS) return
+    try {
+      await navigator.clipboard.writeText(CONTRACT_ADDRESS)
+      setContractCopied(true)
+      setTimeout(() => setContractCopied(false), 2000)
+    } catch {
+      // ignore
+    }
+  }
 
   const handleIntroComplete = () => {
     setShowGame(true)
@@ -57,13 +75,41 @@ export default function LockSlotPage() {
         
         {/* Tagline */}
         <motion.p 
-          className="mb-10 text-center font-mono text-sm text-muted-foreground"
+          className="mb-6 text-center font-mono text-sm text-muted-foreground md:mb-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
           Pain funds glory. EV &lt; 0. You&apos;ve been warned.
         </motion.p>
+
+        <motion.div
+          className="mb-8 flex w-full justify-center md:hidden"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+        >
+          <button
+            type="button"
+            onClick={copyContract}
+            disabled={!CONTRACT_ADDRESS}
+            className="group relative h-10 w-full max-w-xs rounded-lg border border-[#1a3a4a]/50 bg-[#081420]/70 px-4 text-sm text-[#e8f4f8] transition-all overflow-hidden flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#00d4aa]/40"
+            title={CONTRACT_ADDRESS ? CONTRACT_ADDRESS : "Set NEXT_PUBLIC_TOKEN_MINT"}
+          >
+            <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <span className="absolute inset-y-0 -left-full w-1/2 bg-gradient-to-r from-transparent via-[#00d4aa]/20 to-transparent skew-x-12 transition-transform duration-700 group-hover:translate-x-[240%]" />
+            </span>
+
+            <Copy className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b8a9a] group-hover:text-[#00d4aa] transition-colors" />
+            <span className="pl-7 font-mono">
+              {contractCopied
+                ? "Copied Contract!"
+                : truncatedContract
+                  ? `Contract: ${truncatedContract}`
+                  : "Contract not set"}
+            </span>
+          </button>
+        </motion.div>
 
         {/* How It Works Module */}
         <motion.div
