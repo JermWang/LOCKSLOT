@@ -513,10 +513,10 @@ $$ language plpgsql;
 
    perform pg_advisory_xact_lock(hashtextextended(p_wallet_address || ':' || v_epoch.id::text, 0));
 
-   select coalesce(max(nonce), 0) + 1 into v_nonce
-   from public.spins
-   where user_id = v_user.id
-   and epoch_id = v_epoch.id;
+   select coalesce(max(sp.nonce), 0) + 1 into v_nonce
+  from public.spins sp
+  where sp.user_id = v_user.id
+  and sp.epoch_id = v_epoch.id;
 
    v_fee := floor((p_stake_amount::numeric * p_fee_bps::numeric) / 10000::numeric)::bigint;
    v_locked_at := now();
