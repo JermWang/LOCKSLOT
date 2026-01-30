@@ -25,17 +25,45 @@ function isUnauthorized(error: unknown): boolean {
   return message.includes('401') || message.toLowerCase().includes('unauthorized')
 }
 
+function isRateLimited(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes('429') || message.toLowerCase().includes('too many requests')
+}
+
+function isRetryableRpcError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return (
+    isUnauthorized(error) ||
+    isRateLimited(error) ||
+    message.includes('503') ||
+    message.toLowerCase().includes('timeout')
+  )
+}
+
 async function withRpcFallback<T>(fn: (conn: Connection) => Promise<T>): Promise<T> {
-  try {
-    return await fn(connection)
-  } catch (error) {
-    if (isUnauthorized(error) && rpcIndex < rpcUrls.length - 1) {
-      rpcIndex += 1
-      connection = buildConnection(rpcUrls[rpcIndex])
-      return await fn(connection)
+  let lastError: unknown
+  for (let offset = 0; offset < rpcUrls.length; offset += 1) {
+    const candidateIndex = (rpcIndex + offset) % rpcUrls.length
+    const candidateUrl = rpcUrls[candidateIndex]
+    const candidateConn = candidateIndex === rpcIndex ? connection : buildConnection(candidateUrl)
+
+    try {
+      const result = await fn(candidateConn)
+      if (candidateIndex !== rpcIndex) {
+        rpcIndex = candidateIndex
+        connection = candidateConn
+        console.warn(`[escrow] Switched RPC to ${candidateUrl}`)
+      }
+      return result
+    } catch (error) {
+      lastError = error
+      if (!isRetryableRpcError(error) || offset === rpcUrls.length - 1) {
+        throw error
+      }
     }
-    throw error
   }
+
+  throw lastError
 }
 
 // Build a withdrawal transaction that the user signs/pays for
@@ -64,9 +92,9 @@ export async function buildWithdrawalTransaction(
       ASSOCIATED_TOKEN_PROGRAM_ID
     )
 
-    const userAtaInfo = await connection.getAccountInfo(userAta)
+    const userAtaInfo = await withRpcFallback((conn) => conn.getAccountInfo(userAta))
 
-    const escrowBalance = await connection.getTokenAccountBalance(escrowAta)
+    const escrowBalance = await withRpcFallback((conn) => conn.getTokenAccountBalance(escrowAta))
     if (Number(escrowBalance.value.amount) < amount) {
       return { success: false, error: "Insufficient escrow balance" }
     }
@@ -96,7 +124,7 @@ export async function buildWithdrawalTransaction(
 
     const tx = new Transaction().add(...ixs, transferIx)
     tx.feePayer = userPubkey
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed")
+    const { blockhash, lastValidBlockHeight } = await withRpcFallback((conn) => conn.getLatestBlockhash("confirmed"))
     tx.recentBlockhash = blockhash
     tx.lastValidBlockHeight = lastValidBlockHeight
 
@@ -203,9 +231,11 @@ export async function verifyDeposit(
     }
     
     // Fetch transaction
-    const tx = await connection.getParsedTransaction(txSignature, {
-      maxSupportedTransactionVersion: 0
-    })
+    const tx = await withRpcFallback((conn) =>
+      conn.getParsedTransaction(txSignature, {
+        maxSupportedTransactionVersion: 0,
+      })
+    )
     
     if (!tx) {
       return { valid: false, amount: 0, error: 'Insufficient confirmations', confirmations: null }
@@ -282,7 +312,9 @@ export async function verifyDeposit(
     }
 
     const minConfirmations = Number(process.env.DEPOSIT_MIN_CONFIRMATIONS) || 32
-    const sigStatus = await connection.getSignatureStatus(txSignature, { searchTransactionHistory: true })
+    const sigStatus = await withRpcFallback((conn) =>
+      conn.getSignatureStatus(txSignature, { searchTransactionHistory: true })
+    )
     const status = sigStatus.value
     if (!status) {
       return {
@@ -353,10 +385,10 @@ export async function processWithdrawal(
       ASSOCIATED_TOKEN_PROGRAM_ID
     )
 
-    const userAtaInfo = await connection.getAccountInfo(userAta)
+    const userAtaInfo = await withRpcFallback((conn) => conn.getAccountInfo(userAta))
     
     // Check escrow balance
-    const escrowBalance = await connection.getTokenAccountBalance(escrowAta)
+    const escrowBalance = await withRpcFallback((conn) => conn.getTokenAccountBalance(escrowAta))
     if (Number(escrowBalance.value.amount) < amount) {
       return { success: false, error: 'Insufficient escrow balance' }
     }
@@ -389,13 +421,13 @@ export async function processWithdrawal(
     // Build and send transaction
     const tx = new Transaction().add(...ixs, transferIx)
     tx.feePayer = escrowKeypair.publicKey
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+    tx.recentBlockhash = (await withRpcFallback((conn) => conn.getLatestBlockhash())).blockhash
     
     tx.sign(escrowKeypair)
     
-    const txSignature = await connection.sendRawTransaction(tx.serialize())
+    const txSignature = await withRpcFallback((conn) => conn.sendRawTransaction(tx.serialize()))
     try {
-      await connection.confirmTransaction(txSignature, 'finalized')
+      await withRpcFallback((conn) => conn.confirmTransaction(txSignature, 'finalized'))
       return { success: true, txSignature, amount }
     } catch (error) {
       console.error('Withdrawal confirm error:', error)
@@ -430,7 +462,7 @@ export async function transferFees(amount: number): Promise<{ success: boolean; 
       ASSOCIATED_TOKEN_PROGRAM_ID
     )
 
-    const feeAtaInfo = await connection.getAccountInfo(feeAta)
+    const feeAtaInfo = await withRpcFallback((conn) => conn.getAccountInfo(feeAta))
 
     const ixs = [] as any[]
 
@@ -458,12 +490,12 @@ export async function transferFees(amount: number): Promise<{ success: boolean; 
     
     const tx = new Transaction().add(...ixs, transferIx)
     tx.feePayer = escrowKeypair.publicKey
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+    tx.recentBlockhash = (await withRpcFallback((conn) => conn.getLatestBlockhash())).blockhash
     
     tx.sign(escrowKeypair)
     
-    const txSignature = await connection.sendRawTransaction(tx.serialize())
-    await connection.confirmTransaction(txSignature, 'finalized')
+    const txSignature = await withRpcFallback((conn) => conn.sendRawTransaction(tx.serialize()))
+    await withRpcFallback((conn) => conn.confirmTransaction(txSignature, 'finalized'))
     
     return { success: true, txSignature }
   } catch (error) {

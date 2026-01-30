@@ -7,6 +7,7 @@ export type AuthAction =
   | "get_claimable"
   | "set_username"
   | "chat_send"
+  | "session"
 
 export interface AuthPayload {
   message: string

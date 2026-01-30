@@ -14,15 +14,17 @@ function WalletStoreSync() {
   const { publicKey } = useWallet()
   const setWallet = useGameStore((s) => s.setWallet)
   const fetchUserData = useGameStore((s) => s.fetchUserData)
+  const ensureSession = useGameStore((s) => s.ensureSession)
 
   useEffect(() => {
     if (publicKey) {
       setWallet(publicKey)
       fetchUserData(publicKey)
+      ensureSession().catch(() => null)
     } else {
       setWallet(null)
     }
-  }, [publicKey, setWallet, fetchUserData])
+  }, [publicKey, setWallet, fetchUserData, ensureSession])
 
   return null
 }

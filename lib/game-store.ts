@@ -50,6 +50,7 @@ interface GameState {
   walletAddress: string | null
   userBalance: number
   locks: Lock[]
+  sessionExpiresAt: number | null
   
   // Global state
   rewardPool: number
@@ -68,6 +69,7 @@ interface GameState {
   setWallet: (address: string | null) => void
   fetchUserData: (address: string) => Promise<void>
   spin: (amount: number) => Promise<SpinResult>
+  ensureSession: () => Promise<void>
   deposit: (txSignature: string, amount: number) => Promise<void>
   withdraw: (amount: number) => Promise<WithdrawalBuildResult>
   submitWithdrawal: (txId: string, txSignature: string) => Promise<void>
@@ -122,6 +124,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   walletAddress: null,
   userBalance: 0,
   locks: [],
+  sessionExpiresAt: null,
   rewardPool: 0,
   totalSpins: 0,
   activeWinners: 0,
@@ -142,12 +145,43 @@ export const useGameStore = create<GameState>((set, get) => ({
         walletAddress: address,
         userBalance: 0,
         locks: [],
+        sessionExpiresAt: null,
         lastResult: null,
         error: null,
         isSpinning: false,
         isLoading: false,
       }
     }),
+
+  ensureSession: async () => {
+    if (IS_DEMO) return
+    const { walletAddress, sessionExpiresAt } = get()
+    if (!walletAddress) throw new Error("Wallet not connected")
+
+    const now = Date.now()
+    if (sessionExpiresAt && now < sessionExpiresAt - 60_000) {
+      return
+    }
+
+    const auth = await signAuth({
+      action: "session",
+      walletAddress,
+      payload: { scope: "session" },
+    })
+
+    const res = await fetch("/api/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ walletAddress, auth }),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      throw new Error(data?.error || "Failed to create session")
+    }
+
+    set({ sessionExpiresAt: data.expiresAt || now + 1000 * 60 * 60 })
+  },
 
   fetchUserData: async (address: string) => {
     if (IS_DEMO) {
@@ -209,7 +243,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   spin: async (amount: number) => {
-    const { walletAddress, userBalance, rewardPool, locks, activityFeed } = get()
+    const { walletAddress, userBalance, rewardPool, locks, activityFeed, ensureSession } = get()
 
     if (!walletAddress) {
       throw new Error("Wallet not connected")
@@ -262,16 +296,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Production mode - call API
     try {
       const clientSeed = generateClientSeed()
-      const auth = await signAuth({
-        action: "spin",
-        walletAddress,
-        payload: { stakeAmount: amount, clientSeed },
-      })
+      await ensureSession()
 
       const res = await fetch('/api/spin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress, stakeAmount: amount, clientSeed, auth }),
+        body: JSON.stringify({ walletAddress, stakeAmount: amount, clientSeed }),
       })
       
       const data = await res.json()

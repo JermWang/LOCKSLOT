@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { verifyAuth } from '@/lib/auth-server'
+import { getSessionFromRequest } from '@/lib/session'
 import { maintenanceGate, rateLimitGate } from '@/lib/api-guard'
 
 export const runtime = 'nodejs'
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const { walletAddress, stakeAmount, clientSeed: providedClientSeed, auth } = await request.json()
     
-    if (!walletAddress || !stakeAmount || !auth) {
+    if (!walletAddress || !stakeAmount) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -25,14 +26,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing client seed' }, { status: 400 })
     }
 
-    const authResult = verifyAuth({
-      action: "spin",
-      walletAddress,
-      payload: { stakeAmount, clientSeed: providedClientSeed },
-      auth,
-    })
-    if (!authResult.ok) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 })
+    if (auth) {
+      const authResult = verifyAuth({
+        action: "spin",
+        walletAddress,
+        payload: { stakeAmount, clientSeed: providedClientSeed },
+        auth,
+      })
+      if (!authResult.ok) {
+        return NextResponse.json({ error: authResult.error }, { status: 401 })
+      }
+    } else {
+      const session = getSessionFromRequest(request)
+      if (!session.ok) {
+        return NextResponse.json({ error: session.error }, { status: 401 })
+      }
+      if (session.walletAddress !== walletAddress) {
+        return NextResponse.json({ error: 'Session wallet mismatch' }, { status: 401 })
+      }
     }
     
     const stake = Number(stakeAmount)
