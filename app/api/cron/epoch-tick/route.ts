@@ -67,6 +67,53 @@ async function handler(request: NextRequest) {
     }
 
     if (activeEpoch && new Date(activeEpoch.end_time).getTime() > now.getTime()) {
+      const { data: activeSecret, error: activeSecretError } = await supabase
+        .from("epoch_secrets")
+        .select("server_seed")
+        .eq("epoch_id", activeEpoch.id)
+        .maybeSingle()
+
+      if (activeSecretError) {
+        return NextResponse.json(
+          { error: "Failed to load epoch secret", detail: activeSecretError.message },
+          { status: 500 }
+        )
+      }
+
+      if (!activeSecret?.server_seed) {
+        const repairedSeed = randomSeedHex(32)
+        const repairedHash = sha256Hex(repairedSeed)
+
+        const { error: updateErr } = await supabase
+          .from("epochs")
+          .update({ server_seed_hash: repairedHash })
+          .eq("id", activeEpoch.id)
+
+        if (updateErr) {
+          return NextResponse.json(
+            { error: "Failed to repair epoch hash", detail: updateErr.message },
+            { status: 500 }
+          )
+        }
+
+        const { error: insertErr } = await supabase
+          .from("epoch_secrets")
+          .insert({ epoch_id: activeEpoch.id, server_seed: repairedSeed })
+
+        if (insertErr) {
+          return NextResponse.json(
+            { error: "Failed to repair epoch secret", detail: insertErr.message },
+            { status: 500 }
+          )
+        }
+
+        return NextResponse.json({
+          ok: true,
+          action: "repaired",
+          activeEpoch: { ...activeEpoch, server_seed_hash: repairedHash },
+        })
+      }
+
       return NextResponse.json({ ok: true, action: "noop", activeEpoch })
     }
 
