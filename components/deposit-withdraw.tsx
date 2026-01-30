@@ -105,7 +105,7 @@ export function DepositWithdraw() {
   const maxDeposit = walletBalance !== null ? walletBalance : 0
   const maxWithdraw = fromBaseUnits(userBalance)
 
-  const canDeposit = parsedAmount > 0 && parsedAmount <= (walletBalance || 0) && escrowAccount
+  const canDeposit = parsedAmount > 0 && escrowAccount
   const canWithdraw = parsedAmount > 0 && amountInBaseUnits <= userBalance
 
   const handleSetMax = () => {
