@@ -522,8 +522,8 @@ $$ language plpgsql;
    v_locked_at := now();
    v_hash := encode(digest(p_server_seed || ':' || p_client_seed || ':' || v_nonce::text, 'sha256'), 'hex');
 
-   v_int := to_number(substring(v_hash from 1 for 8), 'FMXXXXXXXX');
-   v_roll := v_int / 4294967296::numeric;
+   v_int := ('x' || substring(v_hash from 1 for 8))::bit(32)::bigint;
+   v_roll := v_int::numeric / 4294967296::numeric;
 
    -- Durations in HOURS (max 48h)
    if v_roll < 0.45 then
@@ -543,12 +543,12 @@ $$ language plpgsql;
      v_min_d := 1; v_max_d := 3; v_min_m := 8.0; v_max_m := 15.0;   -- 1-3 hours
    end if;
 
-   v_int := to_number(substring(v_hash from 9 for 8), 'FMXXXXXXXX');
-   v_norm := v_int / 4294967296::numeric;
+   v_int := ('x' || substring(v_hash from 9 for 8))::bit(32)::bigint;
+   v_norm := v_int::numeric / 4294967296::numeric;
    v_duration := round(v_min_d + v_norm * (v_max_d - v_min_d))::int;
 
-   v_int := to_number(substring(v_hash from 17 for 8), 'FMXXXXXXXX');
-   v_norm := v_int / 4294967296::numeric;
+   v_int := ('x' || substring(v_hash from 17 for 8))::bit(32)::bigint;
+   v_norm := v_int::numeric / 4294967296::numeric;
    v_multiplier := round((v_min_m + v_norm * (v_max_m - v_min_m))::numeric, 1);
 
    v_ticket_score := floor(p_stake_amount::numeric * v_multiplier)::bigint;
