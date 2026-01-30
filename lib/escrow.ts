@@ -3,14 +3,39 @@ import { getAssociatedTokenAddress, createTransferInstruction, createAssociatedT
 import bs58 from 'bs58'
 
 // Initialize connection
-function getRpcUrl(): string {
+function getRpcUrls(): string[] {
   const urls = process.env.NEXT_PUBLIC_SOLANA_RPC_URLS || process.env.NEXT_PUBLIC_SOLANA_RPC_URL
-  if (!urls) return 'https://api.mainnet-beta.solana.com'
-  const first = urls
+  if (!urls) return ['https://api.mainnet-beta.solana.com']
+  const list = urls
     .split(',')
     .map((u) => u.trim())
-    .filter(Boolean)[0]
-  return first || 'https://api.mainnet-beta.solana.com'
+    .filter(Boolean)
+  return list.length ? list : ['https://api.mainnet-beta.solana.com']
+}
+
+const rpcUrls = getRpcUrls()
+let rpcIndex = 0
+
+function buildConnection(url: string): Connection {
+  return new Connection(url, 'confirmed')
+}
+
+function isUnauthorized(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes('401') || message.toLowerCase().includes('unauthorized')
+}
+
+async function withRpcFallback<T>(fn: (conn: Connection) => Promise<T>): Promise<T> {
+  try {
+    return await fn(connection)
+  } catch (error) {
+    if (isUnauthorized(error) && rpcIndex < rpcUrls.length - 1) {
+      rpcIndex += 1
+      connection = buildConnection(rpcUrls[rpcIndex])
+      return await fn(connection)
+    }
+    throw error
+  }
 }
 
 // Build a withdrawal transaction that the user signs/pays for
@@ -91,7 +116,7 @@ export async function buildWithdrawalTransaction(
   }
 }
 
-const connection = new Connection(getRpcUrl(), 'confirmed')
+let connection = buildConnection(rpcUrls[rpcIndex])
 
 let cachedTokenProgramId: {
   mint: string
@@ -120,7 +145,7 @@ async function getTokenProgramIdForMint(mint: PublicKey): Promise<PublicKey> {
   const mintKey = mint.toBase58()
   if (cachedTokenProgramId?.mint === mintKey) return cachedTokenProgramId.programId
 
-  const info = await connection.getAccountInfo(mint)
+  const info = await withRpcFallback((conn) => conn.getAccountInfo(mint))
   if (!info) {
     throw new Error('Token mint account not found')
   }
