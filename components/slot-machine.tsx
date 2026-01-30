@@ -770,7 +770,7 @@ export function SlotMachine() {
                 <button
                   key={index}
                   onClick={() => handleQuickAmount(amount)}
-                  disabled={isSpinning || amount > userBalance}
+                  disabled={isSpinning || toBaseUnits(amount) > userBalance}
                   className="quick-amount-btn h-8 font-mono text-xs transition-all disabled:opacity-30"
                 >
                   {formatTokenAmount(amount)}
