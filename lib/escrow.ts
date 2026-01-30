@@ -208,7 +208,7 @@ export async function verifyDeposit(
     })
     
     if (!tx) {
-      return { valid: false, amount: 0, error: 'Transaction not found' }
+      return { valid: false, amount: 0, error: 'Insufficient confirmations', confirmations: null }
     }
     
     if (!tx.meta || tx.meta.err) {
@@ -271,9 +271,13 @@ export async function verifyDeposit(
       return { valid: false, amount: depositAmount, error: 'Deposit amount too low' }
     }
     
-    // Verify sender
-    const senderKey = tx.transaction.message.accountKeys[0]
-    if (senderKey && senderKey.pubkey.toBase58() !== expectedSender) {
+    // Verify sender (do not assume accountKeys[0] is the sender; check signer set)
+    const senderSigned = tx.transaction.message.accountKeys.some((k: any) => {
+      const signer = !!k?.signer || !!k?.isSigner
+      const pubkey = k?.pubkey?.toBase58 ? k.pubkey.toBase58() : undefined
+      return signer && pubkey === expectedSender
+    })
+    if (!senderSigned) {
       return { valid: false, amount: depositAmount, error: 'Sender mismatch' }
     }
 
@@ -281,7 +285,12 @@ export async function verifyDeposit(
     const sigStatus = await connection.getSignatureStatus(txSignature, { searchTransactionHistory: true })
     const status = sigStatus.value
     if (!status) {
-      return { valid: false, amount: depositAmount, error: 'Transaction status not found' }
+      return {
+        valid: false,
+        amount: depositAmount,
+        error: 'Insufficient confirmations',
+        confirmations: null,
+      }
     }
 
     if (status.err) {

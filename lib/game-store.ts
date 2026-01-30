@@ -345,7 +345,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error)
+        const msg = String(data?.error || '')
+        const transient =
+          msg.includes('Transaction not found') ||
+          msg.includes('Transaction status not found') ||
+          msg.includes('Verification failed')
+        if (transient) {
+          return { status: 'pending' }
+        }
+        throw new Error(msg || 'Deposit failed')
       }
       return data
     }
