@@ -23,7 +23,7 @@ const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
 type Tab = "deposit" | "withdraw"
 
 export function DepositWithdraw() {
-  const { connected, publicKey, getTokenBalance, buildDepositTransaction, signAndSendTransaction } = useWallet()
+  const { connected, publicKey, getTokenBalance, buildDepositTransaction, signAndSendTransaction, signTransaction, sendRawTransaction } = useWallet()
   const { userBalance, deposit, withdraw, submitWithdrawal } = useGameStore()
   
   const [activeTab, setActiveTab] = useState<Tab>("deposit")
@@ -176,7 +176,9 @@ export function DepositWithdraw() {
 
       const txBytes = decodeBase64(result.transaction)
       const tx = Transaction.from(txBytes)
-      const txSignature = await signAndSendTransaction(tx)
+      // Use signTransaction + sendRawTransaction for multi-signer tx (Phantom guidelines)
+      const signedTx = await signTransaction(tx)
+      const txSignature = await sendRawTransaction(signedTx)
 
       try {
         await submitWithdrawal(result.txId, txSignature)
