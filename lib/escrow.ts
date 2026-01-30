@@ -311,7 +311,10 @@ export async function verifyDeposit(
       return { valid: false, amount: depositAmount, error: 'Sender mismatch' }
     }
 
-    const minConfirmations = Number(process.env.DEPOSIT_MIN_CONFIRMATIONS) || 32
+    const minConfirmationsEnv = Number(process.env.DEPOSIT_MIN_CONFIRMATIONS)
+    const minConfirmations = Number.isFinite(minConfirmationsEnv) && minConfirmationsEnv > 0
+      ? minConfirmationsEnv
+      : 4
     const sigStatus = await withRpcFallback((conn) =>
       conn.getSignatureStatus(txSignature, { searchTransactionHistory: true })
     )
@@ -354,6 +357,9 @@ export async function verifyDeposit(
     }
   } catch (error) {
     console.error('Verify deposit error:', error)
+    if (isRetryableRpcError(error)) {
+      return { valid: false, amount: 0, error: 'Insufficient confirmations', confirmations: null }
+    }
     return { valid: false, amount: 0, error: 'Verification failed' }
   }
 }
