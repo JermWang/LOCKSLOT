@@ -133,8 +133,9 @@ export function DepositWithdraw() {
       // Build transaction
       const { tx, preview } = await buildDepositTransaction(amountInBaseUnits, escrow)
       
-      // Sign and send
-      const txSignature = await signAndSendTransaction(tx)
+      // Sign and send (use signTransaction + sendRawTransaction per Phantom guidelines)
+      const signedTx = await signTransaction(tx)
+      const txSignature = await sendRawTransaction(signedTx)
       
       // Record deposit in backend
       await deposit(txSignature, amountInBaseUnits)
