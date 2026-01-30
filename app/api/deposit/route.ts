@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { verifyDeposit, getEscrowTokenAccount } from '@/lib/escrow'
+import { verifyDeposit, getEscrowTokenAccount, getEscrowPublicKey } from '@/lib/escrow'
 import { rateLimitGate } from '@/lib/api-guard'
 
 export const runtime = 'nodejs'
@@ -151,9 +151,11 @@ export async function GET(request: NextRequest) {
     if (limited) return limited
 
     const escrowTokenAccount = await getEscrowTokenAccount()
+    const escrowPublicKey = getEscrowPublicKey()
     
     return NextResponse.json({
       escrowTokenAccount,
+      escrowPublicKey,
       tokenMint: process.env.NEXT_PUBLIC_TOKEN_MINT
     })
   } catch (error) {

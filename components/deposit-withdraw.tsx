@@ -71,8 +71,8 @@ export function DepositWithdraw() {
       const res = await fetch("/api/deposit")
       if (res.ok) {
         const data = await res.json()
-        setEscrowAccount(data.escrowTokenAccount)
-        return data.escrowTokenAccount as string
+        setEscrowAccount(data.escrowPublicKey)
+        return data.escrowPublicKey as string
       }
     } catch (err) {
       console.error("Failed to fetch escrow account:", err)

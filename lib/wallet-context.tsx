@@ -5,10 +5,12 @@ import {
   Connection, 
   PublicKey, 
   Transaction, 
+  TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js"
 import { 
   getAssociatedTokenAddress, 
+  createAssociatedTokenAccountInstruction,
   createTransferInstruction,
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
@@ -73,7 +75,7 @@ interface WalletContextType {
   signAndSendTransaction: (tx: Transaction | VersionedTransaction) => Promise<string>
   signTransaction: (tx: Transaction | VersionedTransaction) => Promise<Transaction | VersionedTransaction>
   sendRawTransaction: (tx: Transaction | VersionedTransaction) => Promise<string>
-  buildDepositTransaction: (amount: number, escrowTokenAccount: string) => Promise<{ tx: Transaction; preview: TransactionPreview }>
+  buildDepositTransaction: (amount: number, escrowWalletPublicKey: string) => Promise<{ tx: Transaction | VersionedTransaction; preview: TransactionPreview }>
   getTokenBalance: () => Promise<number>
 }
 
@@ -282,88 +284,121 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   // Build a deposit transaction for SPL token transfer to escrow
   const buildDepositTransaction = useCallback(async (
     amount: number, 
-    escrowTokenAccount: string
-  ): Promise<{ tx: Transaction; preview: TransactionPreview }> => {
+    escrowWalletPublicKey: string
+  ): Promise<{ tx: Transaction | VersionedTransaction; preview: TransactionPreview }> => {
     if (!connected || !publicKey) throw new Error("Wallet not connected")
     
     const tokenMint = getTokenMint()
     if (!tokenMint) throw new Error("Token mint not configured")
 
     const userPubkey = new PublicKey(publicKey)
-    const escrowAta = new PublicKey(escrowTokenAccount)
+    const escrowOwner = new PublicKey(escrowWalletPublicKey)
 
     const tokenProgramId = await getTokenProgramIdForMint(tokenMint)
-    
-    // Get user's associated token account
-    const userAta = await getAssociatedTokenAddress(
-      tokenMint,
+
+    // Find a source token account with enough balance for this mint (don't assume ATA)
+    const parsedAccounts = await connection.getParsedTokenAccountsByOwner(
       userPubkey,
+      { programId: tokenProgramId },
+      "confirmed"
+    )
+
+    const mintAddress = tokenMint.toBase58()
+    const candidates = parsedAccounts.value
+      .map((acc) => {
+        const info = (acc.account.data as any)?.parsed?.info
+        const tokenAmount = info?.tokenAmount
+        return {
+          pubkey: acc.pubkey,
+          mint: info?.mint as string | undefined,
+          rawAmount: tokenAmount?.amount ? Number(tokenAmount.amount) : 0,
+          decimals: tokenAmount?.decimals as number | undefined,
+        }
+      })
+      .filter((c) => c.mint === mintAddress && Number.isFinite(c.rawAmount) && c.rawAmount >= amount)
+      .sort((a, b) => b.rawAmount - a.rawAmount)
+
+    if (!candidates.length) {
+      throw new Error("Insufficient token balance.")
+    }
+
+    const sourceTokenAccount = candidates[0].pubkey
+    const decimals = candidates[0].decimals ?? 0
+
+    // Compute escrow ATA and create if missing
+    const escrowAta = await getAssociatedTokenAddress(
+      tokenMint,
+      escrowOwner,
       false,
       tokenProgramId,
       ASSOCIATED_TOKEN_PROGRAM_ID
     )
-    
-    // Check if user has the token account
-    const userAtaInfo = await connection.getAccountInfo(userAta)
-    if (!userAtaInfo) {
-      throw new Error("You don't have a token account. Please ensure you have tokens first.")
+
+    const instructions = [] as any[]
+    const escrowAtaInfo = await connection.getAccountInfo(escrowAta)
+    if (!escrowAtaInfo) {
+      instructions.push(
+        createAssociatedTokenAccountInstruction(
+          userPubkey,
+          escrowAta,
+          escrowOwner,
+          tokenMint,
+          tokenProgramId,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        )
+      )
     }
 
-    // Verify user has enough balance
-    const userTokenBalance = await connection.getTokenAccountBalance(userAta)
-    const userBalance = Number(userTokenBalance.value.amount)
-    if (userBalance < amount) {
-      throw new Error(`Insufficient token balance. You have ${userTokenBalance.value.uiAmountString} tokens.`)
-    }
-
-    // Build transfer instruction
-    const transferIx = createTransferInstruction(
-      userAta,           // source (user's token account)
-      escrowAta,         // destination (escrow token account)
-      userPubkey,        // owner/authority
-      amount,            // amount in base units
-      [],                // no multisig
-      tokenProgramId
+    instructions.push(
+      createTransferInstruction(
+        sourceTokenAccount,
+        escrowAta,
+        userPubkey,
+        amount,
+        [],
+        tokenProgramId
+      )
     )
 
-    // Build transaction
-    const tx = new Transaction()
-    tx.add(transferIx)
-    tx.feePayer = userPubkey
-    
-    // Get recent blockhash
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed")
-    tx.recentBlockhash = blockhash
-    tx.lastValidBlockHeight = lastValidBlockHeight
+    // Build v0 transaction for simulation with sigVerify:false
+    const { blockhash } = await connection.getLatestBlockhash("confirmed")
+    const messageV0 = new TransactionMessage({
+      payerKey: userPubkey,
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToV0Message()
+    const vtx = new VersionedTransaction(messageV0)
 
-    // Calculate display amount (assuming 9 decimals, adjust as needed)
-    const decimals = userTokenBalance.value.decimals
+    const simulation = await connection.simulateTransaction(vtx, {
+      sigVerify: false,
+      commitment: "confirmed",
+    })
+    if (simulation.value.err) {
+      console.error("[buildDepositTransaction] Simulation failed:", simulation.value.err)
+      if (simulation.value.logs) {
+        console.error("[buildDepositTransaction] Simulation logs:", simulation.value.logs)
+      }
+      throw new Error("Transaction simulation failed. Please try again.")
+    }
+
+    // Estimate transaction fee
+    const feeEstimate = await connection.getFeeForMessage(messageV0, "confirmed")
+    const estimatedFee = feeEstimate.value || 5000 // default 5000 lamports
+
     const displayAmount = (amount / Math.pow(10, decimals)).toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: decimals
     })
 
-    // Estimate transaction fee
-    const feeEstimate = await connection.getFeeForMessage(tx.compileMessage(), "confirmed")
-    const estimatedFee = feeEstimate.value || 5000 // default 5000 lamports
-
-    // Simulate transaction before signing (Phantom guidelines step 4)
-    // This prevents "transaction could be malicious" warnings
-    const simulation = await connection.simulateTransaction(tx)
-    if (simulation.value.err) {
-      console.error("[buildDepositTransaction] Simulation failed:", simulation.value.err)
-      throw new Error("Transaction simulation failed. Please try again.")
-    }
-
     const preview: TransactionPreview = {
       amount,
       displayAmount,
-      recipient: escrowTokenAccount,
+      recipient: escrowAta.toBase58(),
       tokenMint: tokenMint.toBase58(),
       estimatedFee,
     }
 
-    return { tx, preview }
+    return { tx: vtx, preview }
   }, [connected, publicKey])
 
   // Get user's SPL token balance
