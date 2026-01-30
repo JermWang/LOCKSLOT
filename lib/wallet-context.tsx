@@ -16,13 +16,42 @@ import {
 } from "@solana/spl-token"
 
 // RPC connection
-function getRpcUrl(): string {
+function getRpcUrls(): string[] {
   const urls = process.env.NEXT_PUBLIC_SOLANA_RPC_URLS || process.env.NEXT_PUBLIC_SOLANA_RPC_URL
-  if (!urls) return "https://api.mainnet-beta.solana.com"
-  return urls.split(",").map(u => u.trim()).filter(Boolean)[0] || "https://api.mainnet-beta.solana.com"
+  if (!urls) return ["https://api.mainnet-beta.solana.com"]
+  const list = urls
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean)
+  return list.length ? list : ["https://api.mainnet-beta.solana.com"]
 }
 
-const connection = new Connection(getRpcUrl(), "confirmed")
+const rpcUrls = getRpcUrls()
+let rpcIndex = 0
+
+function buildConnection(url: string): Connection {
+  return new Connection(url, "confirmed")
+}
+
+function isUnauthorized(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes("401") || message.toLowerCase().includes("unauthorized")
+}
+
+let connection = buildConnection(rpcUrls[rpcIndex])
+
+async function withRpcFallback<T>(fn: (conn: Connection) => Promise<T>): Promise<T> {
+  try {
+    return await fn(connection)
+  } catch (error) {
+    if (isUnauthorized(error) && rpcIndex < rpcUrls.length - 1) {
+      rpcIndex += 1
+      connection = buildConnection(rpcUrls[rpcIndex])
+      return await fn(connection)
+    }
+    throw error
+  }
+}
 
 let cachedTokenProgramId: {
   mint: string
@@ -44,7 +73,7 @@ async function getTokenProgramIdForMint(mint: PublicKey): Promise<PublicKey> {
   const mintKey = mint.toBase58()
   if (cachedTokenProgramId?.mint === mintKey) return cachedTokenProgramId.programId
 
-  const info = await connection.getAccountInfo(mint)
+  const info = await withRpcFallback((conn) => conn.getAccountInfo(mint))
   if (!info) {
     throw new Error("Token mint account not found")
   }
@@ -229,20 +258,38 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") throw new Error("Not in browser")
     if (!connected || !publicKey) throw new Error("Wallet not connected")
 
-    let signature: string
+    // Simulate before requesting signature to avoid Phantom warnings
+    const simulation = (await withRpcFallback((conn) => {
+      if ("version" in tx) {
+        return conn.simulateTransaction(tx as VersionedTransaction, {
+          sigVerify: false,
+          commitment: "confirmed",
+        } as any)
+      }
+      return (conn as any).simulateTransaction(tx, {
+        sigVerify: false,
+        commitment: "confirmed",
+      })
+    })) as { value: { err: unknown; logs?: string[] | null } }
 
-    if (window.solana?.isPhantom) {
-      const result = await window.solana.signAndSendTransaction(tx)
-      signature = result.signature
-    } else if (window.solflare?.isSolflare) {
-      const result = await window.solflare.signAndSendTransaction(tx)
-      signature = result.signature
-    } else {
-      throw new Error("No compatible wallet found")
+    if (simulation.value.err) {
+      console.error("[simulateTransaction] Error:", simulation.value.err, simulation.value.logs)
+      throw new Error("Transaction simulation failed")
     }
 
-    // Wait for confirmation
-    await connection.confirmTransaction(signature, "confirmed")
+    const provider = window.solana?.isPhantom ? window.solana : window.solflare?.isSolflare ? window.solflare : null
+    if (!provider) throw new Error("No compatible wallet found")
+
+    if (!provider.signTransaction) {
+      const result = await provider.signAndSendTransaction(tx)
+      await withRpcFallback((conn) => conn.confirmTransaction(result.signature, "confirmed"))
+      return result.signature
+    }
+
+    const signedTx = await provider.signTransaction(tx)
+    const rawTx = signedTx.serialize()
+    const signature = await withRpcFallback((conn) => conn.sendRawTransaction(rawTx, { skipPreflight: true }))
+    await withRpcFallback((conn) => conn.confirmTransaction(signature, "confirmed"))
     return signature
   }, [connected, publicKey])
 
@@ -271,13 +318,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     )
     
     // Check if user has the token account
-    const userAtaInfo = await connection.getAccountInfo(userAta)
+    const userAtaInfo = await withRpcFallback((conn) => conn.getAccountInfo(userAta))
     if (!userAtaInfo) {
       throw new Error("You don't have a token account. Please ensure you have tokens first.")
     }
 
     // Verify user has enough balance
-    const userTokenBalance = await connection.getTokenAccountBalance(userAta)
+    const userTokenBalance = await withRpcFallback((conn) => conn.getTokenAccountBalance(userAta))
     const userBalance = Number(userTokenBalance.value.amount)
     if (userBalance < amount) {
       throw new Error(`Insufficient token balance. You have ${userTokenBalance.value.uiAmountString} tokens.`)
@@ -299,7 +346,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     tx.feePayer = userPubkey
     
     // Get recent blockhash
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed")
+    const { blockhash, lastValidBlockHeight } = await withRpcFallback((conn) => conn.getLatestBlockhash("confirmed"))
     tx.recentBlockhash = blockhash
     tx.lastValidBlockHeight = lastValidBlockHeight
 
@@ -311,7 +358,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     })
 
     // Estimate transaction fee
-    const feeEstimate = await connection.getFeeForMessage(tx.compileMessage(), "confirmed")
+    const feeEstimate = await withRpcFallback((conn) => conn.getFeeForMessage(tx.compileMessage(), "confirmed"))
     const estimatedFee = feeEstimate.value || 5000 // default 5000 lamports
 
     const preview: TransactionPreview = {
@@ -349,11 +396,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       )
 
       const userPubkey = new PublicKey(publicKey)
-      const parsedAccounts = await connection.getParsedTokenAccountsByOwner(
+      const parsedAccounts = await withRpcFallback((conn) => conn.getParsedTokenAccountsByOwner(
         userPubkey,
         { programId: tokenProgramId },
         "confirmed"
-      )
+      ))
 
       const mintAddress = tokenMint.toBase58()
       const matchingAccounts = parsedAccounts.value.filter((account) => {
