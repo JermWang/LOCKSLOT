@@ -347,6 +347,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const feeEstimate = await connection.getFeeForMessage(tx.compileMessage(), "confirmed")
     const estimatedFee = feeEstimate.value || 5000 // default 5000 lamports
 
+    // Simulate transaction before signing (Phantom guidelines step 4)
+    // This prevents "transaction could be malicious" warnings
+    const simulation = await connection.simulateTransaction(tx)
+    if (simulation.value.err) {
+      console.error("[buildDepositTransaction] Simulation failed:", simulation.value.err)
+      throw new Error("Transaction simulation failed. Please try again.")
+    }
+
     const preview: TransactionPreview = {
       amount,
       displayAmount,
