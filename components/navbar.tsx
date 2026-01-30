@@ -105,12 +105,12 @@ export function Navbar() {
         </div>
 
         {/* Contract Address */}
-        <div className="hidden md:flex flex-1 max-w-md mx-8">
+        <div className="hidden md:flex mx-8">
           <button
             type="button"
             onClick={copyContract}
             disabled={!CONTRACT_ADDRESS}
-            className="group relative w-full h-10 rounded-lg border border-[#1a3a4a]/50 bg-[#081420]/70 backdrop-blur-md px-4 text-sm text-[#e8f4f8] transition-all overflow-hidden flex items-center justify-start disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#00d4aa]/40"
+            className="group relative h-10 rounded-lg border border-[#1a3a4a]/50 bg-[#081420]/70 backdrop-blur-md px-4 text-sm text-[#e8f4f8] transition-all overflow-hidden flex items-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#00d4aa]/40"
             title={CONTRACT_ADDRESS ? CONTRACT_ADDRESS : "Set NEXT_PUBLIC_TOKEN_MINT"}
           >
             <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
