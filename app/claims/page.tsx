@@ -1,33 +1,61 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useWallet } from "@/lib/wallet-context"
+import { useGameStore } from "@/lib/game-store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Gift, Wallet, Clock, CheckCircle, Coins } from "lucide-react"
+import { Gift, Wallet, Clock, CheckCircle } from "lucide-react"
 import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
-interface ClaimableReward {
-  epoch: number
-  amount: number
-  status: "claimable" | "pending"
-}
-
-interface ClaimedReward {
-  epoch: number
-  amount: number
-  claimedAt: string
-  txHash: string
-}
-
 export default function ClaimsPage() {
-  const { connected, connect, publicKey } = useWallet()
-  const [claimableRewards, setClaimableRewards] = useState<ClaimableReward[]>([])
-  const [claimedRewards, setClaimedRewards] = useState<ClaimedReward[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const { connected, connect } = useWallet()
+  const { locks, claimLock } = useGameStore()
+  const [claimingId, setClaimingId] = useState<string | null>(null)
+  const [claimingAll, setClaimingAll] = useState(false)
 
-  const totalClaimable = claimableRewards.reduce((acc, r) => acc + r.amount, 0)
+  const { claimableLocks, claimedLocks, totalClaimable } = useMemo(() => {
+    const getPayout = (lock: { amount: number; feeAmount?: number; bonusAmount?: number }) => {
+      const principal = Math.max(0, lock.amount - (lock.feeAmount ?? 0))
+      const bonus = lock.bonusAmount ?? 0
+      return principal + bonus
+    }
+
+    const claimable = locks
+      .filter((lock) => lock.status === "unlocked")
+      .sort((a, b) => b.endTime.getTime() - a.endTime.getTime())
+    const claimed = locks
+      .filter((lock) => lock.status === "claimed")
+      .sort((a, b) => b.endTime.getTime() - a.endTime.getTime())
+
+    return {
+      claimableLocks: claimable,
+      claimedLocks: claimed,
+      totalClaimable: claimable.reduce((acc, lock) => acc + getPayout(lock), 0),
+    }
+  }, [locks])
+
+  const handleClaim = async (spinId: string) => {
+    setClaimingId(spinId)
+    try {
+      await claimLock(spinId)
+    } finally {
+      setClaimingId(null)
+    }
+  }
+
+  const handleClaimAll = async () => {
+    if (!claimableLocks.length) return
+    setClaimingAll(true)
+    try {
+      for (const lock of claimableLocks) {
+        await claimLock(lock.id)
+      }
+    } finally {
+      setClaimingAll(false)
+    }
+  }
 
   if (!connected) {
     return (
@@ -71,8 +99,8 @@ export default function ClaimsPage() {
                 </div>
               </div>
             </div>
-            <Button className="glow-primary" disabled={totalClaimable === 0}>
-              Claim All
+            <Button className="glow-primary" disabled={totalClaimable === 0 || claimingAll} onClick={handleClaimAll}>
+              {claimingAll ? "Claiming..." : "Claim All"}
             </Button>
           </div>
         </CardContent>
@@ -87,26 +115,34 @@ export default function ClaimsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {claimableRewards.length > 0 ? (
+          {claimableLocks.length > 0 ? (
             <div className="space-y-3">
-              {claimableRewards.map((reward) => (
+              {claimableLocks.map((lock) => (
                 <div
-                  key={reward.epoch}
+                  key={lock.id}
                   className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 p-4"
                 >
                   <div className="flex items-center gap-4">
                     <div className="text-sm">
                       <span className="text-muted-foreground">Epoch </span>
-                      <span className="font-mono text-primary">#{reward.epoch}</span>
+                      <span className="font-mono text-primary">#{lock.epochNumber ?? "—"}</span>
                     </div>
                     <Badge variant="outline" className="border-primary text-primary">
                       Claimable
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-mono text-primary">{formatTokenAmountFromBase(reward.amount)} $LOCK</span>
-                    <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent">
-                      Claim
+                    <span className="font-mono text-primary">
+                      {formatTokenAmountFromBase(Math.max(0, lock.amount - (lock.feeAmount ?? 0)) + (lock.bonusAmount ?? 0))} $LOCK
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
+                      onClick={() => handleClaim(lock.id)}
+                      disabled={claimingAll || claimingId === lock.id}
+                    >
+                      {claimingId === lock.id ? "Claiming..." : "Claim"}
                     </Button>
                   </div>
                 </div>
@@ -129,26 +165,34 @@ export default function ClaimsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {claimedRewards.map((reward) => (
-              <div
-                key={reward.epoch}
-                className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 p-4 opacity-60"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Epoch </span>
-                    <span className="font-mono">#{reward.epoch}</span>
+          {claimedLocks.length > 0 ? (
+            <div className="space-y-3">
+              {claimedLocks.map((lock) => (
+                <div
+                  key={lock.id}
+                  className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 p-4 opacity-60"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Epoch </span>
+                      <span className="font-mono">#{lock.epochNumber ?? "—"}</span>
+                    </div>
+                    <Badge variant="secondary">Claimed</Badge>
                   </div>
-                  <Badge variant="secondary">Claimed</Badge>
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="text-muted-foreground">{lock.endTime.toLocaleString()}</span>
+                    <span className="font-mono">
+                      {formatTokenAmountFromBase(Math.max(0, lock.amount - (lock.feeAmount ?? 0)) + (lock.bonusAmount ?? 0))} $LOCK
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-muted-foreground">{reward.claimedAt}</span>
-                  <span className="font-mono">{formatTokenAmountFromBase(reward.amount)} $LOCK</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No claims yet
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

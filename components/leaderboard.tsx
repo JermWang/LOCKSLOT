@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { useGameStore } from "@/lib/game-store"
 import { getTierColor, TIER_CONFIG } from "@/lib/game-types"
 import { cn } from "@/lib/utils"
@@ -7,7 +8,13 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 export function Leaderboard() {
-  const { leaderboard } = useGameStore()
+  const { leaderboard, fetchLeaderboard } = useGameStore()
+
+  useEffect(() => {
+    fetchLeaderboard()
+    const interval = setInterval(fetchLeaderboard, 30000)
+    return () => clearInterval(interval)
+  }, [fetchLeaderboard])
 
   return (
     <ScrollArea className="h-[400px]">

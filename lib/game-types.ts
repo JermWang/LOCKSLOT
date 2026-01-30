@@ -10,6 +10,7 @@ export interface SpinResult {
 export interface Lock {
   id: string
   amount: number
+  feeAmount?: number
   tier: Tier
   duration: number
   multiplier: number
@@ -18,6 +19,7 @@ export interface Lock {
   status: "active" | "unlocked" | "claimed" | "exited"
   bonusEligible?: boolean
   bonusAmount?: number
+  epochNumber?: number
   txSignature?: string
 }
 

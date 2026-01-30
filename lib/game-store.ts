@@ -74,6 +74,7 @@ interface GameState {
   withdraw: (amount: number) => Promise<WithdrawalBuildResult>
   submitWithdrawal: (txId: string, txSignature: string) => Promise<void>
   claimLock: (spinId: string) => Promise<void>
+  fetchLeaderboard: () => Promise<void>
   setSpinning: (spinning: boolean) => void
   addActivity: (activity: ActivityItem) => void
 }
@@ -223,6 +224,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         locks: data.locks.map((l: any) => ({
           id: l.id,
           amount: l.stakeAmount,
+          feeAmount: l.feeAmount ?? 0,
           tier: l.tier,
           duration: l.duration,
           multiplier: l.multiplier,
@@ -231,6 +233,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           status: l.status === 'claimed' ? 'claimed' : l.status === 'unlocked' || new Date(l.unlocksAt) < new Date() ? 'unlocked' : 'active',
           bonusEligible: l.bonusEligible,
           bonusAmount: l.bonusAmount,
+          epochNumber: l.epochNumber ?? undefined,
         })),
         rewardPool: data.epoch?.rewardPool || 0,
         totalSpins: data.epoch?.totalSpins || 0,
@@ -317,12 +320,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       const newLock: Lock = {
         id: data.spin.id,
         amount: data.spin.stakeAmount,
+        feeAmount: data.spin.feeAmount,
         tier: data.spin.tier,
         duration: data.spin.duration,
         multiplier: data.spin.multiplier,
         startTime: new Date(data.spin.lockedAt),
         endTime: new Date(data.spin.unlocksAt),
         status: "active",
+        bonusEligible: data.spin.bonusEligible,
       }
 
       set({
@@ -504,11 +509,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (IS_DEMO) {
       const lock = locks.find(l => l.id === spinId)
       if (lock) {
+        const bonus = lock.bonusAmount || 0
+        const principal = Math.max(0, lock.amount - (lock.feeAmount ?? 0))
         set(state => ({
-          userBalance: state.userBalance + lock.amount,
-          locks: state.locks.map(l => l.id === spinId ? { ...l, status: 'claimed' as const } : l)
+          userBalance: state.userBalance + principal + bonus,
+          locks: state.locks.map(l => l.id === spinId ? { ...l, status: 'claimed' as const, bonusAmount: bonus } : l)
         }))
-        gameToast.claim(lock.amount, lock.bonusAmount || 0)
+        gameToast.claim(principal, bonus)
       }
       return
     }
@@ -533,9 +540,28 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     set(state => ({
       userBalance: data.newBalance,
-      locks: state.locks.map(l => l.id === spinId ? { ...l, status: 'claimed' as const } : l)
+      locks: state.locks.map(l => l.id === spinId ? { ...l, status: 'claimed' as const, bonusAmount: data.bonus } : l)
     }))
     gameToast.claim(data.principal || 0, data.bonus || 0)
+  },
+
+  fetchLeaderboard: async () => {
+    if (IS_DEMO) {
+      set({ leaderboard: [], activeWinners: 0 })
+      return
+    }
+
+    try {
+      const res = await fetch('/api/leaderboard')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.error || 'Failed to load leaderboard')
+      set({
+        leaderboard: data.leaderboard || [],
+        activeWinners: data.activeWinners ?? 0,
+      })
+    } catch {
+      set({ leaderboard: [], activeWinners: 0 })
+    }
   },
 
   setSpinning: (spinning) => set({ isSpinning: spinning }),

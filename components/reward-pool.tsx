@@ -7,8 +7,14 @@ import { TrendingUp, Users, Trophy, Sigma } from "lucide-react"
 import { formatTokenAmountFromBase } from "@/lib/token-utils"
 
 export function RewardPool() {
-  const { rewardPool, totalSpins, activeWinners } = useGameStore()
+  const { rewardPool, totalSpins, activeWinners, fetchLeaderboard } = useGameStore()
   const [displayValue, setDisplayValue] = useState(rewardPool)
+
+  useEffect(() => {
+    fetchLeaderboard()
+    const interval = setInterval(fetchLeaderboard, 30000)
+    return () => clearInterval(interval)
+  }, [fetchLeaderboard])
 
   useEffect(() => {
     const duration = 500

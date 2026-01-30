@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
 
     const { data: locks } = await supabase
       .from('spins')
-      .select('*')
+      .select('*, epochs(epoch_number)')
       .eq('user_id', user.id)
-      .in('status', ['locked', 'unlocked'])
+      .in('status', ['locked', 'unlocked', 'claimed'])
       .order('created_at', { ascending: false })
 
     const { data: transactions } = await supabase
@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
           id: lock.id,
           tier: lock.tier,
           stakeAmount: lock.stake_amount,
+          feeAmount: lock.fee_amount,
           multiplier: lock.multiplier,
           duration: lock.lock_duration,
           ticketScore: lock.ticket_score,
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
           status: lock.status,
           bonusEligible: lock.bonus_eligible,
           bonusAmount: lock.bonus_amount,
+          epochNumber: lock.epochs?.epoch_number ?? null,
         })) || [],
       transactions: transactions || [],
       epoch: epoch
