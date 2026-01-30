@@ -366,10 +366,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       }
       
       const balance = await connection.getTokenAccountBalance(userAta)
-      console.log("[getTokenBalance] Balance:", balance.value.amount, "uiAmount:", balance.value.uiAmountString, "decimals:", balance.value.decimals)
-      // Return parsed uiAmountString to preserve precision
-      const uiStr = balance.value.uiAmountString
-      return uiStr ? parseFloat(uiStr) : 0
+      const rawAmount = balance.value.amount
+      const decimals = balance.value.decimals
+      console.log("[getTokenBalance] Raw amount:", rawAmount, "decimals:", decimals, "uiAmountString:", balance.value.uiAmountString)
+      // Convert raw amount using actual token decimals
+      const tokens = Number(rawAmount) / Math.pow(10, decimals)
+      console.log("[getTokenBalance] Calculated tokens:", tokens)
+      return tokens
     } catch (err: any) {
       // Handle specific RPC errors
       if (err?.message?.includes("could not find account") || err?.message?.includes("Invalid param") || err?.message?.includes("Token mint account not found")) {
