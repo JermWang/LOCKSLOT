@@ -328,28 +328,62 @@ export const useGameStore = create<GameState>((set, get) => ({
       return
     }
 
-    const res = await fetch('/api/deposit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ walletAddress, txSignature, expectedAmount: amount }),
-    })
-    
-    const data = await res.json()
-    if (!res.ok) {
-      gameToast.error(data.error)
-      throw new Error(data.error)
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+    const attemptConfirm = async () => {
+      const currentWallet = get().walletAddress
+      if (!currentWallet) throw new Error('Wallet not connected')
+      if (currentWallet !== walletAddress) {
+        throw new Error('Wallet changed')
+      }
+
+      const res = await fetch('/api/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: currentWallet, txSignature, expectedAmount: amount }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error)
+      }
+      return data
     }
 
-    if (data.status === "pending") {
+    let data: any
+    try {
+      data = await attemptConfirm()
+    } catch (err: any) {
+      gameToast.error(err?.message || 'Deposit failed')
+      throw err
+    }
+
+    if (data.status === 'pending') {
       gameToast.depositPending(amount, txSignature)
+
+      for (let i = 0; i < 7; i += 1) {
+        await sleep(4000)
+        try {
+          data = await attemptConfirm()
+        } catch {
+          break
+        }
+
+        if (data?.newBalance !== null && data?.newBalance !== undefined) {
+          set({ userBalance: data.newBalance })
+          gameToast.deposit(amount, txSignature)
+          return
+        }
+      }
+
       return
     }
 
     if (data.newBalance === null || data.newBalance === undefined) {
-      gameToast.error("Deposit confirmation missing balance")
-      throw new Error("Deposit confirmation missing balance")
+      gameToast.error('Deposit confirmation missing balance')
+      throw new Error('Deposit confirmation missing balance')
     }
-    
+
     set({ userBalance: data.newBalance })
     gameToast.deposit(amount, txSignature)
   },
