@@ -6,7 +6,7 @@ import { Wallet, RefreshCw, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
-import { formatTokenAmount, formatTokenAmountFull } from "@/lib/token-utils"
+import { formatTokenAmountFromBase, formatTokenAmountFullFromBase } from "@/lib/token-utils"
 
 const TOKEN_SYMBOL = process.env.NEXT_PUBLIC_TOKEN_SYMBOL || "TOKENS"
 const TOKEN_MINT = process.env.NEXT_PUBLIC_TOKEN_MINT || "NOT_SET"
@@ -173,7 +173,7 @@ export function TokenBalance() {
               {/* Main balance */}
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-black font-mono text-[#e8f4f8] tracking-tight">
-                  {balance !== null ? formatTokenAmount(balance) : "0.00"}
+                  {balance !== null ? formatTokenAmountFromBase(balance) : "0.00"}
                 </span>
                 <span className="text-sm font-semibold text-[#00d4aa]">{TOKEN_SYMBOL}</span>
               </div>
@@ -181,7 +181,7 @@ export function TokenBalance() {
               {/* Full balance tooltip */}
               {balance !== null && balance > 0 && (
                 <p className="text-[10px] font-mono text-[#6b8a9a]">
-                  ≈ {formatTokenAmountFull(balance)} tokens
+                  ≈ {formatTokenAmountFullFromBase(balance)} tokens
                 </p>
               )}
             </motion.div>

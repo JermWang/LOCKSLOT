@@ -102,7 +102,7 @@ export function DepositWithdraw() {
   const parsedAmount = parseFloat(amount) || 0
   const amountInBaseUnits = toBaseUnits(parsedAmount)
 
-  const maxDeposit = walletBalance !== null ? walletBalance : 0
+  const maxDeposit = walletBalance !== null ? fromBaseUnits(walletBalance) : 0
   const maxWithdraw = fromBaseUnits(userBalance)
 
   const canDeposit = parsedAmount > 0 && escrowAccount
@@ -110,7 +110,7 @@ export function DepositWithdraw() {
 
   const handleSetMax = () => {
     if (activeTab === "deposit" && walletBalance !== null) {
-      setAmount(walletBalance.toString())
+      setAmount(fromBaseUnits(walletBalance).toString())
     } else if (activeTab === "withdraw") {
       setAmount(fromBaseUnits(userBalance).toString())
     }
@@ -279,7 +279,7 @@ export function DepositWithdraw() {
         <div className="p-3 rounded-lg bg-[#081420] border border-[#1a3a4a]/50">
           <p className="text-[10px] text-[#6b8a9a] uppercase mb-1">Wallet Balance</p>
           <p className="font-mono text-sm font-bold text-[#e8f4f8]">
-            {walletBalance !== null ? formatTokenAmount(walletBalance) : "..."}
+            {walletBalance !== null ? formatTokenAmountFromBase(walletBalance) : "..."}
           </p>
           <p className="text-[9px] text-[#6b8a9a]">{TOKEN_SYMBOL}</p>
         </div>
